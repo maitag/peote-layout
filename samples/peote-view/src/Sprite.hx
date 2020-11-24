@@ -1,13 +1,16 @@
 package;
 
-import peote.layout.Border;
 import peote.view.Element;
 import peote.view.Display;
 import peote.view.Program;
 import peote.view.Buffer;
 import peote.view.Color;
 
-class Sprite implements Element
+import peote.layout.Border;
+import peote.layout.LayoutElement;
+
+
+class Sprite implements LayoutElement implements Element
 {
 	@color public var borderColor:Color = 0x550000ff; // using propertyname "borderColor" as identifier for setColorFormula()
 	@color("bgcolor") public var color:Color = 0xffff00ff; // using different identifier "bgcolor" for setColorFormula()
@@ -80,7 +83,8 @@ class Sprite implements Element
 		
 	public function new(color:Color) {
 		this.color = color;
-		update({top:5,left:0,right:800,bottom:100}, {top:5,left:10,right:500,bottom:90}, 0);
+		//update({top:5,left:0,right:800,bottom:100}, {top:5,left:10,right:500,bottom:90}, 0);
+		update({top:5,left:0,right:800,bottom:100}, {top:0,left:0,right:800,bottom:100}, 0);
 	}
 	
 	

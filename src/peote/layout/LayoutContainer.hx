@@ -15,6 +15,7 @@ class LayoutContainer
 {
 	public var containerType:ContainerType;
 	public var layout:Layout;
+	public var displayElement:LayoutElement;
 	
 	var solver:Solver;
 	
@@ -57,7 +58,7 @@ class LayoutContainer
 	public var hSize:SizeSpaced;
 	public var vSize:SizeSpaced;
 			
-	public function new(containerType:ContainerType = ContainerType.BOX, displayElement:Dynamic = null, layout:Layout = null, innerLayoutContainer:Array<LayoutContainer> = null) 
+	public function new(containerType:ContainerType = ContainerType.BOX, displayElement:LayoutElement = null, layout:Layout = null, innerLayoutContainer:Array<LayoutContainer> = null) 
 	{
 		this.containerType = containerType;
 		this.layout = layout;
@@ -66,8 +67,8 @@ class LayoutContainer
 		
 		childs = innerLayoutContainer;
 		
-		// TODO
-		xScroll = new Variable();
+
+		xScroll = new Variable();// TODO !
 		
 		x = new Variable();
 		y = new Variable();
@@ -80,7 +81,7 @@ class LayoutContainer
 	
 
 	
-	function init()
+	function init() // TODO !
 	{
 		solver = new Solver();
 		// recursive Container

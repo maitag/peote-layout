@@ -50,7 +50,11 @@ class Main extends lime.app.Application
 		var testsize1 = new Size(29);
 		var testsize2 = Size.min(3, 5, 0.9);
 		
-		var greenHBox = new LayoutContainer(ContainerType.BOX, green, {left: Size.is(10,20), width:300, height:testsize2} );
+		var greenHBox = new LayoutContainer(ContainerType.BOX, green, {
+			left: Size.is(10, 20),
+			width:300,
+			height:testsize2
+		});
 		//var greenHBox = HBox(green, {width:300, height:200} );
 		greenHBox.layout.height = Size.min(10,30);
 		greenHBox.layout.bottom = Size.is(30);
