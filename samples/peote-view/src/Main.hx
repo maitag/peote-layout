@@ -51,28 +51,31 @@ class Main extends lime.app.Application
 				
 		
 		// init a layout
-		var greenHBox = new LayoutContainer(ContainerType.BOX, green,
+		var greenLC = new LayoutContainer(ContainerType.BOX, green,
 			{
 				left: Size.min(100), // can be scale high but not lower as min-value
 				width:Size.limit(300, 400), // can be scale from min to max-value
 				right:Size.max(200), // can be scale from 0 to max-value
 				// right:10 // or can be a fixed value.. same as .limit(10,10)
 				
-				// for "span" they are reaching its min and max at same time
+				// for "span" they are reaching its min and max at the same time while scaling
 				// in a row, but can be scaled higher as max
 				top:Size.span(50, 100),
 				height:Size.span(200, 400),
 				bottom:Size.span(50, 100),
-			}
-			,[] // childs
+			},
+			// childs
+			[
+				// Box is shortcut for LayoutContainer(ContainerType.BOX, ...)
+				new Box(red, {left:0, width:300, height:100, bottom:Size.min(100)} ),
+				new Box(blue, {right:0, width:300, height:100, bottom:0} )
+			]
 		);
-		// later shortcut:
-		//var greenHBox = HBox(green, {width:300, height:200} );
 		
-		greenHBox.init();
-		greenHBox.update(peoteView.width, peoteView.height);
+		greenLC.init();
+		greenLC.update(peoteView.width, peoteView.height);
 		
-		rootLayoutContainer = greenHBox;
+		rootLayoutContainer = greenLC;
 		
 		
 		// TODO: show/hide all layoutElements

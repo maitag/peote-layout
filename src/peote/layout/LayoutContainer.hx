@@ -58,14 +58,14 @@ class LayoutContainer
 	public var hSize:SizeSpaced;
 	public var vSize:SizeSpaced;
 			
-	var strength = Strength.create(0, 900, 0); // TODO: gloabalstatic
-	var strengthLow = Strength.create(0, 0, 900);		
+	static var strength = Strength.create(0, 900, 0);
+	static var strengthLow = Strength.create(0, 0, 900);		
 	
 	public function new(containerType:ContainerType = ContainerType.BOX, layoutElement:LayoutElement = null, layout:Layout = null, innerLayoutContainer:Array<LayoutContainer> = null) 
 	{
 		this.containerType = containerType;
 		this.layoutElement = layoutElement;
-		this.layout = layout;
+		this.layout = (layout != null) ? layout : {};
 		hSize = new SizeSpaced(layout.width, layout.left, layout.right);
 		vSize = new SizeSpaced(layout.height, layout.top, layout.bottom);
 		
@@ -467,7 +467,30 @@ class LayoutContainer
 	
 	
 	
-	
-	
-	
 }
+
+// ------------------------------------------------------------------------------------------
+// ---------------------- shortener for the different container-types -----------------------
+// ------------------------------------------------------------------------------------------
+
+abstract Box(LayoutContainer) from LayoutContainer to LayoutContainer {
+	public inline function new(layoutElement:LayoutElement = null, layout:Layout = null, innerLayoutContainer:Array<LayoutContainer> = null) 
+	{
+		this = new LayoutContainer(ContainerType.BOX, layoutElement, layout, innerLayoutContainer);
+	}
+}
+
+abstract HBox(LayoutContainer) from LayoutContainer to LayoutContainer {
+	public inline function new(layoutElement:LayoutElement = null, layout:Layout = null, innerLayoutContainer:Array<LayoutContainer> = null) 
+	{
+		this = new LayoutContainer(ContainerType.HBOX, layoutElement, layout, innerLayoutContainer);
+	}
+}
+
+abstract VBox(LayoutContainer) from LayoutContainer to LayoutContainer {
+	public inline function new(layoutElement:LayoutElement = null, layout:Layout = null, innerLayoutContainer:Array<LayoutContainer> = null) 
+	{
+		this = new LayoutContainer(ContainerType.VBOX, layoutElement, layout, innerLayoutContainer);
+	}
+}
+
