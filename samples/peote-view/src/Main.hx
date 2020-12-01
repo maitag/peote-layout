@@ -43,23 +43,30 @@ class Main extends lime.app.Application
 
 		Sprite.init(display);
 		
-		// add element to Buffer
+		// add some graphic elements
 		var green = new Sprite(Color.GREEN);
 		var red = new Sprite(Color.RED);
 		var blue = new Sprite(Color.BLUE);
 		var yellow = new Sprite(Color.YELLOW);
 				
-		var greenHBox = new LayoutContainer(ContainerType.BOX, green, {
-			left: Size.min(100),
-			width:Size.limit(300, 400), // TODO: constraints-strength anpassen
-			right:Size.max(200),
-			//top:Size.const(100),
-			top:Size.limit(100, 200),
-			height:Size.span(100,250),
-			bottom:Size.limit(100, 300),
-			//bottom:100
-		});
-		// shortcut:
+		
+		// init a layout
+		var greenHBox = new LayoutContainer(ContainerType.BOX, green,
+			{
+				left: Size.min(100), // can be scale high but not lower as min-value
+				width:Size.limit(300, 400), // can be scale from min to max-value
+				right:Size.max(200), // can be scale from 0 to max-value
+				// right:10 // or can be a fixed value.. same as .limit(10,10)
+				
+				// for "span" they are reaching its min and max at same time
+				// in a row, but can be scaled higher as max
+				top:Size.span(50, 100),
+				height:Size.span(200, 400),
+				bottom:Size.span(50, 100),
+			}
+			,[] // childs
+		);
+		// later shortcut:
 		//var greenHBox = HBox(green, {width:300, height:200} );
 		
 		greenHBox.init();
@@ -72,9 +79,11 @@ class Main extends lime.app.Application
 		// greenHBox.hide();
 		// greenHBox.show();
 		
+		// TODO: changing layout dynamically
 		// greenHBox.layout.height = 100;
 		// greenHBox.layout.bottom = 200;
 		
+		// TODO: adding removing childs dynamically
 	
 
 	}

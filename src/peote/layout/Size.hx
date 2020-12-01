@@ -77,13 +77,14 @@ abstract Size(Limit) from Limit to Limit {
 
 	
 	// TODO: find best api !
-	public static inline function const(size:Int):Size return new Limit(size, size, false);
-	public static inline function min(minSize:Int = 0):Size return new Limit(minSize);
-	public static inline function max(maxSize:Int):Size return new Limit(0, maxSize, false);
-	public static inline function limit(minSize:Int, maxSize:Int):Size return new Limit(minSize, maxSize, false);
+	public static inline function const(size:Int):Size return new Limit(size, size, null, false);
+	public static inline function max(maxSize:Int):Size return new Limit(0, maxSize, null, false);
+	public static inline function limit(minSize:Int, maxSize:Int):Size return new Limit(minSize, maxSize, null, false);
 	
+	// span is true, so they can be scale higher (reaching its min and relative max-value at the same time in a row)
+	public static inline function min(minSize:Int = 0):Size return new Limit(minSize, null, null, true);
 	public static inline function span(minSize:Null<Int> = null, relativeMaxSize:Null<Int> = null, relativeWeight:Null<Float> = null):Size
-		return new Limit(minSize, relativeMaxSize, relativeWeight);
+		return new Limit(minSize, relativeMaxSize, relativeWeight, true);
 
 	
 	// TODO: ratio to Height?
