@@ -2,5 +2,5 @@ package peote.layout;
 
 interface LayoutElement 
 {
-	public function update(posSize:Border, mask:Border, z:Int):Void;
+	public function update(posSize:Bounds, mask:Bounds, z:Int):Void;
 }

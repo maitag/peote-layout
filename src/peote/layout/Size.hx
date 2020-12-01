@@ -10,8 +10,8 @@ import peote.layout.util.SizeVars;
 @:allow(peote.layout)
 class Limit
 {
-	var const = true;
-	var span  = true;
+	var _const = true;
+	var _span  = true;
 	
 	var _min:Int = 0;
 	var _max:Null<Int>;
@@ -28,7 +28,7 @@ class Limit
 	var sizeLimit:Null<Variable> = null;
 	var sizeSpan:Null<Variable> = null;
 	
-	inline function new(min:Null<Int> = null, max:Null<Int> = null, weight:Null<Float> = null, span = true) {
+	public function new(min:Null<Int> = null, max:Null<Int> = null, weight:Null<Float> = null, span = true) {
 		if (min != null && max != null) {
 			if (min > max) {
 				_min = max;
@@ -36,18 +36,18 @@ class Limit
 			} else {
 				_min = min;
 				_max = max;
-				const = false;
+				_const = false;
 			}
 		}
 		else if (min != null) _min = min;
 		else _max = max;
 		if (weight != null) _weight = weight;
-		this.span = span;
+		this._span = span;
 	}
 	
 	function addConstraints(solver:Solver, sizeVars:SizeVars, strength:Strength):SizeVars
 	{
-		if (!const) {
+		if (!_const) {
 			if (sizeVars.sLimit == null) {
 				sizeVars.sLimit = new Variable();
 				solver.addConstraint( (sizeVars.sLimit >= 0) | strength );
@@ -55,7 +55,7 @@ class Limit
 			sizeLimit = sizeVars.sLimit;
 		}
 		
-		if (span) {
+		if (_span) {
 			if (sizeVars.sSpan == null) {
 				sizeVars.sSpan = new Variable();
 				solver.addConstraint( (sizeVars.sSpan >= 0) | strength );
@@ -72,7 +72,19 @@ class Limit
 abstract Size(Limit) from Limit to Limit {
 	public inline function new(width:Int) this = new Limit(width, null, false);
 	@:from static inline function fromInt(i:Int):Size return new Limit(i, null, false);
-	public static inline function is (min:Null<Int> = null, max:Null<Int> = null):Size return new Limit(min, max, false);
-	public static inline function min(min:Null<Int> = null, max:Null<Int> = null, weight:Null<Float> = null):Size return new Limit(min, max, weight);
+	//public static inline function is (min:Null<Int> = null, max:Null<Int> = null):Size return new Limit(min, max, false);
+	//public static inline function min(min:Null<Int> = null, max:Null<Int> = null, weight:Null<Float> = null):Size return new Limit(min, max, weight);
+
+	
+	// TODO: find best api !
+	public static inline function const(size:Int):Size return new Limit(size, size, false);
+	public static inline function min(minSize:Int = 0):Size return new Limit(minSize);
+	public static inline function max(maxSize:Int):Size return new Limit(0, maxSize, false);
+	public static inline function limit(minSize:Int, maxSize:Int):Size return new Limit(minSize, maxSize, false);
+	
+	public static inline function span(minSize:Null<Int> = null, relativeMaxSize:Null<Int> = null, relativeWeight:Null<Float> = null):Size
+		return new Limit(minSize, relativeMaxSize, relativeWeight);
+
+	
 	// TODO: ratio to Height?
 }

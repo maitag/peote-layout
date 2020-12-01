@@ -39,9 +39,9 @@ class SizeSpaced
 	}
 	
 	public function hasSpan():Bool {
-		if (middle.span) return true;
-		if (first != null) if (first.span) return true;
-		if (last  != null) if (last.span) return true;
+		if (middle._span) return true;
+		if (first != null) if (first._span) return true;
+		if (last  != null) if (last._span) return true;
 		return false;
 	}
 	

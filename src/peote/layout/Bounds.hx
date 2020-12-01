@@ -1,6 +1,6 @@
 package peote.layout;
 
-typedef Border = {
+typedef Bounds = {
 	left:Int,
 	right:Int,
 	top:Int,

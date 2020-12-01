@@ -6,7 +6,7 @@ import peote.view.Program;
 import peote.view.Buffer;
 import peote.view.Color;
 
-import peote.layout.Border;
+import peote.layout.Bounds;
 import peote.layout.LayoutElement;
 
 
@@ -84,7 +84,7 @@ class Sprite implements LayoutElement implements Element
 	public function new(color:Color) {
 		this.color = color;
 		//update({top:5,left:0,right:800,bottom:100}, {top:5,left:10,right:500,bottom:90}, 0);
-		update({top:5,left:0,right:800,bottom:100}, {top:0,left:0,right:800,bottom:100}, 0);
+		//update({top:5,left:0,right:800,bottom:100}, {top:0,left:0,right:800,bottom:100}, 0);
 	}
 	
 	
@@ -108,7 +108,7 @@ class Sprite implements LayoutElement implements Element
 		}			
 	}
 	
-	public function update(posSize:Border, mask:Border, z:Int) {
+	public function update(posSize:Bounds, mask:Bounds, z:Int) {
 		if (mask != null) {
 			
 			if (insideMask && isOutsideMask(posSize, mask)) {
@@ -152,7 +152,7 @@ class Sprite implements LayoutElement implements Element
 		
 	}
 	
-	public inline function isOutsideMask(posSize:Border, mask:Border) {
+	public inline function isOutsideMask(posSize:Bounds, mask:Bounds) {
 		if (posSize.bottom < mask.top) return true;
 		if (posSize.top > mask.bottom) return true;
 		if (posSize.right < mask.left) return true;
