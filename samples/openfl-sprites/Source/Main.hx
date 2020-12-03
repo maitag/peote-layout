@@ -17,10 +17,6 @@ class Main extends Sprite {
 	public function new () {
 		
 		super ();
-		
-		Lib.current.stage.addEventListener( Event.RESIZE, function(e) onWindowResize( Lib.current.stage.stageWidth, Lib.current.stage.stageHeight ) );
-		Lib.current.stage.addEventListener( MouseEvent.MOUSE_MOVE, onMouseMove );
-		Lib.current.stage.addEventListener( MouseEvent.MOUSE_UP,   onMouseUp );
 
 		// background
 		display = new Sprite();
@@ -64,15 +60,16 @@ class Main extends Sprite {
 		
 		rootLayoutContainer = greenLC;
 		
-		
+		Lib.current.stage.addEventListener( Event.RESIZE, function(e) onWindowResize( Lib.current.stage.stageWidth, Lib.current.stage.stageHeight ) );
+		Lib.current.stage.addEventListener( MouseEvent.MOUSE_MOVE, onMouseMove );
+		Lib.current.stage.addEventListener( MouseEvent.MOUSE_UP,   onMouseUp );
 	}
 	
 	function onWindowResize (width:Float, height:Float):Void
 	{
 		display.width = width;
 		display.height = height;
-		// from inside eventhandler it gives compile error inside jasper-lib !!!
-		// if (rootLayoutContainer != null) rootLayoutContainer.update(width, height);
+		if (rootLayoutContainer != null) rootLayoutContainer.update(width, height);
 	}
 	
 	// ----------------- MOUSE EVENTS ------------------------------
@@ -82,8 +79,7 @@ class Main extends Sprite {
 		if (sizeEmulation && rootLayoutContainer != null) {
 			display.width = e.stageX;
 			display.height = e.stageY;
-			// from inside eventhandler it gives compile error inside jasper-lib !!!
-			//rootLayoutContainer.update(e.stageX, e.stageY);
+			rootLayoutContainer.update(e.stageX, e.stageY);
 		}
 	}
 	
@@ -95,8 +91,7 @@ class Main extends Sprite {
 		else {
 			display.width = Lib.current.stage.stageWidth;
 			display.height = Lib.current.stage.stageHeight;
-			// from inside eventhandler it gives compile error inside jasper-lib !!!
-			//if (rootLayoutContainer != null) rootLayoutContainer.update(Lib.current.stage.stageWidth, Lib.current.stage.stageHeight);
+			if (rootLayoutContainer != null) rootLayoutContainer.update(Lib.current.stage.stageWidth, Lib.current.stage.stageHeight);
 		}
 	}
 	
