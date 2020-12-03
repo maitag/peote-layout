@@ -45,7 +45,7 @@ class LayoutedSprite extends Sprite implements LayoutElement
 	var insideMask = false;
 	
 	/* INTERFACE peote.layout.LayoutElement */
-	public function update(posSize:Bounds, mask:Bounds, z:Int) {
+	public function updateByLayout(posSize:Bounds, mask:Bounds, z:Int) {
 		if (mask != null) {
 			
 			if (insideMask && isOutsideMask(posSize, mask)) {

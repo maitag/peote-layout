@@ -30,6 +30,7 @@ class Main extends Sprite {
 		var green = new LayoutedSprite(0x00ff00);
 		var red = new LayoutedSprite(0xff0000);
 		var blue = new LayoutedSprite(0x0000ff);
+		var yellow = new LayoutedSprite(0xffff00);
 				
 		
 		// init a layout
@@ -50,7 +51,8 @@ class Main extends Sprite {
 			[
 				// Box is shortcut for LayoutContainer(ContainerType.BOX, ...)
 				new Box(red, {left:0, width:300, height:100, bottom:Size.min(100)} ),
-				new Box(blue, {right:0, width:300, height:100, bottom:0} )
+				new Box(blue, {right:0, width:300, height:100, bottom:0} ),
+				new Box(yellow, {width:100, height:Size.limit(100, 300)} )
 			]
 		);
 		

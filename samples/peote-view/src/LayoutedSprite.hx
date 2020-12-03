@@ -10,7 +10,7 @@ import peote.layout.Bounds;
 import peote.layout.LayoutElement;
 
 
-class Sprite implements LayoutElement implements Element
+class LayoutedSprite implements LayoutElement implements Element
 {
 	@color public var borderColor:Color = 0x550000ff; // using propertyname "borderColor" as identifier for setColorFormula()
 	@color("bgcolor") public var color:Color = 0xffff00ff; // using different identifier "bgcolor" for setColorFormula()
@@ -30,12 +30,12 @@ class Sprite implements LayoutElement implements Element
 	@custom("maskTop") @varying public var maskTop:Int = 0;
 	@custom("maskBottom") @varying public var maskBottom:Int = 0;
 	
-	static public var buffer:Buffer<Sprite>;
+	static public var buffer:Buffer<LayoutedSprite>;
 	static public var program:Program;
 	
 	static public function init(display:Display) {
-		buffer = new Buffer<Sprite>(100);
-		program = new Program(Sprite.buffer);
+		buffer = new Buffer<LayoutedSprite>(100);
+		program = new Program(LayoutedSprite.buffer);
 		program.injectIntoFragmentShader(
 		"
 			float roundedBox (vec2 pos, vec2 size, float padding, float radius)
@@ -108,7 +108,7 @@ class Sprite implements LayoutElement implements Element
 		}			
 	}
 	
-	public function update(posSize:Bounds, mask:Bounds, z:Int) {
+	public function updateByLayout(posSize:Bounds, mask:Bounds, z:Int) {
 		if (mask != null) {
 			
 			if (insideMask && isOutsideMask(posSize, mask)) {
@@ -116,14 +116,14 @@ class Sprite implements LayoutElement implements Element
 				insideMask = false;
 			}
 			else {
-				x = posSize.left;
-				y = posSize.top;
-				w = posSize.right - x;
-				h = posSize.bottom - y;
-				maskLeft = (x > mask.left) ? 0 : mask.left - x;
-				maskTop = (y > mask.top) ? 0 : mask.top - y;
-				maskRight = (posSize.right < mask.right) ? w : w - (posSize.right - mask.right);
-				maskBottom = (posSize.bottom < mask.bottom) ? h : h - (posSize.bottom - mask.bottom);
+				x = Std.int(posSize.left);
+				y = Std.int(posSize.top);
+				w = Std.int(posSize.right) - x;
+				h = Std.int(posSize.bottom) - y;
+				maskLeft = (x > mask.left) ? 0 : Std.int(mask.left) - x;
+				maskTop = (y > mask.top) ? 0 : Std.int(mask.top) - y;
+				maskRight = (posSize.right < mask.right) ? w : w - Std.int(posSize.right - mask.right);
+				maskBottom = (posSize.bottom < mask.bottom) ? h : h - Std.int(posSize.bottom - mask.bottom);
 				
 				if (!insideMask) {
 					buffer.addElement(this);
@@ -134,10 +134,10 @@ class Sprite implements LayoutElement implements Element
 			
 		} 
 		else {
-			x = posSize.left;
-			y = posSize.top;
-			w = posSize.right - x;
-			h = posSize.bottom - y;
+			x = Std.int(posSize.left);
+			y = Std.int(posSize.top);
+			w = Std.int(posSize.right) - x;
+			h = Std.int(posSize.bottom) - y;
 			maskLeft = 0;
 			maskTop = 0;
 			maskRight = w;

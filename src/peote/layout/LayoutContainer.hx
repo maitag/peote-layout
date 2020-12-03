@@ -158,11 +158,11 @@ class LayoutContainer
 	function updateLayoutElement()
 	{
 		if (layoutElement != null) {
-			layoutElement.update({
-					left:Std.int(x.m_value),
-					right:Std.int(x.m_value + this.width.m_value),
-					top:Std.int(y.m_value),
-					bottom:Std.int(y.m_value + this.height.m_value) 
+			layoutElement.updateByLayout({
+					left:x.m_value,
+					right:x.m_value + this.width.m_value,
+					top:y.m_value,
+					bottom:y.m_value + this.height.m_value
 				},
 				null,
 				0

@@ -41,13 +41,13 @@ class Main extends lime.app.Application
 		display = new Display(0, 0, window.width, window.height, Color.GREY1);	
 		peoteView.addDisplay(display);
 
-		Sprite.init(display);
+		LayoutedSprite.init(display);
 		
 		// add some graphic elements
-		var green = new Sprite(Color.GREEN);
-		var red = new Sprite(Color.RED);
-		var blue = new Sprite(Color.BLUE);
-		var yellow = new Sprite(Color.YELLOW);
+		var green = new LayoutedSprite(Color.GREEN);
+		var red = new LayoutedSprite(Color.RED);
+		var blue = new LayoutedSprite(Color.BLUE);
+		var yellow = new LayoutedSprite(Color.YELLOW);
 				
 		
 		// init a layout
@@ -68,7 +68,8 @@ class Main extends lime.app.Application
 			[
 				// Box is shortcut for LayoutContainer(ContainerType.BOX, ...)
 				new Box(red, {left:0, width:300, height:100, bottom:Size.min(100)} ),
-				new Box(blue, {right:0, width:300, height:100, bottom:0} )
+				new Box(blue, {right:0, width:300, height:100, bottom:0} ),
+				new Box(yellow, {width:100, height:Size.limit(100, 300)} )
 			]
 		);
 		
@@ -123,7 +124,7 @@ class Main extends lime.app.Application
 		if (sizeEmulation && rootLayoutContainer != null) {
 			display.width = Std.int(x);
 			display.height = Std.int(y);
-			rootLayoutContainer.update(Std.int(x),Std.int(y));
+			rootLayoutContainer.update(x, y);
 		}
 	}
 	//public override function onMouseDown (x:Float, y:Float, button:MouseButton) {};

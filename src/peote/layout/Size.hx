@@ -63,8 +63,7 @@ class Limit
 			sizeSpan = sizeVars.sSpan;
 		}
 		return sizeVars;
-	}
-	
+	}	
 }
 
 @:allow(peote.layout)
@@ -72,11 +71,7 @@ class Limit
 abstract Size(Limit) from Limit to Limit {
 	public inline function new(width:Int) this = new Limit(width, null, false);
 	@:from static inline function fromInt(i:Int):Size return new Limit(i, null, false);
-	//public static inline function is (min:Null<Int> = null, max:Null<Int> = null):Size return new Limit(min, max, false);
-	//public static inline function min(min:Null<Int> = null, max:Null<Int> = null, weight:Null<Float> = null):Size return new Limit(min, max, weight);
 
-	
-	// TODO: find best api !
 	public static inline function const(size:Int):Size return new Limit(size, size, null, false);
 	public static inline function max(maxSize:Int):Size return new Limit(0, maxSize, null, false);
 	public static inline function limit(minSize:Int, maxSize:Int):Size return new Limit(minSize, maxSize, null, false);

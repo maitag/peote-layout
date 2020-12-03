@@ -1,8 +1,8 @@
 package peote.layout;
 
 typedef Bounds = {
-	left:Int,
-	right:Int,
-	top:Int,
-	bottom:Int
+	left:Float,
+	right:Float,
+	top:Float,
+	bottom:Float
 }
