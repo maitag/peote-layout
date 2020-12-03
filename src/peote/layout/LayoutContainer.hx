@@ -17,7 +17,7 @@ class LayoutContainer
 	public var layout:Layout;
 	public var layoutElement:LayoutElement;
 	
-	public var solver:Solver;
+	public var solver:Null<Solver>;
 	
 	public var parent:LayoutContainer;
 	var childs:Array<LayoutContainer>;
@@ -144,13 +144,15 @@ class LayoutContainer
 		solver.addConstraint( (bottom == rootHeight) | strengthLow );				
 	}
 	
-	public function update(width:Int, height:Int)
+	public function update(width:Float, height:Float)
 	{
-		solver.suggestValue(rootWidth, width);
-		solver.suggestValue(rootHeight, height);
-		solver.updateVariables();
-		
-		updateLayoutElement();
+		if (solver != null) {
+			solver.suggestValue(rootWidth, width);
+			solver.suggestValue(rootHeight, height);
+			solver.updateVariables();
+			
+			updateLayoutElement();
+		}
 	}
 	
 	function updateLayoutElement()

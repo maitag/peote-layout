@@ -4,11 +4,13 @@
 	<meta title="OpenFL Sprites arranged by peote-layout" package="org.openfl.peote.layout" version="1.0.0" company="sylvio sell - maitag" />
 	<app main="Main" path="Export" file="OpenFLSprites" />
 	
+	<window background="0x00000000" />
+	
 	<source path="Source" />
 	
 	<haxelib name="openfl" />
 	<haxelib name="peote-layout" />
-	
-	<assets path="Assets" rename="assets" />
+
+	<haxeflag name="-dce" value="full" />
 	
 </project>
