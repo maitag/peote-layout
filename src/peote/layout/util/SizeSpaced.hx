@@ -3,6 +3,7 @@ package peote.layout.util;
 import jasper.Expression;
 import jasper.Solver;
 import jasper.Strength;
+import jasper.Variable;
 
 class SizeSpaced 
 {
@@ -24,11 +25,18 @@ class SizeSpaced
 		last  = sizeLast;
 	}
 	
-	public function addConstraints(solver:Solver, sizeVars:SizeVars, strength:Strength):SizeVars {
-		sizeVars = middle.addConstraints(solver, sizeVars, strength);
-		if (first != null) sizeVars = first.addConstraints(solver, sizeVars, strength);
-		if (last != null) sizeVars = last.addConstraints(solver, sizeVars, strength);
-		return sizeVars;
+	public function setSizeLimit(sizeLimitVar:Null<Variable>):Null<Variable> {
+		sizeLimitVar = middle.setSizeLimit(sizeLimitVar);
+		if (first != null) sizeLimitVar = first.setSizeLimit(sizeLimitVar);
+		if (last != null) sizeLimitVar = last.setSizeLimit(sizeLimitVar);
+		return sizeLimitVar;
+	}
+	
+	public function setSizeSpan(sizeSpanVar:Null<Variable>):Null<Variable> {
+		sizeSpanVar = middle.setSizeSpan(sizeSpanVar);
+		if (first != null) sizeSpanVar = first.setSizeSpan(sizeSpanVar);
+		if (last != null) sizeSpanVar = last.setSizeSpan(sizeSpanVar);
+		return sizeSpanVar;
 	}
 	
 	public function getMin():Int {

@@ -12,7 +12,6 @@ class Limit
 {
 	var _const = true;
 	var _span  = true;
-	
 	var _min:Int = 0;
 	var _max:Null<Int>;
 	var _weight:Float = 1.0;
@@ -44,25 +43,23 @@ class Limit
 		if (weight != null) _weight = weight;
 		this._span = span;
 	}
-	
-	function addConstraints(solver:Solver, sizeVars:SizeVars, strength:Strength):SizeVars
+		
+	inline function setSizeLimit(sizeLimitVar:Null<Variable>):Null<Variable>
 	{
 		if (!_const) {
-			if (sizeVars.sLimit == null) {
-				sizeVars.sLimit = new Variable();
-				solver.addConstraint( (sizeVars.sLimit >= 0) | strength );
-			}
-			sizeLimit = sizeVars.sLimit;
+			if (sizeLimitVar == null) sizeLimitVar = new Variable();
+			sizeLimit = sizeLimitVar;
 		}
-		
+		return sizeLimitVar;
+	}
+	
+	inline function setSizeSpan(sizeSpanVar:Null<Variable>):Null<Variable>
+	{
 		if (_span) {
-			if (sizeVars.sSpan == null) {
-				sizeVars.sSpan = new Variable();
-				solver.addConstraint( (sizeVars.sSpan >= 0) | strength );
-			}
-			sizeSpan = sizeVars.sSpan;
+			if (sizeSpanVar == null) sizeSpanVar = new Variable();
+			sizeSpan = sizeSpanVar;
 		}
-		return sizeVars;
+		return sizeSpanVar;
 	}	
 }
 
