@@ -54,7 +54,6 @@ class Main extends Sprite {
 			]
 		);
 		
-		// no problem to use Jasper-Lib from here:
 		greenLC.init();
 		greenLC.update(Lib.current.stage.stageWidth, Lib.current.stage.stageHeight);
 		
