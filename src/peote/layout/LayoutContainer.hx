@@ -6,7 +6,6 @@ import jasper.Term;
 import jasper.Strength;
 import jasper.Solver;
 
-import peote.layout.util.SizeVars;
 import peote.layout.util.SizeSpaced;
 
 typedef InnerLimit = { width:Int, height:Int }
@@ -22,37 +21,107 @@ class LayoutContainer
 	public var parent:LayoutContainer;
 	var childs:Array<LayoutContainer>;
 	
-	// ----------
+	// TODO:
+	public var isHidden:Bool = false;
+	public var isMasked:Bool = false;
+	
+	
+	// Boundaries (accessors for jasper-vars)
+	public var xIsEditable(default, set):Bool = false;
+	inline function set_xIsEditable(value:Bool):Bool {
+		if (value) solver.addEditVariable(_x, strength);
+		else solver.removeEditVariable(_x);
+		return value;
+	}
+	public var x(get,set):Float;
+	inline function get_x():Float return _x.m_value;
+	inline function set_x(value:Float):Float {
+		if (solver == null) throw("Error: can't set x value of LayoutContainer if its not initialized.");
+		if (!xIsEditable) throw("Error: can't set x value of LayoutContainer if its not editable.");
+		solver.suggestValue(_x, value);
+		return value;
+	}
+	
+	public var yIsEditable(default, set):Bool = false;
+	inline function set_yIsEditable(value:Bool):Bool {
+		if (value) solver.addEditVariable(_y, strength);
+		else solver.removeEditVariable(_y);
+		return value;
+	}
+	public var y(get,set):Float;
+	inline function get_y():Float return _y.m_value;
+	inline function set_y(value:Float):Float {
+		if (solver == null) throw("Error: can't set y value of LayoutContainer if its not initialized.");
+		if (!yIsEditable) throw("Error: can't set y value of LayoutContainer if its not editable.");
+		solver.suggestValue(_y, value);
+		return value;
+	}
+	
+	public var widthIsEditable(default, set):Bool = false;
+	inline function set_widthIsEditable(value:Bool):Bool {
+		if (value) solver.addEditVariable(_width, strength);
+		else solver.removeEditVariable(_width);
+		return value;
+	}
+	public var width(get,set):Float;
+	inline function get_width():Float return _width.m_value;
+	inline function set_width(value:Float):Float {
+		if (solver == null) throw("Error: can't set width value of LayoutContainer if its not initialized.");
+		if (!widthIsEditable) throw("Error: can't set width value of LayoutContainer if its not editable.");
+		solver.suggestValue(_width, value);
+		return value;
+	}
+	
+	public var heightIsEditable(default, set):Bool = false;
+	inline function set_heightIsEditable(value:Bool):Bool {
+		if (value) solver.addEditVariable(_height, strength);
+		else solver.removeEditVariable(_height);
+		return value;
+	}
+	public var height(get,set):Float;
+	inline function get_height():Float return _height.m_value;
+	inline function set_height(value:Float):Float {
+		if (solver == null) throw("Error: can't set height value of LayoutContainer if its not initialized.");
+		if (!heightIsEditable) throw("Error: can't set height value of LayoutContainer if its not editable.");
+		// if i uncomment this line:
+		//    solver.suggestValue(_height, value);
+		// sometimes (randomly°-°on haxe 4.1.4) problem here.. compile error: jasper/SolverImpl.hx:662: characters 57-65 : { m_type : jasper.SymbolType } should be jasper.Symbol
+		// maybe because of "generics" inside Jasper Maps ?
+		return value;
+	}
+	
+	
+	// ---------- Variables for Jasper Constraints ------
 	public var xScroll(default,null):Variable;
 
-	public var x(default,null):Variable;
-	public var y(default,null):Variable;	
+	public var _x(default,null):Variable;
+	public var _y(default,null):Variable;	
 
-	public var width(default,null):Variable;
-	public var height(default,null):Variable;	
+	public var _width(default,null):Variable;
+	public var _height(default,null):Variable;	
 	
-	public var centerX:Expression; // TODO: check public/rw-access
-	public var centerY:Expression;
+	public var _centerX:Expression; // TODO: check public/rw-access
+	public var _centerY:Expression;
 
-	public var left(get,never):Expression;
-	function get_left():Expression {
-		if (hSize.first != null) return new Term(x) - hSize.first.size;
-		else return new Expression([new Term(x)]);
+	public var _left(get,never):Expression;
+	function get__left():Expression {
+		if (hSize.first != null) return new Term(_x) - hSize.first.size;
+		else return new Expression([new Term(_x)]);
 	}
-	public var right(get,never):Expression;
-	function get_right():Expression {
-		if (hSize.last != null) return new Term(x) + width + hSize.last.size;
-		else return new Term(x) + width;
+	public var _right(get,never):Expression;
+	function get__right():Expression {
+		if (hSize.last != null) return new Term(_x) + _width + hSize.last.size;
+		else return new Term(_x) + _width;
 	}
-	public var top(get, never):Expression;
-	function get_top():Expression {
-		if (vSize.first != null) return new Term(y) - vSize.first.size;
-		else return new Expression([new Term(y)]);
+	public var _top(get, never):Expression;
+	function get__top():Expression {
+		if (vSize.first != null) return new Term(_y) - vSize.first.size;
+		else return new Expression([new Term(_y)]);
 	}
-	public var bottom(get,never):Expression;
-	function get_bottom():Expression {
-		if (vSize.last != null) return new Term(y) + height + vSize.last.size;
-		else return new Term(y) + height;
+	public var _bottom(get,never):Expression;
+	function get__bottom():Expression {
+		if (vSize.last != null) return new Term(_y) + _height + vSize.last.size;
+		else return new Term(_y) + _height;
 	}
 	
 	public var hSize:SizeSpaced;
@@ -74,29 +143,29 @@ class LayoutContainer
 
 		xScroll = new Variable();// TODO !
 		
-		x = new Variable();
-		y = new Variable();
-		width = new Variable();
-		height = new Variable();
+		_x = new Variable();
+		_y = new Variable();
+		_width = new Variable();
+		_height = new Variable();
 		
-		centerX = new Term(x) + (width / 2.0);
-		centerY = new Term(y) + (height / 2.0);
+		_centerX = new Term(_x) + (_width / 2.0);
+		_centerY = new Term(_y) + (_height / 2.0);
 	}
 	
-	var rootWidth:Variable;
-	var rootHeight:Variable;
+	var root_width:Variable;
+	var root_height:Variable;
 	
 	public function init() // TODO !
 	{
 		solver = new Solver();
 		
-		rootWidth = new Variable();
-		rootHeight = new Variable();
-		solver.addEditVariable(rootWidth, strength);
-		solver.addEditVariable(rootHeight, strength);
+		root_width = new Variable();
+		root_height = new Variable();
+		solver.addEditVariable(root_width, strength);
+		solver.addEditVariable(root_height, strength);
 		
 		var innerLimit = addConstraints(solver); // recursive Container
-		//trace(innerLimit.width);
+		//trace(innerLimit._width);
 		
 		// --------------------------------- horizontal ---------------------------------------				
 		fixLimit(hSize, innerLimit.width);
@@ -109,12 +178,12 @@ class LayoutContainer
 		var hSizeSpanVar = hSize.setSizeSpan(null);
 		if (hSizeSpanVar != null) {
 			solver.addConstraint( (hSizeSpanVar >= 0) | strength );
-			solver.addConstraint( (hSizeSpanVar == (rootWidth - hSize.getLimitMax()) / hSize.getSumWeight() ) | strengthLow );
+			solver.addConstraint( (hSizeSpanVar == (root_width - hSize.getLimitMax()) / hSize.getSumWeight() ) | strengthLow );
 		}
-		solver.addConstraint( (width == hSize.middle.size) | strength );
+		solver.addConstraint( (_width == hSize.middle.size) | strength );
 		
-		solver.addConstraint( (left == 0) | strength );
-		solver.addConstraint( (right == rootWidth) | strengthLow );
+		solver.addConstraint( (_left == 0) | strength );
+		solver.addConstraint( (_right == root_width) | strengthLow );
 				
 		// --------------------------------- vertical ---------------------------------------
 		fixLimit(vSize, innerLimit.height);
@@ -127,19 +196,19 @@ class LayoutContainer
 		var vSizeSpanVar = vSize.setSizeSpan(null);
 		if (vSizeSpanVar != null) {
 			solver.addConstraint( (vSizeSpanVar >= 0) | strength );
-			solver.addConstraint( (vSizeSpanVar == (rootHeight - vSize.getLimitMax()) / vSize.getSumWeight() ) | strengthLow );
+			solver.addConstraint( (vSizeSpanVar == (root_height - vSize.getLimitMax()) / vSize.getSumWeight() ) | strengthLow );
 		}
-		solver.addConstraint( (height == vSize.middle.size) | strength );
+		solver.addConstraint( (_height == vSize.middle.size) | strength );
 		
-		solver.addConstraint( (top == 0) | strength );
-		solver.addConstraint( (bottom == rootHeight) | strengthLow );				
+		solver.addConstraint( (_top == 0) | strength );
+		solver.addConstraint( (_bottom == root_height) | strengthLow );				
 	}
 	
 	public function update(width:Float, height:Float)
 	{
 		if (solver != null) {
-			solver.suggestValue(rootWidth, width);
-			solver.suggestValue(rootHeight, height);
+			solver.suggestValue(root_width, width);
+			solver.suggestValue(root_height, height);
 			solver.updateVariables();
 			
 			updateLayoutElement();
@@ -148,18 +217,7 @@ class LayoutContainer
 	
 	function updateLayoutElement()
 	{
-		if (layoutElement != null) {
-			layoutElement.updateByLayout({
-					left:x.m_value,
-					right:x.m_value + this.width.m_value,
-					top:y.m_value,
-					bottom:y.m_value + this.height.m_value
-				},
-				null,
-				0
-			);
-		}
-		
+		layoutElement.updateByLayout(this);
 		if (childs != null) for (child in childs) child.updateLayoutElement();
 	}
 	
@@ -286,12 +344,12 @@ class LayoutContainer
 				var hSizeSpanVar = child.hSize.setSizeSpan(null);
 				if (hSizeSpanVar != null) {
 					solver.addConstraint( (hSizeSpanVar >= 0) | strength );
-					solver.addConstraint( (hSizeSpanVar == (width - child.hSize.getLimitMax()) / child.hSize.getSumWeight() ) | strengthLow );
+					solver.addConstraint( (hSizeSpanVar == (_width - child.hSize.getLimitMax()) / child.hSize.getSumWeight() ) | strengthLow );
 				}
-				solver.addConstraint( (child.width == child.hSize.middle.size) | strength );
+				solver.addConstraint( (child._width == child.hSize.middle.size) | strength );
 		
-				solver.addConstraint( (child.left == x) | strength );
-				solver.addConstraint( (child.right == x + width) | strength );
+				solver.addConstraint( (child._left == _x) | strength );
+				solver.addConstraint( (child._right == _x + _width) | strength );
 				
 				// --------------------------------- vertical ---------------------------------------
 				fixLimit(child.vSize, innerLimit.height);
@@ -306,12 +364,12 @@ class LayoutContainer
 				var vSizeSpanVar = child.vSize.setSizeSpan(null);
 				if (vSizeSpanVar != null) {
 					solver.addConstraint( (vSizeSpanVar >= 0) | strength );
-					solver.addConstraint( (vSizeSpanVar == (height - child.vSize.getLimitMax()) / child.vSize.getSumWeight() ) | strengthLow );
+					solver.addConstraint( (vSizeSpanVar == (_height - child.vSize.getLimitMax()) / child.vSize.getSumWeight() ) | strengthLow );
 				}
-				solver.addConstraint( (child.height == child.vSize.middle.size) | strength );				
+				solver.addConstraint( (child._height == child.vSize.middle.size) | strength );				
 				
-				solver.addConstraint( (child.top == y) | strength );
-				solver.addConstraint( (child.bottom == y + height) | strength );				
+				solver.addConstraint( (child._top == _y) | strength );
+				solver.addConstraint( (child._bottom == _y + _height) | strength );				
 			}
 		}
 		return childsLimit;
@@ -326,8 +384,8 @@ class LayoutContainer
 		if (childs != null)
 		{
 			//var hSizeVars:SizeVars = {sLimit:null, sSpan:null};
-			var hSizeLimitVar:Variable = null;
-			var hSizeSpanVar:Variable = null;
+			var hSizeLimitVar:Null<Variable> = null;
+			var hSizeSpanVar:Null<Variable> = null;
 			
 			var hSumWeight:Float = 0.0;
 			var hLimitMax:Int = fixHMaxSpan();
@@ -346,13 +404,13 @@ class LayoutContainer
 				//hSizeVars = child.addHConstraints(solver, hSizeVars, strength);
 				hSizeLimitVar = child.hSize.setSizeLimit(null);
 				hSizeSpanVar = child.hSize.setSizeSpan(null);
-				solver.addConstraint( (child.width == child.hSize.middle.size) | strength );
+				solver.addConstraint( (child._width == child.hSize.middle.size) | strength );
 				
 				hSumWeight += child.hSize.getSumWeight();
 				
-				if (i == 0) solver.addConstraint( (child.left == x) | strength ); // first
-				else solver.addConstraint( (child.left == childs[i-1].right) | strength ); // not first
-				if (i == childs.length - 1) solver.addConstraint( (child.right == x + width) | strength ); // last
+				if (i == 0) solver.addConstraint( (child._left == _x) | strength ); // first
+				else solver.addConstraint( (child._left == childs[i-1]._right) | strength ); // not first
+				if (i == childs.length - 1) solver.addConstraint( (child._right == _x + _width) | strength ); // last
 				
 				// --------------------------------- vertical ---------------------------------------
 				fixLimit(child.vSize, innerLimit.height);
@@ -367,21 +425,21 @@ class LayoutContainer
 				var vSizeSpanVar = child.vSize.setSizeSpan(null);
 				if (vSizeSpanVar != null) {
 					solver.addConstraint( (vSizeSpanVar >= 0) | strength );
-					solver.addConstraint( (vSizeSpanVar == (height - child.vSize.getLimitMax()) / child.vSize.getSumWeight() ) | strengthLow );
+					solver.addConstraint( (vSizeSpanVar == (_height - child.vSize.getLimitMax()) / child.vSize.getSumWeight() ) | strengthLow );
 				}
-				solver.addConstraint( (child.height == child.vSize.middle.size) | strength );				
+				solver.addConstraint( (child._height == child.vSize.middle.size) | strength );				
 				
-				solver.addConstraint( (child.top == y) | strength );
-				solver.addConstraint( (child.bottom == y + height) | strength );
+				solver.addConstraint( (child._top == _y) | strength );
+				solver.addConstraint( (child._bottom == _y + _height) | strength );
 			}
 			
-			//if (hSizeVars.sSpan != null) solver.addConstraint( (hSizeVars.sSpan == (width - hLimitMax) / hSumWeight ) | strengthLow );			
+			//if (hSizeVars.sSpan != null) solver.addConstraint( (hSizeVars.sSpan == (_width - hLimitMax) / hSumWeight ) | strengthLow );			
 			if (hSizeLimitVar != null) {
 				solver.addConstraint( (hSizeLimitVar >= 0) | strength );
 			}
 			if (hSizeSpanVar != null) {
 				solver.addConstraint( (hSizeSpanVar >= 0) | strength );
-				solver.addConstraint( (hSizeSpanVar == (width - hLimitMax) / hSumWeight ) | strengthLow );			
+				solver.addConstraint( (hSizeSpanVar == (_width - hLimitMax) / hSumWeight ) | strengthLow );			
 			}
 		}		
 		return childsLimit;
@@ -396,8 +454,8 @@ class LayoutContainer
 		if (childs != null)
 		{
 			//var vSizeVars:SizeVars = {sLimit:null, sSpan:null};
-			var vSizeLimitVar:Variable = null;
-			var vSizeSpanVar:Variable = null;
+			var vSizeLimitVar:Null<Variable> = null;
+			var vSizeSpanVar:Null<Variable> = null;
 
 			var vSumWeight:Float = 0.0;			
 			var vLimitMax:Int = fixVMaxSpan();
@@ -421,12 +479,12 @@ class LayoutContainer
 				var hSizeSpanVar = child.hSize.setSizeSpan(null);
 				if (hSizeSpanVar != null) {
 					solver.addConstraint( (hSizeSpanVar >= 0) | strength );
-					solver.addConstraint( (hSizeSpanVar == (width - child.hSize.getLimitMax()) / child.hSize.getSumWeight() ) | strengthLow );
+					solver.addConstraint( (hSizeSpanVar == (_width - child.hSize.getLimitMax()) / child.hSize.getSumWeight() ) | strengthLow );
 				}
-				solver.addConstraint( (child.width == child.hSize.middle.size) | strength );
+				solver.addConstraint( (child._width == child.hSize.middle.size) | strength );
 				
-				solver.addConstraint( (child.left == x) | strength );
-				solver.addConstraint( (child.right == x + width) | strength );
+				solver.addConstraint( (child._left == _x) | strength );
+				solver.addConstraint( (child._right == _x + _width) | strength );
 				
 				// --------------------------------- vertical ---------------------------------------
 				fixLimit(child.vSize, innerLimit.height);
@@ -436,22 +494,21 @@ class LayoutContainer
 				//vSizeVars = child.addVConstraints(solver, vSizeVars, strength);
 				vSizeLimitVar = child.vSize.setSizeLimit(null);
 				vSizeSpanVar = child.vSize.setSizeSpan(null);
-				solver.addConstraint( (child.height == child.vSize.middle.size) | strength );
+				solver.addConstraint( (child._height == child.vSize.middle.size) | strength );
 				
 				vSumWeight += child.vSize.getSumWeight();
 				
-				if (i == 0) solver.addConstraint( (child.top == y) | strength ); // first
-				else solver.addConstraint( (child.top == childs[i-1].bottom) | strength ); // not first
-				if (i == childs.length - 1) solver.addConstraint( (child.bottom == y + height) | strength ); // last
+				if (i == 0) solver.addConstraint( (child._top == _y) | strength ); // first
+				else solver.addConstraint( (child._top == childs[i-1]._bottom) | strength ); // not first
+				if (i == childs.length - 1) solver.addConstraint( (child._bottom == _y + _height) | strength ); // last
 			}
 			
-			//if (vSizeVars.sSpan != null) solver.addConstraint( (vSizeVars.sSpan == (height - vLimitMax) / vSumWeight ) | strengthLow );			
 			if (vSizeLimitVar != null) {
 				solver.addConstraint( (vSizeLimitVar >= 0) | strength );
 			}
 			if (vSizeSpanVar != null) {
 				solver.addConstraint( (vSizeSpanVar >= 0) | strength );
-				solver.addConstraint( (vSizeSpanVar == (height - vLimitMax) / vSumWeight ) | strengthLow );			
+				solver.addConstraint( (vSizeSpanVar == (_height - vLimitMax) / vSumWeight ) | strengthLow );			
 			}
 		}		
 		return childsLimit;
@@ -477,7 +534,7 @@ class LayoutContainer
 				fixLimit(child.hSize, innerLimit.width);
 				fixSpacer(hSize, child.hSize);
 				
-				//if (child.hSize.getMin() > childsLimit.width) childsLimit.width = child.hSize.getMin();
+				//if (child.hSize.getMin() > childsLimit._width) childsLimit._width = child.hSize.getMin();
 				
 				var hSizeLimitVar = child.hSize.setSizeLimit(null);
 				if (hSizeLimitVar != null) {
@@ -486,13 +543,13 @@ class LayoutContainer
 				var hSizeSpanVar = child.hSize.setSizeSpan(null);
 				if (hSizeSpanVar != null) {
 					solver.addConstraint( (hSizeSpanVar >= 0) | strength );
-					solver.addConstraint( (hSizeSpanVar == (width - child.hSize.getLimitMax()) / child.hSize.getSumWeight() ) | strengthLow );
+					solver.addConstraint( (hSizeSpanVar == (_width - child.hSize.getLimitMax()) / child.hSize.getSumWeight() ) | strengthLow );
 				}
-				solver.addConstraint( (child.width == child.hSize.middle.size) | strength );
+				solver.addConstraint( (child._width == child.hSize.middle.size) | strength );
 				
 				// TODO: xScroll 
-				solver.addConstraint( (child.left == x - xScroll) | strength );
-				solver.addConstraint( (child.right == x + width - xScroll) | strengthLow );
+				solver.addConstraint( (child._left == _x - xScroll) | strength );
+				solver.addConstraint( (child._right == _x + _width - xScroll) | strengthLow );
 				
 				// --------------------------------- vertical ---------------------------------------
 				fixLimit(child.vSize, innerLimit.height);
@@ -507,12 +564,12 @@ class LayoutContainer
 				var vSizeSpanVar = child.vSize.setSizeSpan(null);
 				if (vSizeSpanVar != null) {
 					solver.addConstraint( (vSizeSpanVar >= 0) | strength );
-					solver.addConstraint( (vSizeSpanVar == (height - child.vSize.getLimitMax()) / child.vSize.getSumWeight() ) | strengthLow );
+					solver.addConstraint( (vSizeSpanVar == (_height - child.vSize.getLimitMax()) / child.vSize.getSumWeight() ) | strengthLow );
 				}
-				solver.addConstraint( (child.height == child.vSize.middle.size) | strength );				
+				solver.addConstraint( (child._height == child.vSize.middle.size) | strength );				
 				
-				solver.addConstraint( (child.top == y) | strength );
-				solver.addConstraint( (child.bottom == y + height) | strength );				
+				solver.addConstraint( (child._top == _y) | strength );
+				solver.addConstraint( (child._bottom == _y + _height) | strength );				
 			}
 		}
 		return childsLimit;

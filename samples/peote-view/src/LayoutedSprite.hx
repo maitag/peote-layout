@@ -1,5 +1,6 @@
 package;
 
+import peote.layout.LayoutContainer;
 import peote.view.Element;
 import peote.view.Display;
 import peote.view.Program;
@@ -91,68 +92,77 @@ class LayoutedSprite implements LayoutElement implements Element
 	
 	
 	
-	var insideMask:Bool = false;
-	public var isAdded:Bool = false;
+	var isHidden:Bool = true;
 
 	public function show() {
-		if (!isAdded) {
-			isAdded = true;
+		if (!isHidden) {
+			isHidden = true;
 			buffer.addElement(this);
 		}
 	}
 	
 	public function hide() {
-		if (isAdded) {
-			isAdded = false;
+		if (isHidden) {
+			isHidden = false;
 			buffer.removeElement(this);
 		}			
 	}
 	
-	public function updateByLayout(posSize:Bounds, mask:Bounds, z:Int) {
-		if (mask != null) {
-			
-			if (insideMask && isOutsideMask(posSize, mask)) {
+	//TODO: public function updateByLayout(layoutContainer:LayoutContainer) {
+	//      layoutContainer.isOutsideMask -> true if it is full outside of the Mask (so invisible)
+	//      layoutContainer.isMasked -> true if its is not fully displayed
+	//      layoutContainer.maskX
+	//      layoutContainer.maskY
+	//      layoutContainer.maskWidth
+	//      layoutContainer.maskHeight
+	
+	//      layoutContainer.parent
+	//      layoutContainer.root
+	//      layoutContainer.isRoot
+	
+	// }
+	public function updateByLayout(layoutContainer:LayoutContainer) {
+		if (layoutContainer.isHidden) { // if it is full outside of the Mask (so invisible)
+			if (!this.isHidden) {
 				buffer.removeElement(this);
-				insideMask = false;
+				this.isHidden = true;
 			}
-			else {
-				x = Std.int(posSize.left);
-				y = Std.int(posSize.top);
-				w = Std.int(posSize.right) - x;
-				h = Std.int(posSize.bottom) - y;
-				maskLeft = (x > mask.left) ? 0 : Std.int(mask.left) - x;
-				maskTop = (y > mask.top) ? 0 : Std.int(mask.top) - y;
-				maskRight = (posSize.right < mask.right) ? w : w - Std.int(posSize.right - mask.right);
-				maskBottom = (posSize.bottom < mask.bottom) ? h : h - Std.int(posSize.bottom - mask.bottom);
-				
-				if (!insideMask) {
-					buffer.addElement(this);
-					insideMask = true;
-				} 
-				else buffer.updateElement(this);
-			}
-			
-		} 
+		}
 		else {
-			x = Std.int(posSize.left);
-			y = Std.int(posSize.top);
-			w = Std.int(posSize.right) - x;
-			h = Std.int(posSize.bottom) - y;
-			maskLeft = 0;
-			maskTop = 0;
-			maskRight = w;
-			maskBottom = h;
-			
-			if (!insideMask) {
+			if (layoutContainer.isMasked) {// if its is not fully displayed
+				x = Std.int(layoutContainer.x);
+				y = Std.int(layoutContainer.y);
+				w = Std.int(layoutContainer.width);
+				h = Std.int(layoutContainer.height);
+				//maskLeft = (x > mask.left) ? 0 : Std.int(mask.left) - x;
+				//maskTop = (y > mask.top) ? 0 : Std.int(mask.top) - y;
+				//maskRight = (posSize.right < mask.right) ? w : w - Std.int(posSize.right - mask.right);
+				//maskBottom = (posSize.bottom < mask.bottom) ? h : h - Std.int(posSize.bottom - mask.bottom);
+				maskLeft = 0;
+				maskTop = 0;
+				maskRight = w;
+				maskBottom = h;
+			}
+			else { // if its fully displayed
+				x = Std.int(layoutContainer.x);
+				y = Std.int(layoutContainer.y);
+				w = Std.int(layoutContainer.width);
+				h = Std.int(layoutContainer.height);
+				maskLeft = 0;
+				maskTop = 0;
+				maskRight = w;
+				maskBottom = h;
+			}
+			if (this.isHidden) {
 				buffer.addElement(this);
-				insideMask = true;
+				this.isHidden = false;
 			} 
 			else buffer.updateElement(this);
+
 		}
-		
 	}
 	
-	public inline function isOutsideMask(posSize:Bounds, mask:Bounds) {
+/*	public inline function isOutsideMask(posSize:Bounds, mask:Bounds) {
 		if (posSize.bottom < mask.top) return true;
 		if (posSize.top > mask.bottom) return true;
 		if (posSize.right < mask.left) return true;
@@ -160,7 +170,7 @@ class LayoutedSprite implements LayoutElement implements Element
 		
 		return false;
 	}
-	
+*/	
 	
 	
 }

@@ -1,11 +1,8 @@
 package peote.layout;
 
 import jasper.Expression;
-import jasper.Solver;
 import jasper.Term;
 import jasper.Variable;
-import jasper.Strength;
-import peote.layout.util.SizeVars;
 
 @:allow(peote.layout)
 class Limit

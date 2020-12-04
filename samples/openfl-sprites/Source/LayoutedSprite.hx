@@ -1,11 +1,11 @@
-package ;
+package;
 
 import openfl.Lib;
 import openfl.display.Sprite;
 import openfl.geom.Rectangle;
 
-import peote.layout.Bounds;
 import peote.layout.LayoutElement;
+import peote.layout.LayoutContainer;
 
 
 class LayoutedSprite extends Sprite implements LayoutElement 
@@ -17,12 +17,10 @@ class LayoutedSprite extends Sprite implements LayoutElement
 		super();
 		
 		this.color = color;
-				
-		// self adding to stage
-		Lib.current.stage.addChild(this);
+		Lib.current.stage.addChild(this); // self adding to stage
 	}
 	
-	public function drawRoundRect (x:Float, y:Float, w:Float, h:Float)
+	public function drawNewRoundRect (x:Float, y:Float, w:Float, h:Float)
 	{
 		var radius:Float = 20;
 		var lineColor:UInt = 0x550000;
@@ -42,61 +40,43 @@ class LayoutedSprite extends Sprite implements LayoutElement
 	}	
 	
 	
-	var insideMask = false;
-	
 	/* INTERFACE peote.layout.LayoutElement */
-	public function updateByLayout(posSize:Bounds, mask:Bounds, z:Int) {
-		if (mask != null) {
-			
-			if (insideMask && isOutsideMask(posSize, mask)) {
+	
+	var isHidden = false;	
+	
+	public function updateByLayout(layoutContainer:LayoutContainer) 
+	{
+		if (layoutContainer.isHidden) // if it is fully outside of the scroll-area mask
+		{
+			if (!isHidden) {
 				Lib.current.stage.removeChild(this);
-				insideMask = false;
+				isHidden = true;
 			}
-			else {
-				x = posSize.left;
-				y = posSize.top;
-				
-				var w = posSize.right - x;
-				var h = posSize.bottom - y;
-				
-				var maskLeft = (x > mask.left) ? 0 : mask.left - x;
-				var maskTop = (y > mask.top) ? 0 : mask.top - y;
-				var maskRight = (posSize.right < mask.right) ? w : w - (posSize.right - mask.right);
-				var maskBottom = (posSize.bottom < mask.bottom) ? h : h - (posSize.bottom - mask.bottom);
-				
-				scrollRect = new Rectangle(maskLeft, maskTop, maskRight, maskBottom);
-				drawRoundRect(0, 0, w, h);
-				
-				if (!insideMask) {
-					Lib.current.stage.addChild(this);
-					insideMask = true;
-				} 
+		}
+		else 
+		{
+			if (layoutContainer.isMasked) // if its partly inside of mask for scroll-area
+			{
+				//scrollRect = new Rectangle(
+				//	layoutContainer.maskX,
+				//	layoutContainer.maskY,
+				//	layoutContainer.maskWidth,
+				//	layoutContainer.maskHeight
+				//);
 			}
+			else scrollRect = null;
 			
-		} 
-		else {
-			x = posSize.left;
-			y = posSize.top;
-			var w = posSize.right - x;
-			var h = posSize.bottom - y;
+			x = layoutContainer.x;
+			y = layoutContainer.y;
 			
-			scrollRect = null;
-			drawRoundRect(0,0,w,h);
+			drawNewRoundRect(0, 0, layoutContainer.width, layoutContainer.height);
 			
-			if (!insideMask) {
+			if (isHidden) {
 				Lib.current.stage.addChild(this);
-				insideMask = true;
+				isHidden = false;
 			} 
 		}
 		
 	}
 	
-	public inline function isOutsideMask(posSize:Bounds, mask:Bounds) {
-		if (posSize.bottom < mask.top) return true;
-		if (posSize.top > mask.bottom) return true;
-		if (posSize.right < mask.left) return true;
-		if (posSize.left > mask.right) return true;
-		
-		return false;
-	}	
 }
