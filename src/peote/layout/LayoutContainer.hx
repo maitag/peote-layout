@@ -18,78 +18,49 @@ class LayoutContainer
 	
 	public var solver:Null<Solver>;
 	
-	public var parent:LayoutContainer;
-	var childs:Array<LayoutContainer>;
+	public var parent:LayoutContainer = null;
+	var childs:Array<LayoutContainer> = null;
+		
+	public var isRoot(get, never):Bool;
+	inline function get_isRoot():Bool return (parent == null);
 	
-	// TODO:
+	// masked by parent layoutcontainer
 	public var isHidden:Bool = false;
 	public var isMasked:Bool = false;
+	public var maskX(default,null):Float;
+	public var maskY(default,null):Float;
+	public var maskWidth(default,null):Float;
+	public var maskHeight(default,null):Float;
+		
 	
+	// Position and Size (suggesting/accessing jasper-vars)
+	public var x(get,set):Null<Float>;
+	inline function get_x():Null<Float> return _x.m_value;
+	inline function set_x(value:Null<Float>):Null<Float> return suggestValue(_x, value);
 	
-	// Boundaries (accessors for jasper-vars)
-	public var xIsEditable(default, set):Bool = false;
-	inline function set_xIsEditable(value:Bool):Bool {
-		if (value) solver.addEditVariable(_x, strength);
-		else solver.removeEditVariable(_x);
-		return value;
-	}
-	public var x(get,set):Float;
-	inline function get_x():Float return _x.m_value;
-	inline function set_x(value:Float):Float {
-		if (solver == null) throw("Error: can't set x value of LayoutContainer if its not initialized.");
-		if (!xIsEditable) throw("Error: can't set x value of LayoutContainer if its not editable.");
-		solver.suggestValue(_x, value);
-		return value;
-	}
+	public var y(get,set):Null<Float>;
+	inline function get_y():Null<Float> return _y.m_value;
+	inline function set_y(value:Null<Float>):Null<Float> return suggestValue(_y, value);
 	
-	public var yIsEditable(default, set):Bool = false;
-	inline function set_yIsEditable(value:Bool):Bool {
-		if (value) solver.addEditVariable(_y, strength);
-		else solver.removeEditVariable(_y);
-		return value;
-	}
-	public var y(get,set):Float;
-	inline function get_y():Float return _y.m_value;
-	inline function set_y(value:Float):Float {
-		if (solver == null) throw("Error: can't set y value of LayoutContainer if its not initialized.");
-		if (!yIsEditable) throw("Error: can't set y value of LayoutContainer if its not editable.");
-		solver.suggestValue(_y, value);
-		return value;
-	}
+	public var width(get,set):Null<Float>;
+	inline function get_width():Null<Float> return _width.m_value;
+	inline function set_width(value:Null<Float>):Null<Float> return suggestValue(_width, value);
 	
-	public var widthIsEditable(default, set):Bool = false;
-	inline function set_widthIsEditable(value:Bool):Bool {
-		if (value) solver.addEditVariable(_width, strength);
-		else solver.removeEditVariable(_width);
+	public var height(get,set):Null<Float>;
+	inline function get_height() return _height.m_value;
+	inline function set_height(value:Null<Float>):Null<Float> return suggestValue(_height, value);
+
+	inline function suggestValue(variable:Variable, value:Null<Float>):Null<Float> {
+		if (solver == null) throw('Error: can\'t set ${variable.m_name} value of LayoutContainer if its not initialized.');
+		if (value == null && solver.hasEditVariable(variable)) {
+			solver.removeEditVariable(variable);
+			return null;
+		}
+		if (!solver.hasEditVariable(variable)) solver.addEditVariable(variable, strength);
+		solver.suggestValue(variable, value);
 		return value;
 	}
-	public var width(get,set):Float;
-	inline function get_width():Float return _width.m_value;
-	inline function set_width(value:Float):Float {
-		if (solver == null) throw("Error: can't set width value of LayoutContainer if its not initialized.");
-		if (!widthIsEditable) throw("Error: can't set width value of LayoutContainer if its not editable.");
-		solver.suggestValue(_width, value);
-		return value;
-	}
-	
-	public var heightIsEditable(default, set):Bool = false;
-	inline function set_heightIsEditable(value:Bool):Bool {
-		if (value) solver.addEditVariable(_height, strength);
-		else solver.removeEditVariable(_height);
-		return value;
-	}
-	public var height(get,set):Float;
-	inline function get_height():Float return _height.m_value;
-	inline function set_height(value:Float):Float {
-		if (solver == null) throw("Error: can't set height value of LayoutContainer if its not initialized.");
-		if (!heightIsEditable) throw("Error: can't set height value of LayoutContainer if its not editable.");
-		// if i uncomment this line:
-		//    solver.suggestValue(_height, value);
-		// sometimes (randomly°-°on haxe 4.1.4) problem here.. compile error: jasper/SolverImpl.hx:662: characters 57-65 : { m_type : jasper.SymbolType } should be jasper.Symbol
-		// maybe because of "generics" inside Jasper Maps ?
-		return value;
-	}
-	
+
 	
 	// ---------- Variables for Jasper Constraints ------
 	public var xScroll(default,null):Variable;
@@ -130,7 +101,7 @@ class LayoutContainer
 	static var strength = Strength.create(0, 900, 0);
 	static var strengthLow = Strength.create(0, 0, 900);		
 	
-	public function new(containerType:ContainerType = ContainerType.BOX, layoutElement:LayoutElement = null, layout:Layout = null, innerLayoutContainer:Array<LayoutContainer> = null) 
+	public function new(containerType:ContainerType = ContainerType.BOX, layoutElement:LayoutElement = null, layout:Layout = null, childs:Array<LayoutContainer> = null) 
 	{
 		this.containerType = containerType;
 		this.layoutElement = layoutElement;
@@ -138,9 +109,11 @@ class LayoutContainer
 		hSize = new SizeSpaced(layout.width, layout.left, layout.right);
 		vSize = new SizeSpaced(layout.height, layout.top, layout.bottom);
 		
-		childs = innerLayoutContainer;
+		if (childs != null) {
+			for (child in childs) child.parent = this;
+			this.childs = childs;
+		}
 		
-
 		xScroll = new Variable();// TODO !
 		
 		_x = new Variable();
@@ -217,9 +190,69 @@ class LayoutContainer
 	
 	function updateLayoutElement()
 	{
+		updateMask();
+		
 		layoutElement.updateByLayout(this);
 		if (childs != null) for (child in childs) child.updateLayoutElement();
 	}
+	
+	function updateMask()
+	{
+		isMasked = false;
+		isHidden = false;
+
+		if (isRoot) {
+			maskX = 0;
+			maskY = 0;
+			maskWidth = width;
+			maskHeight = height;
+		}
+		else {
+			if (parent.isHidden) {
+				isMasked = true;
+				isHidden = true;
+			}
+			else
+			{				
+				maskX = parent.x + parent.maskX - x;
+				if (maskX > 0) {
+					isMasked = true;
+					maskWidth = width - maskX;
+					if (maskWidth < 0) isHidden = true;
+					else if (maskWidth > parent.maskWidth) maskWidth = parent.maskWidth;
+				}
+				else {
+					maskWidth = parent.maskWidth + maskX;
+					if (maskWidth >= width) maskWidth = width;
+					else {
+						isMasked = true;
+						if (maskWidth < 0) isHidden = true;
+					}
+					maskX = 0;
+				}
+				
+				if (!isHidden) {
+					maskY = parent.y + parent.maskY - y;
+					if (maskY > 0) {
+						isMasked = true;
+						maskHeight = height - maskY;
+						if (maskHeight < 0) isHidden = true;
+						else if (maskHeight > parent.maskHeight) maskHeight = parent.maskHeight;
+					}
+					else {
+						maskHeight = parent.maskHeight + maskY;
+						if (maskHeight >= height) maskHeight = height;
+						else {
+							isMasked = true;
+							if (maskHeight < 0) isHidden = true;
+						}
+						maskY = 0;
+					}
+				}
+			}
+		}
+	}
+	
 	
 	// TODO:
 	public function addChild(child:LayoutContainer) {
@@ -227,6 +260,14 @@ class LayoutContainer
 	}
 	
 	public function removeChild(child:LayoutContainer) {
+		
+	}
+	
+	public function show() {
+		
+	}
+	
+	public function hide() {
 		
 	}
 	

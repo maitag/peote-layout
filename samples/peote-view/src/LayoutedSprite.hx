@@ -7,7 +7,6 @@ import peote.view.Program;
 import peote.view.Buffer;
 import peote.view.Color;
 
-import peote.layout.Bounds;
 import peote.layout.LayoutElement;
 
 
@@ -26,10 +25,10 @@ class LayoutedSprite implements LayoutElement implements Element
 	
 	@zIndex public var z:Int = 0;
 	
-	@custom("maskLeft") @varying public var maskLeft:Int = 0;
-	@custom("maskRight") @varying public var maskRight:Int = 0;
-	@custom("maskTop") @varying public var maskTop:Int = 0;
-	@custom("maskBottom") @varying public var maskBottom:Int = 0;
+	@custom("maskX") @varying public var maskX:Int = 0;
+	@custom("maskY") @varying public var maskY:Int = 0;
+	@custom("maskWidth") @varying public var maskWidth:Int = 0;
+	@custom("maskHeight") @varying public var maskHeight:Int = 0;
 	
 	static public var buffer:Buffer<LayoutedSprite>;
 	static public var program:Program;
@@ -61,7 +60,7 @@ class LayoutedSprite implements LayoutElement implements Element
 			float rectMask (vec2 pos, vec2 size, vec4 mask)
 			{
 				pos = pos * size;
-				if (pos.x <= mask.x || pos.x >= mask.y || pos.y <= mask.z || pos.y >= mask.w) return 0.0;
+				if (pos.x < mask.x || pos.x > mask.z || pos.y < mask.y || pos.y > mask.w) return 0.0;
 				else return 1.0;
 			}
 
@@ -75,7 +74,7 @@ class LayoutedSprite implements LayoutElement implements Element
 			}
 		");
 		
-		program.setColorFormula('compose(bgcolor, borderColor, borderSize, borderRadius, vec4(maskLeft, maskRight, maskTop, maskBottom))');// parsed by color and custom identifiers
+		program.setColorFormula('compose(bgcolor, borderColor, borderSize, borderRadius, vec4(maskX, maskY, maskWidth, maskHeight))');// parsed by color and custom identifiers
 		
 		program.alphaEnabled = true;
 		display.addProgram(program);
@@ -84,13 +83,11 @@ class LayoutedSprite implements LayoutElement implements Element
 		
 	public function new(color:Color) {
 		this.color = color;
-		//update({top:5,left:0,right:800,bottom:100}, {top:5,left:10,right:500,bottom:90}, 0);
-		//update({top:5,left:0,right:800,bottom:100}, {top:0,left:0,right:800,bottom:100}, 0);
 	}
 	
 	
 	
-	
+	/* INTERFACE peote.layout.LayoutElement */	
 	
 	var isHidden:Bool = true;
 
@@ -108,20 +105,8 @@ class LayoutedSprite implements LayoutElement implements Element
 		}			
 	}
 	
-	//TODO: public function updateByLayout(layoutContainer:LayoutContainer) {
-	//      layoutContainer.isOutsideMask -> true if it is full outside of the Mask (so invisible)
-	//      layoutContainer.isMasked -> true if its is not fully displayed
-	//      layoutContainer.maskX
-	//      layoutContainer.maskY
-	//      layoutContainer.maskWidth
-	//      layoutContainer.maskHeight
-	
-	//      layoutContainer.parent
-	//      layoutContainer.root
-	//      layoutContainer.isRoot
-	
-	// }
-	public function updateByLayout(layoutContainer:LayoutContainer) {
+	public function updateByLayout(layoutContainer:LayoutContainer) 
+	{
 		if (layoutContainer.isHidden) { // if it is full outside of the Mask (so invisible)
 			if (!this.isHidden) {
 				buffer.removeElement(this);
@@ -129,30 +114,24 @@ class LayoutedSprite implements LayoutElement implements Element
 			}
 		}
 		else {
-			if (layoutContainer.isMasked) {// if its is not fully displayed
-				x = Std.int(layoutContainer.x);
-				y = Std.int(layoutContainer.y);
-				w = Std.int(layoutContainer.width);
-				h = Std.int(layoutContainer.height);
-				//maskLeft = (x > mask.left) ? 0 : Std.int(mask.left) - x;
-				//maskTop = (y > mask.top) ? 0 : Std.int(mask.top) - y;
-				//maskRight = (posSize.right < mask.right) ? w : w - Std.int(posSize.right - mask.right);
-				//maskBottom = (posSize.bottom < mask.bottom) ? h : h - Std.int(posSize.bottom - mask.bottom);
-				maskLeft = 0;
-				maskTop = 0;
-				maskRight = w;
-				maskBottom = h;
+			x = Math.round(layoutContainer.x);
+			y = Math.round(layoutContainer.y);
+			w = Math.round(layoutContainer.width);
+			h = Math.round(layoutContainer.height);
+			
+			if (layoutContainer.isMasked) { // if some of the edges is cut by mask for scroll-area
+				maskX = Math.round(layoutContainer.maskX);
+				maskY = Math.round(layoutContainer.maskY);
+				maskWidth = maskX + Math.round(layoutContainer.maskWidth);
+				maskHeight = maskY + Math.round(layoutContainer.maskHeight);
 			}
 			else { // if its fully displayed
-				x = Std.int(layoutContainer.x);
-				y = Std.int(layoutContainer.y);
-				w = Std.int(layoutContainer.width);
-				h = Std.int(layoutContainer.height);
-				maskLeft = 0;
-				maskTop = 0;
-				maskRight = w;
-				maskBottom = h;
+				maskX = 0;
+				maskY = 0;
+				maskWidth = w;
+				maskHeight = h;
 			}
+			
 			if (this.isHidden) {
 				buffer.addElement(this);
 				this.isHidden = false;
@@ -162,15 +141,6 @@ class LayoutedSprite implements LayoutElement implements Element
 		}
 	}
 	
-/*	public inline function isOutsideMask(posSize:Bounds, mask:Bounds) {
-		if (posSize.bottom < mask.top) return true;
-		if (posSize.top > mask.bottom) return true;
-		if (posSize.right < mask.left) return true;
-		if (posSize.left > mask.right) return true;
-		
-		return false;
-	}
-*/	
 	
 	
 }

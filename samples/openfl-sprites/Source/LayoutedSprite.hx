@@ -55,22 +55,25 @@ class LayoutedSprite extends Sprite implements LayoutElement
 		}
 		else 
 		{
-			if (layoutContainer.isMasked) // if its partly inside of mask for scroll-area
-			{
-				//scrollRect = new Rectangle(
-				//	layoutContainer.maskX,
-				//	layoutContainer.maskY,
-				//	layoutContainer.maskWidth,
-				//	layoutContainer.maskHeight
-				//);
-			}
-			else scrollRect = null;
-			
 			x = layoutContainer.x;
 			y = layoutContainer.y;
 			
 			drawNewRoundRect(0, 0, layoutContainer.width, layoutContainer.height);
 			
+			if (layoutContainer.isMasked) // if some of the edges is cut by mask for scroll-area
+			{
+				x += layoutContainer.maskX;
+				y += layoutContainer.maskY;
+				
+				scrollRect = new Rectangle(
+					layoutContainer.maskX,
+					layoutContainer.maskY,
+					layoutContainer.maskWidth,
+					layoutContainer.maskHeight
+				);
+			}
+			else scrollRect = null;
+						
 			if (isHidden) {
 				Lib.current.stage.addChild(this);
 				isHidden = false;
