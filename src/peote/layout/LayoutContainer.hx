@@ -4,11 +4,13 @@ import jasper.Variable;
 import jasper.Expression;
 import jasper.Term;
 import jasper.Strength;
+import jasper.Constraint;
 import jasper.Solver;
 
 import peote.layout.util.SizeSpaced;
 
 typedef InnerLimit = { width:Int, height:Int }
+
 
 class LayoutContainer
 {
@@ -52,11 +54,19 @@ class LayoutContainer
 
 	inline function suggestValue(variable:Variable, value:Null<Float>):Null<Float> {
 		if (solver == null) throw('Error: can\'t set ${variable.m_name} value of LayoutContainer if its not initialized.');
+		
+		//if (value == null && heightIsEditable) {
 		if (value == null && solver.hasEditVariable(variable)) {
+			//heightIsEditable = false;
 			solver.removeEditVariable(variable);
 			return null;
 		}
-		if (!solver.hasEditVariable(variable)) solver.addEditVariable(variable, strength);
+		
+		//if (!heightIsEditable) {
+		if (!solver.hasEditVariable(variable)) {
+			//heightIsEditable = true;
+			solver.addEditVariable(variable, strength);
+		}
 		solver.suggestValue(variable, value);
 		return value;
 	}
@@ -99,15 +109,23 @@ class LayoutContainer
 	public var vSize:SizeSpaced;
 			
 	static var strength = Strength.create(0, 900, 0);
-	static var strengthLow = Strength.create(0, 0, 900);		
+	static var strengthLow = Strength.create(0, 0, 900);
 	
+	// ----------------------------------------------------------------------------------------
+	// storing constraints
+	public var customConstraints:Array<Constraint>;
+	
+	
+	// ----------------------------------------------------------------------------------------
+	// --------------------------------- NEW --------------------------------------------------
+	// ----------------------------------------------------------------------------------------
 	public function new(containerType:ContainerType = ContainerType.BOX, layoutElement:LayoutElement = null, layout:Layout = null, childs:Array<LayoutContainer> = null) 
 	{
 		this.containerType = containerType;
 		this.layoutElement = layoutElement;
 		this.layout = (layout != null) ? layout : {};
-		hSize = new SizeSpaced(layout.width, layout.left, layout.right);
-		vSize = new SizeSpaced(layout.height, layout.top, layout.bottom);
+		hSize = new SizeSpaced(this.layout.width, this.layout.left, this.layout.right);
+		vSize = new SizeSpaced(this.layout.height, this.layout.top, this.layout.bottom);
 		
 		if (childs != null) {
 			for (child in childs) child.parent = this;
@@ -442,9 +460,8 @@ class LayoutContainer
 				
 				childsLimit.width += child.hSize.getMin();
 				
-				//hSizeVars = child.addHConstraints(solver, hSizeVars, strength);
-				hSizeLimitVar = child.hSize.setSizeLimit(null);
-				hSizeSpanVar = child.hSize.setSizeSpan(null);
+				hSizeLimitVar = child.hSize.setSizeLimit(hSizeLimitVar);
+				hSizeSpanVar = child.hSize.setSizeSpan(hSizeSpanVar);
 				solver.addConstraint( (child._width == child.hSize.middle.size) | strength );
 				
 				hSumWeight += child.hSize.getSumWeight();
@@ -474,7 +491,6 @@ class LayoutContainer
 				solver.addConstraint( (child._bottom == _y + _height) | strength );
 			}
 			
-			//if (hSizeVars.sSpan != null) solver.addConstraint( (hSizeVars.sSpan == (_width - hLimitMax) / hSumWeight ) | strengthLow );			
 			if (hSizeLimitVar != null) {
 				solver.addConstraint( (hSizeLimitVar >= 0) | strength );
 			}
@@ -533,8 +549,8 @@ class LayoutContainer
 				childsLimit.height += child.vSize.getMin();
 				
 				//vSizeVars = child.addVConstraints(solver, vSizeVars, strength);
-				vSizeLimitVar = child.vSize.setSizeLimit(null);
-				vSizeSpanVar = child.vSize.setSizeSpan(null);
+				vSizeLimitVar = child.vSize.setSizeLimit(vSizeLimitVar);
+				vSizeSpanVar = child.vSize.setSizeSpan(vSizeSpanVar);
 				solver.addConstraint( (child._height == child.vSize.middle.size) | strength );
 				
 				vSumWeight += child.vSize.getSumWeight();

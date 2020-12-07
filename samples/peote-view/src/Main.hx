@@ -74,6 +74,7 @@ class Main extends lime.app.Application
 		);
 		
 		greenLC.init();
+		
 		greenLC.update(peoteView.width, peoteView.height);
 		
 		rootLayoutContainer = greenLC;

@@ -1,8 +1,6 @@
 package peote.layout.util;
 
 import jasper.Expression;
-import jasper.Solver;
-import jasper.Strength;
 import jasper.Variable;
 
 class SizeSpaced 
