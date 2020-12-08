@@ -49,7 +49,7 @@ class LayoutedSprite extends Sprite implements LayoutElement
 		if (layoutContainer.isHidden) // if it is fully outside of the scroll-area mask
 		{
 			if (!isHidden) {
-				Lib.current.stage.removeChild(this);
+				if (parent != null) parent.removeChild(this); //thx to joshua
 				isHidden = true;
 			}
 		}
@@ -58,13 +58,14 @@ class LayoutedSprite extends Sprite implements LayoutElement
 			x = layoutContainer.x;
 			y = layoutContainer.y;
 			
-			drawNewRoundRect(0, 0, layoutContainer.width, layoutContainer.height);
+			drawNewRoundRect(0, 0, layoutContainer.width, layoutContainer.height); // todo: optimize (draw only again if size is changing!) 
 			
 			if (layoutContainer.isMasked) // if some of the edges is cut by mask for scroll-area
 			{
 				x += layoutContainer.maskX;
 				y += layoutContainer.maskY;
 				
+				// todo: optimize (set only changed mask parameters!)
 				scrollRect = new Rectangle(
 					layoutContainer.maskX,
 					layoutContainer.maskY,
