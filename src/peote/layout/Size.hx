@@ -13,8 +13,8 @@ class Limit
 	var _max:Null<Int>;
 	var _weight:Float = 1.0;
 	
-	var size(get, never):Expression;
-	function get_size():Expression {
+	public var size(get, never):Expression;
+	inline function get_size():Expression {
 		if (sizeLimit == null && sizeSpan == null) return new Expression([], _min); // CHECK!
 		else if (sizeLimit== null) return _min + (new Term(sizeSpan) * _weight);
 		else if (sizeSpan == null) return _min + (new Term(sizeLimit) * (_max - _min));
