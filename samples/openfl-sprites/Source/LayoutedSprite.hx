@@ -1,7 +1,10 @@
 package;
 
 import openfl.Lib;
+import openfl.display.DisplayObject;
+import openfl.display.DisplayObjectContainer;
 import openfl.display.Sprite;
+import openfl.display.Stage;
 import openfl.geom.Rectangle;
 
 import peote.layout.LayoutElement;
@@ -42,16 +45,31 @@ class LayoutedSprite extends Sprite implements LayoutElement
 	
 	/* INTERFACE peote.layout.LayoutElement */
 	
-	var isHidden = false;	
+	//var lastParent:DisplayObjectContainer = null;
+	
+	public function showByLayout():Void {
+		visible = true;
+		//if (parent == null && lastParent != null) {
+			//lastParent.addChildAt(this);
+		//} 
+	}
+	
+	public function hideByLayout():Void{
+		visible = false;
+		//if (parent != null) {
+			//lastParent = parent;
+			//parent.removeChild(this);
+		//}		
+	}
+
+	var layoutWasHidden = false;
 	
 	public function updateByLayout(layoutContainer:LayoutContainer) 
 	{
-		if (layoutContainer.isHidden) // if it is fully outside of the scroll-area mask
+		if (!layoutWasHidden && layoutContainer.isHidden) // if it is fully outside of the scroll-area mask
 		{
-			if (!isHidden) {
-				if (parent != null) parent.removeChild(this); //thx to joshua
-				isHidden = true;
-			}
+			hideByLayout();
+			layoutWasHidden = true;
 		}
 		else 
 		{
@@ -75,9 +93,9 @@ class LayoutedSprite extends Sprite implements LayoutElement
 			}
 			else scrollRect = null;
 						
-			if (isHidden) {
-				Lib.current.stage.addChild(this);
-				isHidden = false;
+			if (layoutWasHidden) {
+				showByLayout();
+				layoutWasHidden = false;
 			} 
 		}
 		

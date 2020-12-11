@@ -81,12 +81,12 @@ class Main extends lime.app.Application
 		
 		
 		// TODO: show/hide all layoutElements
-		// greenHBox.hide();
-		// greenHBox.show();
+		// greenLC.hide();
+		// greenLC.show();
 		
 		// TODO: changing layout dynamically
-		// greenHBox.layout.height = 100;
-		// greenHBox.layout.bottom = 200;
+		// greenLC.layout.height = 100;
+		// greenLC.layout.bottom = 200;
 		
 		// TODO: adding removing childs dynamically
 	

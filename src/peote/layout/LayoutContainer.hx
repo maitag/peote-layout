@@ -36,13 +36,15 @@ class LayoutContainer
 		
 	
 	// Position and Size (suggesting/accessing jasper-vars)
+	var xParentOffset:Float = 0;
 	public var x(get,set):Null<Float>;
-	inline function get_x():Null<Float> return _x.m_value;
-	inline function set_x(value:Null<Float>):Null<Float> return suggestValue(_x, value);
+	inline function get_x():Null<Float> return _x.m_value - xParentOffset;
+	inline function set_x(value:Null<Float>):Null<Float> return suggestValue(_x, value - xParentOffset);
 	
+	var yParentOffset:Float = 0;
 	public var y(get,set):Null<Float>;
-	inline function get_y():Null<Float> return _y.m_value;
-	inline function set_y(value:Null<Float>):Null<Float> return suggestValue(_y, value);
+	inline function get_y():Null<Float> return _y.m_value - yParentOffset;
+	inline function set_y(value:Null<Float>):Null<Float> return suggestValue(_y, value - yParentOffset);
 	
 	public var width(get,set):Null<Float>;
 	inline function get_width():Null<Float> return _width.m_value;
@@ -225,16 +227,25 @@ class LayoutContainer
 			solver.suggestValue(root_height, height);
 			solver.updateVariables();
 			
-			updateLayoutElement();
+			updateLayoutElement(xParentOffset, yParentOffset);
 		}
 	}
 	
-	function updateLayoutElement()
+	function updateLayoutElement(xOffset:Float, yOffset:Float)
 	{
-		updateMask();
+		xParentOffset = xOffset;
+		yParentOffset = yOffset;
+		if (layout.relativeChildPositions != null && layout.relativeChildPositions == true) {
+			xOffset += x;
+			yOffset += y;
+		}
 		
-		layoutElement.updateByLayout(this);
-		if (childs != null) for (child in childs) child.updateLayoutElement();
+		updateMask();		
+		
+		if (layoutElement != null) layoutElement.updateByLayout(this);
+		
+		if (childs != null) 
+			for (child in childs) child.updateLayoutElement(xOffset, yOffset); // recursive
 	}
 	
 	function updateMask()
@@ -255,7 +266,7 @@ class LayoutContainer
 			}
 			else
 			{				
-				maskX = parent.x + parent.maskX - x;
+				maskX = parent._x.m_value + parent.maskX - _x.m_value;
 				if (maskX > 0) {
 					isMasked = true;
 					maskWidth = width - maskX;
@@ -273,7 +284,7 @@ class LayoutContainer
 				}
 				
 				if (!isHidden) {
-					maskY = parent.y + parent.maskY - y;
+					maskY = parent._y.m_value + parent.maskY - _y.m_value;
 					if (maskY > 0) {
 						isMasked = true;
 						maskHeight = height - maskY;

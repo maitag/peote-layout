@@ -80,38 +80,36 @@ class LayoutedSprite implements LayoutElement implements Element
 		display.addProgram(program);
 	}
 	
+	
+	var isVisible:Bool = false;
 		
 	public function new(color:Color) {
 		this.color = color;
+		showByLayout();
 	}
 	
 	
 	
 	/* INTERFACE peote.layout.LayoutElement */	
-	
-	var isHidden:Bool = true;
 
-	public function show() {
-		if (!isHidden) {
-			isHidden = true;
+	public function showByLayout() {
+		if (!isVisible) {
+			isVisible = true;
 			buffer.addElement(this);
 		}
 	}
 	
-	public function hide() {
-		if (isHidden) {
-			isHidden = false;
+	public function hideByLayout() {
+		if (isVisible) {
+			isVisible = false;
 			buffer.removeElement(this);
 		}			
 	}
 	
 	public function updateByLayout(layoutContainer:LayoutContainer) 
 	{
-		if (layoutContainer.isHidden) { // if it is full outside of the Mask (so invisible)
-			if (!this.isHidden) {
-				buffer.removeElement(this);
-				this.isHidden = true;
-			}
+		if (isVisible && layoutContainer.isHidden) { // if it is full outside of the Mask (so invisible)
+			hideByLayout();
 		}
 		else {
 			x = Math.round(layoutContainer.x);
@@ -132,10 +130,7 @@ class LayoutedSprite implements LayoutElement implements Element
 				maskHeight = h;
 			}
 			
-			if (this.isHidden) {
-				buffer.addElement(this);
-				this.isHidden = false;
-			} 
+			if (!isVisible) showByLayout()
 			else buffer.updateElement(this);
 
 		}

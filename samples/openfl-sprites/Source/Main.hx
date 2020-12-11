@@ -59,6 +59,10 @@ class Main extends Sprite {
 		greenLC.init();
 		greenLC.update(Lib.current.stage.stageWidth, Lib.current.stage.stageHeight);
 		
+		//greenLC.hide();
+		//greenLC.showt();
+		
+		
 		rootLayoutContainer = greenLC;
 		
 		Lib.current.stage.addEventListener( Event.RESIZE, function(e) onWindowResize( Lib.current.stage.stageWidth, Lib.current.stage.stageHeight ) );

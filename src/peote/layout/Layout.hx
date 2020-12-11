@@ -7,5 +7,6 @@ typedef Layout =
 	?left:Size,
 	?right:Size,
 	?top:Size,
-	?bottom:Size	
+	?bottom:Size,
+	?relativeChildPositions:Bool
 }
