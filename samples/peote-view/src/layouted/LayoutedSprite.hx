@@ -1,10 +1,8 @@
-package;
+package layouted;
 
 import peote.layout.LayoutContainer;
 import peote.view.Element;
-import peote.view.Display;
 import peote.view.Program;
-import peote.view.Buffer;
 import peote.view.Color;
 
 import peote.layout.LayoutElement;
@@ -30,12 +28,9 @@ class LayoutedSprite implements LayoutElement implements Element
 	@custom("maskWidth") @varying public var maskWidth:Int = 0;
 	@custom("maskHeight") @varying public var maskHeight:Int = 0;
 	
-	static public var buffer:Buffer<LayoutedSprite>;
-	static public var program:Program;
 	
-	static public function init(display:Display) {
-		buffer = new Buffer<LayoutedSprite>(100);
-		program = new Program(LayoutedSprite.buffer);
+	static public function initProgram(program:Program) 
+	{
 		program.injectIntoFragmentShader(
 		"
 			float roundedBox (vec2 pos, vec2 size, float padding, float radius)
@@ -72,19 +67,19 @@ class LayoutedSprite implements LayoutElement implements Element
 				c = c * rectMask(vTexCoord, vSize, mask);
 				return c;
 			}
-		");
-		
-		program.setColorFormula('compose(bgcolor, borderColor, borderSize, borderRadius, vec4(maskX, maskY, maskWidth, maskHeight))');// parsed by color and custom identifiers
-		
+		");		
+		program.setColorFormula('compose(bgcolor, borderColor, borderSize, borderRadius, vec4(maskX, maskY, maskWidth, maskHeight))');// parsed by color and custom identifiers		
 		program.alphaEnabled = true;
-		display.addProgram(program);
 	}
 	
 	
+	var display:LayoutedDisplay;
+	
 	var isVisible:Bool = false;
 		
-	public function new(color:Color) {
+	public function new(display:LayoutedDisplay, color:Color) {
 		this.color = color;
+		this.display = display;
 		showByLayout();
 	}
 	
@@ -95,14 +90,14 @@ class LayoutedSprite implements LayoutElement implements Element
 	public function showByLayout() {
 		if (!isVisible) {
 			isVisible = true;
-			buffer.addElement(this);
+			display.buffer.addElement(this);
 		}
 	}
 	
 	public function hideByLayout() {
 		if (isVisible) {
 			isVisible = false;
-			buffer.removeElement(this);
+			display.buffer.removeElement(this);
 		}			
 	}
 	
@@ -131,7 +126,7 @@ class LayoutedSprite implements LayoutElement implements Element
 			}
 			
 			if (!isVisible) showByLayout()
-			else buffer.updateElement(this);
+			else display.buffer.updateElement(this);
 
 		}
 	}

@@ -1,6 +1,8 @@
 package;
 
 import lime.ui.MouseButton;
+import lime.app.Application;
+
 import peote.view.PeoteView;
 import peote.view.Display;
 import peote.view.Color;
@@ -9,23 +11,22 @@ import peote.layout.LayoutContainer;
 import peote.layout.ContainerType;
 import peote.layout.Size;
 
+import layouted.LayoutedSprite;
+import layouted.LayoutedDisplay;
 
 class Main extends lime.app.Application
 {
 	var peoteView:PeoteView;
-	var display:Display;
+	var display:LayoutedDisplay;
 	
 	public function new() super();
 	
 	public override function onWindowCreate():Void
 	{
-		// to get sure into rendercontext
 		switch (window.context.type)
 		{
-			case WEBGL, OPENGL, OPENGLES: 
-				initPeoteView(window); // start sample
-			default:
-				throw("Sorry, only works with OpenGL.");
+			case WEBGL, OPENGL, OPENGLES: initPeoteView(window); // start sample
+			default: throw("Sorry, only works with OpenGL.");
 		}
 	}
 		
@@ -38,20 +39,20 @@ class Main extends lime.app.Application
 	{
 		peoteView = new PeoteView(window.context, window.width, window.height);
 
-		display = new Display(0, 0, window.width, window.height, Color.GREY1);	
+		display = new LayoutedDisplay(Color.GREY1);	
 		peoteView.addDisplay(display);
 
-		LayoutedSprite.init(display);
-		
 		// add some graphic elements
-		var green = new LayoutedSprite(Color.GREEN);
-		var red = new LayoutedSprite(Color.RED);
-		var blue = new LayoutedSprite(Color.BLUE);
-		var yellow = new LayoutedSprite(Color.YELLOW);
+		var green = new LayoutedSprite(display, Color.GREEN);
+		var red = new LayoutedSprite(display, Color.RED);
+		var blue = new LayoutedSprite(display, Color.BLUE);
+		var yellow = new LayoutedSprite(display, Color.YELLOW);
 				
 		
 		// init a layout
-		var greenLC = new LayoutContainer(ContainerType.BOX, green,
+		var displayLC = new LayoutContainer(ContainerType.BOX, display,
+		[ 
+			new Box(green,
 			{
 				left: Size.min(100), // can be scale high but not lower as min-value
 				width:Size.limit(300, 400), // can be scale from min to max-value
@@ -70,14 +71,14 @@ class Main extends lime.app.Application
 				new Box(red, {left:0, width:300, height:100, bottom:Size.min(100)} ),
 				new Box(blue, {right:0, width:300, height:100, bottom:0} ),
 				new Box(yellow, {width:100, height:Size.limit(100, 300)} )
-			]
-		);
+			])
+		]);
 		
-		greenLC.init();
+		displayLC.init();
 		
-		greenLC.update(peoteView.width, peoteView.height);
+		displayLC.update(peoteView.width, peoteView.height);
 		
-		rootLayoutContainer = greenLC;
+		rootLayoutContainer = displayLC;
 		
 		
 		// TODO: show/hide all layoutElements
@@ -113,8 +114,6 @@ class Main extends lime.app.Application
 	public override function onWindowResize (width:Int, height:Int):Void
 	{
 		peoteView.resize(width, height);
-		display.width = width;
-		display.height = height;
 		if (rootLayoutContainer != null) rootLayoutContainer.update(width, height);
 	}
 
@@ -123,8 +122,6 @@ class Main extends lime.app.Application
 	
 	public override function onMouseMove (x:Float, y:Float) {
 		if (sizeEmulation && rootLayoutContainer != null) {
-			display.width = Std.int(x);
-			display.height = Std.int(y);
 			rootLayoutContainer.update(x, y);
 		}
 	}
@@ -133,8 +130,6 @@ class Main extends lime.app.Application
 		sizeEmulation = !sizeEmulation; 
 		if (sizeEmulation) onMouseMove(x, y);
 		else {
-			display.width = peoteView.width;
-			display.height = peoteView.height;
 			rootLayoutContainer.update(peoteView.width, peoteView.height);
 		}
 	}

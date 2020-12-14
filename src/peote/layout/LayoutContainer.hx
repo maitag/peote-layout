@@ -504,9 +504,11 @@ class LayoutContainer
 				
 				hSumWeight += child.hSize.getSumWeight();
 				
-// setConstraintConnectToNeighboars
+// setConstraintConnectToParent				
 				if (i == 0) solver.addConstraint( (child._left == _x) | strength ); // first
+// setConstraintConnectToNeighboars
 				else solver.addConstraint( (child._left == childs[i-1]._right) | strength ); // not first
+// setConstraintConnectToParent
 				if (i == childs.length - 1) solver.addConstraint( (child._right == _x + _width) | strength ); // last
 				
 				// --------------------------------- vertical ---------------------------------------
