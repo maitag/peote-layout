@@ -52,7 +52,7 @@ class Main extends lime.app.Application
 		// init a layout
 		var displayLC = new LayoutContainer(ContainerType.BOX, display,
 		[ 
-			new Box(green,
+			new Box( green,
 			{
 				left: Size.min(100), // can be scale high but not lower as min-value
 				width:Size.limit(300, 400), // can be scale from min to max-value
@@ -61,16 +61,16 @@ class Main extends lime.app.Application
 				
 				// for "span" they are reaching its min and max at the same time while scaling
 				// in a row, but can be scaled higher as max
-				top:Size.span(50, 100),
+				top:   Size.span(50, 100),
 				height:Size.span(200, 400),
 				bottom:Size.span(50, 100),
 			},
 			// childs
 			[
 				// Box is shortcut for LayoutContainer(ContainerType.BOX, ...)
-				new Box(red, {left:0, width:300, height:100, bottom:Size.min(100)} ),
-				new Box(blue, {right:0, width:300, height:100, bottom:0} ),
-				new Box(yellow, {width:100, height:Size.limit(100, 300)} )
+				new Box( red,   {left:0, width:300, height:100, bottom:Size.min(100)} ),
+				new Box( blue,  {right:0, width:300, height:100, bottom:0} ),
+				new Box( yellow,{width:100, height:Size.limit(100, 300)} )
 			])
 		]);
 		

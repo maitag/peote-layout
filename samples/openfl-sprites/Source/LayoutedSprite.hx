@@ -18,7 +18,6 @@ class LayoutedSprite extends Sprite implements LayoutElement
 	public function new(color:Int) 
 	{
 		super();
-		
 		this.color = color;
 		Lib.current.stage.addChild(this); // self adding to stage
 	}
