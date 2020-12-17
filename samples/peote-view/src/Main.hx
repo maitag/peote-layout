@@ -52,7 +52,7 @@ class Main extends lime.app.Application
 		// init a layout
 		var displayLC = new LayoutContainer(ContainerType.BOX, display,
 		[ 
-			new VBox( green,
+			new Box( green,
 			{
 				left: Size.min(100), // can be scale high but not lower as min-value
 				width:Size.limit(300, 400), // can be scale from min to max-value
