@@ -6,7 +6,6 @@ import openfl.events.Event;
 import openfl.events.MouseEvent;
 
 import peote.layout.LayoutContainer;
-import peote.layout.ContainerType;
 import peote.layout.Size;
 
 class Main extends Sprite {
@@ -62,15 +61,15 @@ class Main extends Sprite {
 		]);
 		
 		layoutContainer.init();
-		layoutContainer.update(Lib.current.stage.stageWidth, Lib.current.stage.stageHeight);
+		layoutContainer.update(stage.stageWidth, stage.stageHeight);
 		
 		
 		// window resize is updating outer Box of rootLayoutContainer  
-		Lib.current.stage.addEventListener( Event.RESIZE, function(e) onWindowResize( Lib.current.stage.stageWidth, Lib.current.stage.stageHeight ) );
+		stage.addEventListener( Event.RESIZE, function(e) onWindowResize( stage.stageWidth, stage.stageHeight ) );
 		
 		// to simmulate resizing via moving mouse after pressing left mousebutton
-		Lib.current.stage.addEventListener( MouseEvent.MOUSE_UP,   onMouseUp );
-		Lib.current.stage.addEventListener( MouseEvent.MOUSE_MOVE, onMouseMove );
+		stage.addEventListener( MouseEvent.MOUSE_UP,   onMouseUp );
+		stage.addEventListener( MouseEvent.MOUSE_MOVE, onMouseMove );
 	}
 	
 	
@@ -94,7 +93,7 @@ class Main extends Sprite {
 		sizeEmulation = !sizeEmulation; 
 		if (sizeEmulation) onMouseMove(e);
 		else if (layoutContainer != null)
-			layoutContainer.update(Lib.current.stage.stageWidth, Lib.current.stage.stageHeight);
+			layoutContainer.update(stage.stageWidth, stage.stageHeight);
 	}
 	
 }

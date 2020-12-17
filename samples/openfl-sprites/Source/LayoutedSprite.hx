@@ -1,10 +1,8 @@
 package;
 
 import openfl.Lib;
-import openfl.display.DisplayObject;
 import openfl.display.DisplayObjectContainer;
 import openfl.display.Sprite;
-import openfl.display.Stage;
 import openfl.geom.Rectangle;
 
 import peote.layout.LayoutElement;
@@ -15,11 +13,12 @@ class LayoutedSprite extends Sprite implements LayoutElement
 {
 	var color:Int;
 	
-	public function new(color:Int) 
+	public function new(?parent:DisplayObjectContainer, color:Int) 
 	{
 		super();
 		this.color = color;
-		Lib.current.stage.addChild(this); // self adding to stage
+		if (parent == null) parent = Lib.current.stage;
+		parent.addChild(this); // self adding
 	}
 	
 	public function drawNewRoundRect (x:Float, y:Float, w:Float, h:Float)
@@ -42,25 +41,30 @@ class LayoutedSprite extends Sprite implements LayoutElement
 	}	
 	
 	
-	/* INTERFACE peote.layout.LayoutElement */
+	// ----------------------------------------------------------------------------
+	// ----------- Interface functions for peote.layout.LayoutElement -------------
+	// ----------------------------------------------------------------------------
 	
-	//var lastParent:DisplayObjectContainer = null;
+	// instead of changing visible it can be also add or remove from parent displayObjectContainer
+	// var lastParent:DisplayObjectContainer = null;
 	
 	public function showByLayout():Void {
 		visible = true;
-		//if (parent == null && lastParent != null) {
-			//lastParent.addChildAt(this);
-		//} 
+ 		// to add at Stage again
+		// if (parent == null && lastParent != null) {
+			// lastParent.addChild(this);
+		//}
 	}
 	
 	public function hideByLayout():Void{
 		visible = false;
-		//if (parent != null) {
-			//lastParent = parent;
-			//parent.removeChild(this);
-		//}		
+		// to remove from Stage
+		// if (parent != null) {
+			// lastParent = parent;
+			// parent.removeChild(this);
+		//}
 	}
-
+	
 	var layoutWasHidden = false;
 	
 	public function updateByLayout(layoutContainer:LayoutContainer) 
@@ -70,7 +74,7 @@ class LayoutedSprite extends Sprite implements LayoutElement
 			hideByLayout();
 			layoutWasHidden = true;
 		}
-		else 
+		else
 		{
 			x = layoutContainer.x;
 			y = layoutContainer.y;
@@ -91,7 +95,7 @@ class LayoutedSprite extends Sprite implements LayoutElement
 				);
 			}
 			else scrollRect = null;
-						
+			
 			if (layoutWasHidden) {
 				showByLayout();
 				layoutWasHidden = false;
