@@ -1,6 +1,7 @@
 package layouted;
 
 import peote.layout.LayoutContainer;
+import peote.view.Buffer;
 import peote.view.Element;
 import peote.view.Program;
 import peote.view.Color;
@@ -90,14 +91,14 @@ class LayoutedSprite implements LayoutElement implements Element
 	public function showByLayout() {
 		if (!isVisible) {
 			isVisible = true;
-			display.buffer.addElement(this);
+			(display.buffer:Buffer<LayoutedSprite>).addElement(this);
 		}
 	}
 	
 	public function hideByLayout() {
 		if (isVisible) {
 			isVisible = false;
-			display.buffer.removeElement(this);
+			(display.buffer:Buffer<LayoutedSprite>).removeElement(this);
 		}			
 	}
 	
@@ -126,7 +127,7 @@ class LayoutedSprite implements LayoutElement implements Element
 			}
 			
 			if (!isVisible) showByLayout()
-			else display.buffer.updateElement(this);
+			else (display.buffer:Buffer<LayoutedSprite>).updateElement(this);
 
 		}
 	}
