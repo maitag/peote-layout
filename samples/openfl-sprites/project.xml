@@ -2,7 +2,14 @@
 <project>
 	
 	<meta title="OpenFL Sprites arranged by peote-layout" package="org.openfl.peote.layout" version="1.0.0" company="sylvio sell - maitag" />
-	<app main="Main" path="Export" file="OpenFLSprites" />
+	
+	<!-- choose here what sample to build -->
+
+	<app main="NestedLayout" path="Export" file="NestedLayout" />
+	<!--
+	<app main="Main" path="Export" file="Starter" />
+	-->
+	
 	
 	<window background="0x000000" />
 	

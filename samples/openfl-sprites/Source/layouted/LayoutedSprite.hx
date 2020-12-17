@@ -1,4 +1,4 @@
-package;
+package layouted;
 
 import openfl.Lib;
 import openfl.display.DisplayObjectContainer;

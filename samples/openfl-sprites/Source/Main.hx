@@ -8,6 +8,8 @@ import openfl.events.MouseEvent;
 import peote.layout.LayoutContainer;
 import peote.layout.Size;
 
+import layouted.LayoutedSprite;
+
 class Main extends Sprite {
 	
 	var layoutContainer:LayoutContainer;
