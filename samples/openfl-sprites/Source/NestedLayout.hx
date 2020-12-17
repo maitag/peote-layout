@@ -1,6 +1,5 @@
 package;
 
-import openfl.Lib;
 import openfl.display.Sprite;
 import openfl.events.Event;
 import openfl.events.MouseEvent;
@@ -16,13 +15,13 @@ class NestedLayout extends Sprite {
 	
 	public function new () {
 		
-		super(); // supersprite ;)
+		super();
 		
 		
 		var sameLimit = Size.limit(80, 150);
 		
 		// init a complex layout
-		var layoutContainer = new Box( // no binding here !
+		layoutContainer = new Box( // no binding here !
 		[	// childs -----------------------------------------
 			new HBox( new LayoutedSprite(0x00ff00), // green
 			{	left:  	Size.min(10),
@@ -81,7 +80,7 @@ class NestedLayout extends Sprite {
 							}),
 						]),
 					]),
-					new Box( new LayoutedSprite(0x00ffff), 
+					new Box( new LayoutedSprite(0x00ffff), // cyan
 					{	left:   Size.span(10, 1.5 ),
 						width:  Size.span(100),
 						height: Size.span(50,  0.5),
