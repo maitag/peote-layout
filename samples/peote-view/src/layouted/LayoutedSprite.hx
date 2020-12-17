@@ -15,7 +15,7 @@ class LayoutedSprite implements LayoutElement implements Element
 	@color("bgcolor") public var color:Color = 0xffff00ff; // using different identifier "bgcolor" for setColorFormula()
 	
 	@custom @varying public var borderRadius:Float = 25.0; // using propertyname as identifier for setColorFormula()
-	@custom("borderSize") @varying public var bSize:Float = 10.0;// using different identifier "borderSize" for setColorFormula()
+	@custom("borderSize") @varying public var bSize:Float = 5.0;// using different identifier "borderSize" for setColorFormula()
 	
 	@posX public var x:Int=0;
 	@posY public var y:Int=0;	

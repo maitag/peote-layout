@@ -186,41 +186,39 @@ class LayoutContainer
 		solver.addConstraint( (root_width >= innerLimit.width) | strengthHigh );
 		solver.addConstraint( (root_height >= innerLimit.height) | strengthHigh );
 		
-		// --------------------------------- horizontal ---------------------------------------				
+		// --------------------------- root-container horizontal -----------------------------			
 		fixLimit(hSize, innerLimit.width);
 		fixSpacer(null, hSize);
 		
 		var hSizeLimitVar = hSize.setSizeLimit(null);
-		if (hSizeLimitVar != null) {
-			solver.addConstraint( (hSizeLimitVar >= 0) | strength );
-		}
+		if (hSizeLimitVar != null) solver.addConstraint( (hSizeLimitVar >= 0) | strength );
+		
 		var hSizeSpanVar = hSize.setSizeSpan(null);
 		if (hSizeSpanVar != null) {
 			solver.addConstraint( (hSizeSpanVar >= 0) | strengthHigh );
 			solver.addConstraint( (hSizeSpanVar == (root_width - hSize.getLimitMax()) / hSize.getSumWeight() ) | strengthLow );
 		}
-		solver.addConstraint( (_width == hSize.middle.size) | strength );
-		
 		solver.addConstraint( (_left == 0) | strength );
 		solver.addConstraint( (_right == root_width) | strength );
+		
+		solver.addConstraint( (_width == hSize.middle.size) | strength );
 				
-		// --------------------------------- vertical ---------------------------------------
+		// ---------------------------- root-container vertical ------------------------------			
 		fixLimit(vSize, innerLimit.height);
 		fixSpacer(null, vSize);
 				
 		var vSizeLimitVar = vSize.setSizeLimit(null);
-		if (vSizeLimitVar != null) {
-			solver.addConstraint( (vSizeLimitVar >= 0) | strength );
-		}
+		if (vSizeLimitVar != null) solver.addConstraint( (vSizeLimitVar >= 0) | strength );
+		
 		var vSizeSpanVar = vSize.setSizeSpan(null);
 		if (vSizeSpanVar != null) {
 			solver.addConstraint( (vSizeSpanVar >= 0) | strengthHigh );
 			solver.addConstraint( (vSizeSpanVar == (root_height - vSize.getLimitMax()) / vSize.getSumWeight() ) | strengthLow );
 		}
-		solver.addConstraint( (_height == vSize.middle.size) | strength );
-		
 		solver.addConstraint( (_top == 0) | strength );
 		solver.addConstraint( (_bottom == root_height) | strength );				
+		
+		solver.addConstraint( (_height == vSize.middle.size) | strength );
 	}
 	
 	public function update(width:Float, height:Float)
@@ -422,6 +420,7 @@ class LayoutContainer
 		return vLimitMax;
 	}
 	// -----------------------------------------------------------------------------------------------------
+	// TODO
 	inline function setConstraintLeft(c:Constraint) {
 		solver.addConstraint(c);
 	}
@@ -480,8 +479,7 @@ class LayoutContainer
 			var limitMax:Int = 0;
 			
 			if (containerType == ContainerType.HBOX) limitMax = fixHMaxSpan();
-			else if (containerType  == ContainerType.VBOX) limitMax = fixVMaxSpan();
-			
+			else if (containerType  == ContainerType.VBOX) limitMax = fixVMaxSpan();			
 			
 			for (i in 0...childs.length)
 			{	
@@ -494,7 +492,7 @@ class LayoutContainer
 				// ------------------------------------------------------
 				fixLimit(child.hSize, innerLimit.width);
 
-				if (containerType  == ContainerType.HBOX) // -------- HBOX --------
+				if (containerType == ContainerType.HBOX) // -------- HBOX --------
 				{
 					childsLimit.width += child.hSize.getMin();
 					
@@ -506,7 +504,7 @@ class LayoutContainer
 					else child.setConstraintLeft( (child._left == childs[i-1]._right) | strength );
 					if (i == childs.length - 1) child.setConstraintRight( (child._right == _x + _width) | strength );
 				}
-				else                                     // -------- BOX ---------
+				else                                      // -------- BOX ---------
 				{
 					fixSpacer(hSize, child.hSize);
 					
@@ -516,15 +514,17 @@ class LayoutContainer
 					var hSizeSpanVar = child.hSize.setSizeSpan(null);
 					
 					if (hSizeLimitVar != null) child.setConstraintHLimit( (hSizeLimitVar >= 0) | strength );
-					if (hSizeSpanVar != null) child.setConstraintHSpan( (hSizeSpanVar >= 0) | strengthHigh , (hSizeSpanVar == (_width - child.hSize.getLimitMax()) / child.hSize.getSumWeight() ) | strengthLow );
+					if (hSizeSpanVar != null) child.setConstraintHSpan(
+						(hSizeSpanVar >= 0) | strengthHigh, // check nested boxes+rows here
+						(hSizeSpanVar == (_width - child.hSize.getLimitMax()) / child.hSize.getSumWeight() ) | strengthLow
+					);
 								
 					child.setConstraintLeft( (child._left == _x) | strength );
 					child.setConstraintRight( (child._right == _x + _width) | strength );
 				}
 				
 				child.setConstraintWidth( (child._width == child.hSize.middle.size) | strength );
-					
-								
+												
 				// ------------------------------------------------------
 				// ------------------- vertical -------------------------
 				// ------------------------------------------------------
@@ -542,7 +542,7 @@ class LayoutContainer
 					else child.setConstraintTop( (child._top == childs[i-1]._bottom) | strength );
 					if (i == childs.length - 1) child.setConstraintBottom( (child._bottom == _y + _height) | strength );
 				}
-				else                                    // -------- BOX ---------
+				else                                     // -------- BOX ---------
 				{
 					fixSpacer(vSize, child.vSize);
 					
@@ -551,17 +551,18 @@ class LayoutContainer
 					var vSizeLimitVar = child.vSize.setSizeLimit(null);
 					if (vSizeLimitVar != null) child.setConstraintVLimit( (vSizeLimitVar >= 0) | strength );
 					
-					var vSizeSpanVar = child.vSize.setSizeSpan(null);trace("B",child.vSize.getLimitMax(), child.vSize.getSumWeight());
-					if (vSizeSpanVar != null) child.setConstraintVSpan( (vSizeSpanVar >= 0) | strengthHigh, (vSizeSpanVar == (_height - child.vSize.getLimitMax()) / child.vSize.getSumWeight() ) | strengthLow );
+					var vSizeSpanVar = child.vSize.setSizeSpan(null);
+					if (vSizeSpanVar != null) child.setConstraintVSpan(
+						(vSizeSpanVar >= 0) | strengthHigh, // check nested boxes+rows here
+						(vSizeSpanVar == (_height - child.vSize.getLimitMax()) / child.vSize.getSumWeight() ) | strengthLow
+					);
 					
 					child.setConstraintTop( (child._top == _y) | strength );
 					child.setConstraintBottom( (child._bottom == _y + _height) | strength );
 				}
 				
 				child.setConstraintHeight( (child._height == child.vSize.middle.size) | strength );
-
 			}			
-			
 			
 			// ----------------------------------------------------------------
 			// ------- limitVar and sumWeight of childs for ROW or COL --------
@@ -577,7 +578,7 @@ class LayoutContainer
 					if (containerType  == ContainerType.HBOX) {
 						setConstraintRowColSpan( (sizeSpanVar >= 0) | strength, (sizeSpanVar == (_width - limitMax) / sumWeight ) | strengthLow );
 					}
-					else { trace("V",limitMax, sumWeight);
+					else {
 						setConstraintRowColSpan( (sizeSpanVar >= 0) | strength, (sizeSpanVar == (_height - limitMax) / sumWeight ) | strengthLow );
 					}
 				}
@@ -586,8 +587,6 @@ class LayoutContainer
 		}
 		return childsLimit;
 	}
-	
-	
 	
 }
 
