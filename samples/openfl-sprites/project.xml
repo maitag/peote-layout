@@ -5,9 +5,9 @@
 	
 	<!-- choose here what sample to build -->
 
-	<app main="NestedLayout" path="Export" file="NestedLayout" />
-	<!--
 	<app main="Main" path="Export" file="Starter" />
+	<!--
+	<app main="NestedLayout" path="Export" file="NestedLayout" />
 	-->
 	
 	

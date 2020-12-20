@@ -8,7 +8,7 @@ import peote.view.Display;
 import peote.view.Color;
 
 import peote.layout.LayoutContainer;
-import peote.layout.ContainerType;
+import peote.layout.Container;
 import peote.layout.Size;
 
 import layouted.LayoutedSprite;
@@ -33,7 +33,7 @@ class Main extends lime.app.Application
 	// ------------------------------------------------------------
 	// --------------- SAMPLE STARTS HERE -------------------------
 	// ------------------------------------------------------------	
-	var rootLayoutContainer:LayoutContainer;
+	var layoutContainer:LayoutContainer;
 	
 	public function initPeoteView(window:lime.ui.Window)
 	{
@@ -50,7 +50,7 @@ class Main extends lime.app.Application
 				
 		
 		// init a layout
-		var displayLC = new LayoutContainer(ContainerType.BOX, display,
+		layoutContainer = new LayoutContainer(Container.BOX, display,
 		[ 
 			new Box( green,
 			{
@@ -74,11 +74,10 @@ class Main extends lime.app.Application
 			])
 		]);
 		
-		displayLC.init();
+		layoutContainer.init();
 		
-		displayLC.update(peoteView.width, peoteView.height);
+		layoutContainer.update(peoteView.width, peoteView.height);
 		
-		rootLayoutContainer = displayLC;
 		
 		
 		// TODO: show/hide all layoutElements
@@ -114,15 +113,15 @@ class Main extends lime.app.Application
 	public override function onWindowResize (width:Int, height:Int):Void
 	{
 		peoteView.resize(width, height);
-		if (rootLayoutContainer != null) rootLayoutContainer.update(width, height);
+		if (layoutContainer != null) layoutContainer.update(width, height);
 	}
 
 	// ----------------- MOUSE EVENTS ------------------------------
 	var sizeEmulation = false;
 	
 	public override function onMouseMove (x:Float, y:Float) {
-		if (sizeEmulation && rootLayoutContainer != null) {
-			rootLayoutContainer.update(x, y);
+		if (sizeEmulation && layoutContainer != null) {
+			layoutContainer.update(x, y);
 		}
 	}
 	//public override function onMouseDown (x:Float, y:Float, button:MouseButton) {};
@@ -130,7 +129,7 @@ class Main extends lime.app.Application
 		sizeEmulation = !sizeEmulation; 
 		if (sizeEmulation) onMouseMove(x, y);
 		else {
-			rootLayoutContainer.update(peoteView.width, peoteView.height);
+			layoutContainer.update(peoteView.width, peoteView.height);
 		}
 	}
 	// public override function onMouseWheel (deltaX:Float, deltaY:Float, deltaMode:lime.ui.MouseWheelMode):Void {}

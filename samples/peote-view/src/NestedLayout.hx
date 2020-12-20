@@ -2,13 +2,15 @@ package;
 
 import lime.ui.MouseButton;
 import lime.app.Application;
+import peote.layout.Align;
+import peote.layout.Scroll;
 
 import peote.view.PeoteView;
 import peote.view.Display;
 import peote.view.Color;
 
 import peote.layout.LayoutContainer;
-import peote.layout.ContainerType;
+import peote.layout.Container;
 import peote.layout.Size;
 
 import layouted.LayoutedSprite;
@@ -33,7 +35,7 @@ class NestedLayout extends lime.app.Application
 	// ------------------------------------------------------------
 	// --------------- SAMPLE STARTS HERE -------------------------
 	// ------------------------------------------------------------	
-	var rootLayoutContainer:LayoutContainer;
+	var layoutContainer:LayoutContainer;
 	
 	public function initPeoteView(window:lime.ui.Window)
 	{
@@ -46,7 +48,7 @@ class NestedLayout extends lime.app.Application
 		var sameLimit = Size.limit(80, 150);
 		
 		// init a complex layout
-		var displayLC = new Box( display,
+		layoutContainer = new Box( display,
 		[	// childs -----------------------------------------
 			new HBox( new LayoutedSprite(display, Color.GREEN),
 			{	left:  	Size.min(10),
@@ -56,7 +58,7 @@ class NestedLayout extends lime.app.Application
 				bottom:	10,
 			},
 			[	// childs -----------------------------------------
-				new VBox( // no binding here !
+				new VBox( new LayoutedSprite(display, Color.BLUE), Scroll.VERTICAL, // vertically scrolling if not fit
 				{	left:  Size.span(0, 0.1),
 					width: Size.span(10),
 					right: Size.span(10, 0.1),
@@ -65,13 +67,19 @@ class NestedLayout extends lime.app.Application
 					new Box( new LayoutedSprite(display, Color.RED), 
 					{	left:   Size.span(10),
 						width:  Size.limit(100, 200),
-						height: sameLimit,
+						height: Size.limit(200, 200),
 						bottom: 10,
 					}),
 					new Box( new LayoutedSprite(display, Color.RED), 
 					{	left:   Size.span(10),
 						width:  Size.span(100, 200),
-						height: Size.limit(160, 300),
+						height: Size.limit(200, 200),
+						bottom: 10,
+					}),
+					new Box( new LayoutedSprite(display, Color.RED), 
+					{	left:   Size.span(10),
+						width:  Size.span(100, 200),
+						height: Size.limit(200, 200),
 					}),
 				]),
 				new VBox( new LayoutedSprite(display, Color.BLUE),
@@ -115,11 +123,9 @@ class NestedLayout extends lime.app.Application
 			])
 		]);
 		
-		displayLC.init();
+		layoutContainer.init();
 		
-		displayLC.update(peoteView.width, peoteView.height);
-		
-		rootLayoutContainer = displayLC;
+		layoutContainer.update(peoteView.width, peoteView.height);
 		
 	}
 	
@@ -143,15 +149,15 @@ class NestedLayout extends lime.app.Application
 	public override function onWindowResize (width:Int, height:Int):Void
 	{
 		peoteView.resize(width, height);
-		if (rootLayoutContainer != null) rootLayoutContainer.update(width, height);
+		if (layoutContainer != null) layoutContainer.update(width, height);
 	}
 
 	// ----------------- MOUSE EVENTS ------------------------------
 	var sizeEmulation = false;
 	
 	public override function onMouseMove (x:Float, y:Float) {
-		if (sizeEmulation && rootLayoutContainer != null) {
-			rootLayoutContainer.update(x, y);
+		if (sizeEmulation && layoutContainer != null) {
+			layoutContainer.update(x, y);
 		}
 	}
 	//public override function onMouseDown (x:Float, y:Float, button:MouseButton) {};
@@ -159,10 +165,16 @@ class NestedLayout extends lime.app.Application
 		sizeEmulation = !sizeEmulation; 
 		if (sizeEmulation) onMouseMove(x, y);
 		else {
-			rootLayoutContainer.update(peoteView.width, peoteView.height);
+			layoutContainer.update(peoteView.width, peoteView.height);
 		}
 	}
-	// public override function onMouseWheel (deltaX:Float, deltaY:Float, deltaMode:lime.ui.MouseWheelMode):Void {}
+	public override function onMouseWheel (deltaX:Float, deltaY:Float, deltaMode:lime.ui.MouseWheelMode):Void {
+		if (deltaY != 0) {
+			//layoutContainer.firstChild.xScroll += 10 * deltaY;
+			//trace(layoutContainer.firstChild.xScrollMax); // only get: same as innerHeight - height
+			//trace(layoutContainer.firstChild.innerHeight);
+		}
+	}
 	// public override function onMouseMoveRelative (x:Float, y:Float):Void {}
 
 	// ----------------- TOUCH EVENTS ------------------------------

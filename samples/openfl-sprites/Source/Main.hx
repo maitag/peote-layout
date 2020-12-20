@@ -1,6 +1,5 @@
 package;
 
-import openfl.Lib;
 import openfl.display.Sprite;
 import openfl.events.Event;
 import openfl.events.MouseEvent;
@@ -16,7 +15,7 @@ class Main extends Sprite {
 	
 	public function new () {
 		
-		super ();
+		super();
 		
 		// add some graphic elements
 		var gray   = new LayoutedSprite(0x555555);
