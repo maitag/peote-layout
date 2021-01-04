@@ -18,10 +18,10 @@ class Limit
 	
 	public var size(get, never):Expression;
 	inline function get_size():Expression {
-		if (sizeLimit == null && sizeSpan == null) return new Expression([], _min); // CHECK!
-		else if (sizeLimit== null) return _min + (new Term(sizeSpan) * _weight);
-		else if (sizeSpan == null) return _min + (new Term(sizeLimit) * (_max - _min));
-		else return _min + (new Term(sizeLimit) * (_max - _min)) + (new Term(sizeSpan) * _weight);
+		if (sizeLimit != null && sizeSpan != null) return _min + (new Term(sizeLimit) * (_max - _min)) + (new Term(sizeSpan) * _weight);
+		else if (sizeLimit != null) return _min + (new Term(sizeLimit) * (_max - _min));
+		else if (sizeSpan  != null) return _min + (new Term(sizeSpan) * _weight);
+		else return new Expression([], _min); // CHECK if there is better jasper-way to define!
 	}
 	
 	public function new(min:Null<Int> = null, max:Null<Int> = null, weight:Null<Float> = null, span = true) {

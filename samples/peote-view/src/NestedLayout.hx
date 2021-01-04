@@ -6,7 +6,6 @@ import peote.layout.Align;
 import peote.layout.Scroll;
 
 import peote.view.PeoteView;
-import peote.view.Display;
 import peote.view.Color;
 
 import peote.layout.LayoutContainer;
