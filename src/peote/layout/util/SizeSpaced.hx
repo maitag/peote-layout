@@ -58,7 +58,7 @@ class SizeSpaced
 		return limitMax;
 	}
 	
-	public function getSumWeight():Float {
+	public function getSpanSumWeight():Float {
 		var sumWeight:Float = (middle.sizeSpan != null) ? middle._weight : 0.0;
 		if (first != null) if (first.sizeSpan != null) sumWeight += first._weight;
 		if (last  != null) if (last.sizeSpan  != null) sumWeight += last._weight;

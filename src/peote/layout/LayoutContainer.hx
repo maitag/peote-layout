@@ -216,7 +216,7 @@ class LayoutContainer
 		var hSizeSpanVar = hSize.setSizeSpan(null);
 		if (hSizeSpanVar != null) {
 			solver.addConstraint( (hSizeSpanVar >= 0) | strengthHigh );
-			solver.addConstraint( (hSizeSpanVar == (root_width - hSize.getLimitMax()) / hSize.getSumWeight() ) | strengthLow );
+			solver.addConstraint( (hSizeSpanVar == (root_width - hSize.getLimitMax()) / hSize.getSpanSumWeight() ) | strengthLow );
 		}
 		solver.addConstraint( (_left == 0) | strength );
 		solver.addConstraint( (_right == root_width) | strength );
@@ -233,7 +233,7 @@ class LayoutContainer
 		var vSizeSpanVar = vSize.setSizeSpan(null);
 		if (vSizeSpanVar != null) {
 			solver.addConstraint( (vSizeSpanVar >= 0) | strengthHigh );
-			solver.addConstraint( (vSizeSpanVar == (root_height - vSize.getLimitMax()) / vSize.getSumWeight() ) | strengthLow );
+			solver.addConstraint( (vSizeSpanVar == (root_height - vSize.getLimitMax()) / vSize.getSpanSumWeight() ) | strengthLow );
 		}
 		solver.addConstraint( (_top == 0) | strength );
 		solver.addConstraint( (_bottom == root_height) | strength );				
@@ -392,66 +392,34 @@ class LayoutContainer
 		}		
 	}
 
+	static inline var AUTOSPACE_NONE:Int = 0;
 	static inline var AUTOSPACE_FIRST:Int = 1;
 	static inline var AUTOSPACE_LAST:Int = 2;
-	static inline function getAutospace(size:SizeSpaced, childSize:SizeSpaced):Int
+	static inline var AUTOSPACE_BOTH:Int = 3;
+	static inline function getAutospaceBox(size:SizeSpaced, childSize:SizeSpaced):Int
 	{
+		if (childSize.hasSpan()) return AUTOSPACE_NONE;
 		if (size == null || (size.middle._span || childSize.getLimitMax() < ( (size.middle._max != null) ? size.middle._max : size.middle._min) ) )
 		{
 			if (childSize.first == null && childSize.last != null) return AUTOSPACE_FIRST;
 			else if (childSize.last == null && childSize.first != null) return AUTOSPACE_LAST;
-			else return AUTOSPACE_FIRST | AUTOSPACE_LAST;
+			else return AUTOSPACE_BOTH;
 		}
-		else return 0;
+		else return AUTOSPACE_NONE;
 	}
 	
-	// ---------------------------------------------------	
-	inline function fixHMaxSpan():Int {
-		var hLimitMax:Int = 0;
-		var noChildHasSpan = true; // TODO: better storing the number of childs that have a span!
-		for (child in childs) {
-			if (noChildHasSpan && child.hSize.hasSpan()) noChildHasSpan = false;
-			hLimitMax += child.hSize.getLimitMax();
+	static inline function getAutospace(size:SizeSpaced, limitMax:Int, firstSize:SizeSpaced, lastSize:SizeSpaced):Int
+	{
+		//if (childSize.hasSpan()) return AUTOSPACE_NONE; // TODO: numSpan
+		if (size == null || (size.middle._span || limitMax < ( (size.middle._max != null) ? size.middle._max : size.middle._min) ) )
+		{
+			if (firstSize.first == null && lastSize.last != null) return AUTOSPACE_FIRST;
+			else if (lastSize.last == null && firstSize.first != null) return AUTOSPACE_LAST;
+			else return AUTOSPACE_BOTH;
 		}
-		if (noChildHasSpan && childs.length > 0) {
-			if ( hSize.middle._span || hLimitMax < ( (hSize.middle._max != null) ? hSize.middle._max : hSize.middle._min) )
-			{
-				// TODO: store into a flag to reset later if childs was changed here 
-				if (childs[0].hSize.first != null && childs[childs.length-1].hSize.last != null) {
-					childs[0].hSize.first._span = true;
-					childs[childs.length-1].hSize.last._span = true;
-				}
-				else {
-					if (childs[0].hSize.first == null) childs[0].hSize.first = Size.min();
-					if (childs[childs.length-1].hSize.last  == null) childs[childs.length-1].hSize.last = Size.min();
-				}					
-			}					
-		}
-		return hLimitMax;
+		else return AUTOSPACE_NONE;
 	}
 	
-	inline function fixVMaxSpan():Int {
-		var vLimitMax:Int = 0;
-		var noChildHasSpan = true;
-		for (child in childs) {
-			if (noChildHasSpan && child.vSize.hasSpan()) noChildHasSpan = false;
-			vLimitMax += child.vSize.getLimitMax();
-		}		
-		if (noChildHasSpan && childs.length > 0) {
-			if ( vSize.middle._span || vLimitMax < ( (vSize.middle._max != null) ? vSize.middle._max : vSize.middle._min) )
-			{
-				if (childs[0].vSize.first != null && childs[childs.length-1].vSize.last != null) {
-					childs[0].vSize.first._span = true;
-					childs[childs.length-1].vSize.last._span = true;
-				}
-				else {
-					if (childs[0].vSize.first == null) childs[0].vSize.first = Size.min();
-					if (childs[childs.length-1].vSize.last == null) childs[childs.length-1].vSize.last = Size.min();
-				}
-			}
-		}
-		return vLimitMax;
-	}
 	// -----------------------------------------------------------------------------------------------------
 	// TODO
 	inline function setConstraintLeft(c:Constraint) {
@@ -555,18 +523,13 @@ class LayoutContainer
 			var sizeLimitVar:Null<Variable> = null;
 			var sizeSpanVar:Null<Variable> = null;			
 			var sumWeight:Float = 0.0;			
-			var limitMax:Int = 0;
 			
-			
-			// TODO: set all Limit Values into child-properties first !
-			if (container == Container.HBOX) limitMax = fixHMaxSpan();
-			else if (container  == Container.VBOX) limitMax = fixVMaxSpan();			
+			var autospace:Int = 0;
 			
 			for (i in 0...childs.length)
 			{	
 				var child = childs[i];
 				
-				// TODO: set all Limit Values into child-properties
 				var innerLimit = child.addTreeConstraints(solver); // recursive childs
 				
 				// ------------------------------------------------------
@@ -580,40 +543,31 @@ class LayoutContainer
 					
 					sizeLimitVar = child.hSize.setSizeLimit(sizeLimitVar);
 					sizeSpanVar = child.hSize.setSizeSpan(sizeSpanVar);
-					sumWeight += child.hSize.getSumWeight();
+					sumWeight += child.hSize.getSpanSumWeight();
 										
-					// TODO: change connections here in depend of yscroll, innerAlign and innerScroll
-					if (i == 0) child.setConstraintLeft( (child._left == _x) | strength );
-					else child.setConstraintLeft( (child._left == childs[i-1]._right) | strength );
-					if (i == childs.length - 1) child.setConstraintRight( (child._right == _x + _width) | strength );
+					if (i>0) child.setConstraintLeft( (child._left == childs[i-1]._right) | strength );
 				}
 				else                             // -------- BOX ---------
 				{
-					fixSpacer(hSize, child.hSize); // TODO: erst später und return 0, 1 (nur links), 2 (nur rechts) oder 3 (beide)
-					
 					if (child.hSize.getMin() > childsLimit.width) childsLimit.width = child.hSize.getMin();
 					
 					var hSizeLimitVar = child.hSize.setSizeLimit(null); 
-					var hSizeSpanVar = child.hSize.setSizeSpan(null);
-					
 					if (hSizeLimitVar != null) child.setConstraintHLimit( (hSizeLimitVar >= 0) | strength );
 					
-					// TODO: hier erst den fixSpacer-check wenn (hSizeSpanVar == null)
-					// var autospace:Int = getAutospace(child.hSize);
-					if (hSizeSpanVar != null) child.setConstraintHSpan(
-						(hSizeSpanVar >= 0) | strengthHigh, // check nested boxes+rows here
-						(hSizeSpanVar == (_width - child.hSize.getLimitMax()) / child.hSize.getSumWeight() ) | strengthLow
-					);
-								
-					// TODO: change connections here in depend of yscroll, innerAlign and innerScroll
+					autospace = getAutospaceBox(hSize, child.hSize);
 					
-					// TODO noch den hSizeSpanVar vorne oder hinten (oder beide Seiten) ranhängen
-					// if (autospace && AUTOSPACE_FIRST == 0) child.setConstraintLeft( (child._left == _x) | strength );
-					// else child.setConstraintLeft( (child._left + hSizeSpanVar == _x) | strength );
-					child.setConstraintLeft( (child._left == _x) | strength );
-					// if (autospace && AUTOSPACE_LAST == 0) child.setConstraintRight( (child._right == _x + _width) | strength );
-					// else child.setConstraintRight( (child._right + hSizeSpanVar == _x + _width) | strength );
-					child.setConstraintRight( (child._right == _x + _width) | strength );
+					var hSizeSpanVar = (autospace == AUTOSPACE_NONE) ? child.hSize.setSizeSpan(null) : new Variable();
+					if (hSizeSpanVar != null) {
+						var _sumWeight = (autospace == AUTOSPACE_NONE) ? child.hSize.getSpanSumWeight() : ((autospace == AUTOSPACE_BOTH) ? 2 : 1);
+						child.setConstraintHSpan( (hSizeSpanVar >= 0) | strengthHigh, // check nested boxes+rows here
+							(hSizeSpanVar == (_width - child.hSize.getLimitMax()) / _sumWeight) | strengthLow );
+					}
+								
+					// TODO: change connections here in depend of yscroll, innerAlign and innerScroll					
+					if (autospace & AUTOSPACE_FIRST == 0) child.setConstraintLeft( (child._left == _x) | strength );
+					else child.setConstraintLeft( (child._left - hSizeSpanVar == _x) | strength );
+					if (autospace & AUTOSPACE_LAST == 0) child.setConstraintRight( (child._right == _x + _width) | strength );
+					else child.setConstraintRight( (child._right + hSizeSpanVar == _x + _width) | strength );
 				}
 				
 				child.setConstraintWidth( (child._width == child.hSize.middle.size) | strength );
@@ -629,31 +583,29 @@ class LayoutContainer
 					
 					sizeLimitVar = child.vSize.setSizeLimit(sizeLimitVar);
 					sizeSpanVar = child.vSize.setSizeSpan(sizeSpanVar);
-					sumWeight += child.vSize.getSumWeight();
+					sumWeight += child.vSize.getSpanSumWeight();
 					
-					// TODO: change connections here in depend of yscroll, innerAlign and innerScroll
-					if (i == 0) child.setConstraintTop( (child._top == _y) | strength );
-					else child.setConstraintTop( (child._top == childs[i-1]._bottom) | strength );
-					if (i == childs.length - 1) child.setConstraintBottom( (child._bottom == _y + _height) | strength );
+					if (i > 0) child.setConstraintTop( (child._top == childs[i-1]._bottom) | strength );
 				}
 				else                             // -------- BOX ---------
 				{
-					fixSpacer(vSize, child.vSize);
-					
 					if (child.vSize.getMin() > childsLimit.height) childsLimit.height = child.vSize.getMin();
 					
 					var vSizeLimitVar = child.vSize.setSizeLimit(null);
 					if (vSizeLimitVar != null) child.setConstraintVLimit( (vSizeLimitVar >= 0) | strength );
 					
-					var vSizeSpanVar = child.vSize.setSizeSpan(null);
-					if (vSizeSpanVar != null) child.setConstraintVSpan(
-						(vSizeSpanVar >= 0) | strengthHigh, // check nested boxes+rows here
-						(vSizeSpanVar == (_height - child.vSize.getLimitMax()) / child.vSize.getSumWeight() ) | strengthLow
-					);
+					var vSizeSpanVar = (autospace == AUTOSPACE_NONE) ? child.vSize.setSizeSpan(null) : new Variable();
+					if (vSizeSpanVar != null) {
+						var _sumWeight = (autospace == AUTOSPACE_NONE) ? child.vSize.getSpanSumWeight() : ((autospace == AUTOSPACE_BOTH) ? 2 : 1);
+						child.setConstraintVSpan( (vSizeSpanVar >= 0) | strengthHigh, // check nested boxes+rows here
+							(vSizeSpanVar == (_height - child.vSize.getLimitMax()) / _sumWeight) | strengthLow );
+					}
 					
 					// TODO: change connections here in depend of yscroll, innerAlign and innerScroll
-					child.setConstraintTop( (child._top == _y) | strength );
-					child.setConstraintBottom( (child._bottom == _y + _height) | strength );
+					if (autospace & AUTOSPACE_FIRST == 0) child.setConstraintTop( (child._top == _y) | strength );
+					else child.setConstraintTop( (child._top - vSizeSpanVar == _y) | strength );
+					if (autospace & AUTOSPACE_LAST == 0) child.setConstraintBottom( (child._bottom == _y + _height) | strength );
+					else child.setConstraintBottom( (child._bottom + vSizeSpanVar == _y + _height) | strength );
 				}
 				
 				child.setConstraintHeight( (child._height == child.vSize.middle.size) | strength );
@@ -662,20 +614,71 @@ class LayoutContainer
 			// ----------------------------------------------------------------
 			// ------- limitVar and sumWeight of childs for ROW or COL --------
 			// ----------------------------------------------------------------
-			if (container != Container.BOX)
+			if (container != Container.BOX && childs.length > 0)
 			{
 				if (sizeLimitVar != null) {
 					setConstraintRowColLimit( (sizeLimitVar >= 0) | strength );
 				}
 				
-				if (sizeSpanVar != null) 
+				// ------- 
+				if (container == Container.HBOX)
 				{
-					if (container  == Container.HBOX) {
-						setConstraintRowColSpan( (sizeSpanVar >= 0) | strength, (sizeSpanVar == (_width - limitMax) / sumWeight ) | strengthLow );
+					// TODO: set all Limit Values into child-properties
+					var hLimitMax:Int = 0;
+					var noChildHasSpan = true; // TODO: better storing the number of childs that have a span!
+					for (child in childs) {
+						if (noChildHasSpan && child.hSize.hasSpan()) noChildHasSpan = false;
+						hLimitMax += child.hSize.getLimitMax();
 					}
-					else {
-						setConstraintRowColSpan( (sizeSpanVar >= 0) | strength, (sizeSpanVar == (_height - limitMax) / sumWeight ) | strengthLow );
+					
+					if (noChildHasSpan) {
+						autospace = getAutospace(hSize, hLimitMax, childs[0].hSize, childs[childs.length - 1].hSize);
+						if (autospace != AUTOSPACE_NONE) {
+							sumWeight += (autospace == AUTOSPACE_BOTH) ? 2 : 1;
+							if (sizeSpanVar == null) sizeSpanVar = new Variable();
+						}
 					}
+					else autospace = AUTOSPACE_NONE;
+					
+					if (sizeSpanVar != null) {
+						setConstraintRowColSpan( (sizeSpanVar >= 0) | strength, (sizeSpanVar == (_width - hLimitMax) / sumWeight ) | strengthLow );
+					}
+			
+					// TODO: change connections here in depend of yscroll, innerAlign and innerScroll
+					if (autospace & AUTOSPACE_FIRST == 0) childs[0].setConstraintLeft( (childs[0]._left == _x) | strength );
+					else childs[0].setConstraintLeft( (childs[0]._left - sizeSpanVar == _x) | strength );
+					if (autospace & AUTOSPACE_LAST == 0) childs[childs.length-1].setConstraintRight( (childs[childs.length-1]._right == _x + _width) | strength );
+					else childs[childs.length-1].setConstraintRight( (childs[childs.length-1]._right + sizeSpanVar == _x + _width) | strength );
+				
+				}
+				else // --------- Container.VBOX --------
+				{					
+					// TODO: set all Limit Values into child-properties
+					var vLimitMax:Int = 0;
+					var noChildHasSpan = true;
+					for (child in childs) {
+						if (noChildHasSpan && child.vSize.hasSpan()) noChildHasSpan = false;
+						vLimitMax += child.vSize.getLimitMax();
+					}
+					
+					if (noChildHasSpan) {
+						autospace = getAutospace(vSize, vLimitMax, childs[0].vSize, childs[childs.length - 1].vSize);
+						if (autospace != AUTOSPACE_NONE) {
+							sumWeight += (autospace == AUTOSPACE_BOTH) ? 2 : 1;
+							if (sizeSpanVar == null) sizeSpanVar = new Variable();
+						}
+					}
+					else autospace = AUTOSPACE_NONE;
+					
+					if (sizeSpanVar != null) {
+						setConstraintRowColSpan( (sizeSpanVar >= 0) | strength, (sizeSpanVar == (_height - vLimitMax) / sumWeight ) | strengthLow );
+					}
+			
+					// TODO: change connections here in depend of yscroll, innerAlign and innerScroll
+					if (autospace & AUTOSPACE_FIRST == 0) childs[0].setConstraintTop( (childs[0]._top == _y) | strength );
+					else childs[0].setConstraintTop( (childs[0]._top - sizeSpanVar == _y) | strength );
+					if (autospace & AUTOSPACE_LAST == 0) childs[childs.length-1].setConstraintBottom( (childs[childs.length-1]._bottom == _y + _height) | strength );
+					else childs[childs.length-1].setConstraintBottom( (childs[childs.length-1]._bottom + sizeSpanVar == _y + _height) | strength );
 				}
 			}
 
