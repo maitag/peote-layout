@@ -399,7 +399,7 @@ class LayoutContainer
 	static inline function getAutospaceBox(size:SizeSpaced, childSize:SizeSpaced):Int
 	{
 		if (childSize.hasSpan()) return AUTOSPACE_NONE;
-		if (size == null || (size.middle._span || childSize.getLimitMax() < ( (size.middle._max != null) ? size.middle._max : size.middle._min) ) )
+		if (size.middle._span || childSize.getLimitMax() < ( (size.middle._max != null) ? size.middle._max : size.middle._min))
 		{
 			if (childSize.first == null && childSize.last != null) return AUTOSPACE_FIRST;
 			else if (childSize.last == null && childSize.first != null) return AUTOSPACE_LAST;
@@ -411,7 +411,7 @@ class LayoutContainer
 	static inline function getAutospace(size:SizeSpaced, limitMax:Int, firstSize:SizeSpaced, lastSize:SizeSpaced):Int
 	{
 		//if (childSize.hasSpan()) return AUTOSPACE_NONE; // TODO: numSpan
-		if (size == null || (size.middle._span || limitMax < ( (size.middle._max != null) ? size.middle._max : size.middle._min) ) )
+		if (size.middle._span || limitMax < ( (size.middle._max != null) ? size.middle._max : size.middle._min))
 		{
 			if (firstSize.first == null && lastSize.last != null) return AUTOSPACE_FIRST;
 			else if (lastSize.last == null && firstSize.first != null) return AUTOSPACE_LAST;
@@ -522,7 +522,10 @@ class LayoutContainer
 		{
 			var sizeLimitVar:Null<Variable> = null;
 			var sizeSpanVar:Null<Variable> = null;			
-			var sumWeight:Float = 0.0;			
+			
+			var childsNumSpan:Int = 0;
+			var limitMax:Int = 0;
+			var sumWeight:Float = 0.0;		
 			
 			var autospace:Int = 0;
 			
@@ -541,6 +544,9 @@ class LayoutContainer
 				{
 					childsLimit.width += child.hSize.getMin();
 					
+					if (child.hSize.hasSpan()) childsNumSpan++;
+					limitMax += child.hSize.getLimitMax();
+						
 					sizeLimitVar = child.hSize.setSizeLimit(sizeLimitVar);
 					sizeSpanVar = child.hSize.setSizeSpan(sizeSpanVar);
 					sumWeight += child.hSize.getSpanSumWeight();
@@ -581,6 +587,9 @@ class LayoutContainer
 				{
 					childsLimit.height += child.vSize.getMin();
 					
+					if (child.vSize.hasSpan()) childsNumSpan++;
+					limitMax += child.vSize.getLimitMax();
+										
 					sizeLimitVar = child.vSize.setSizeLimit(sizeLimitVar);
 					sizeSpanVar = child.vSize.setSizeSpan(sizeSpanVar);
 					sumWeight += child.vSize.getSpanSumWeight();
@@ -620,19 +629,10 @@ class LayoutContainer
 					setConstraintRowColLimit( (sizeLimitVar >= 0) | strength );
 				}
 				
-				// ------- 
 				if (container == Container.HBOX)
 				{
-					// TODO: set all Limit Values into child-properties
-					var hLimitMax:Int = 0;
-					var noChildHasSpan = true; // TODO: better storing the number of childs that have a span!
-					for (child in childs) {
-						if (noChildHasSpan && child.hSize.hasSpan()) noChildHasSpan = false;
-						hLimitMax += child.hSize.getLimitMax();
-					}
-					
-					if (noChildHasSpan) {
-						autospace = getAutospace(hSize, hLimitMax, childs[0].hSize, childs[childs.length - 1].hSize);
+					if (childsNumSpan == 0) {
+						autospace = getAutospace(hSize, limitMax, childs[0].hSize, childs[childs.length - 1].hSize);
 						if (autospace != AUTOSPACE_NONE) {
 							sumWeight += (autospace == AUTOSPACE_BOTH) ? 2 : 1;
 							if (sizeSpanVar == null) sizeSpanVar = new Variable();
@@ -641,7 +641,7 @@ class LayoutContainer
 					else autospace = AUTOSPACE_NONE;
 					
 					if (sizeSpanVar != null) {
-						setConstraintRowColSpan( (sizeSpanVar >= 0) | strength, (sizeSpanVar == (_width - hLimitMax) / sumWeight ) | strengthLow );
+						setConstraintRowColSpan( (sizeSpanVar >= 0) | strength, (sizeSpanVar == (_width - limitMax) / sumWeight ) | strengthLow );
 					}
 			
 					// TODO: change connections here in depend of yscroll, innerAlign and innerScroll
@@ -653,16 +653,8 @@ class LayoutContainer
 				}
 				else // --------- Container.VBOX --------
 				{					
-					// TODO: set all Limit Values into child-properties
-					var vLimitMax:Int = 0;
-					var noChildHasSpan = true;
-					for (child in childs) {
-						if (noChildHasSpan && child.vSize.hasSpan()) noChildHasSpan = false;
-						vLimitMax += child.vSize.getLimitMax();
-					}
-					
-					if (noChildHasSpan) {
-						autospace = getAutospace(vSize, vLimitMax, childs[0].vSize, childs[childs.length - 1].vSize);
+					if (childsNumSpan == 0) {
+						autospace = getAutospace(vSize, limitMax, childs[0].vSize, childs[childs.length - 1].vSize);
 						if (autospace != AUTOSPACE_NONE) {
 							sumWeight += (autospace == AUTOSPACE_BOTH) ? 2 : 1;
 							if (sizeSpanVar == null) sizeSpanVar = new Variable();
@@ -671,7 +663,7 @@ class LayoutContainer
 					else autospace = AUTOSPACE_NONE;
 					
 					if (sizeSpanVar != null) {
-						setConstraintRowColSpan( (sizeSpanVar >= 0) | strength, (sizeSpanVar == (_height - vLimitMax) / sumWeight ) | strengthLow );
+						setConstraintRowColSpan( (sizeSpanVar >= 0) | strength, (sizeSpanVar == (_height - limitMax) / sumWeight ) | strengthLow );
 					}
 			
 					// TODO: change connections here in depend of yscroll, innerAlign and innerScroll
