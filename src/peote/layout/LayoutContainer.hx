@@ -396,6 +396,7 @@ class LayoutContainer
 	static inline var AUTOSPACE_FIRST:Int = 1;
 	static inline var AUTOSPACE_LAST:Int = 2;
 	static inline var AUTOSPACE_BOTH:Int = 3;
+
 	static inline function getAutospaceBox(size:SizeSpaced, childSize:SizeSpaced):Int
 	{
 		if (childSize.hasSpan()) return AUTOSPACE_NONE;
@@ -410,7 +411,6 @@ class LayoutContainer
 	
 	static inline function getAutospace(size:SizeSpaced, limitMax:Int, firstSize:SizeSpaced, lastSize:SizeSpaced):Int
 	{
-		//if (childSize.hasSpan()) return AUTOSPACE_NONE; // TODO: numSpan
 		if (size.middle._span || limitMax < ( (size.middle._max != null) ? size.middle._max : size.middle._min))
 		{
 			if (firstSize.first == null && lastSize.last != null) return AUTOSPACE_FIRST;
@@ -546,10 +546,10 @@ class LayoutContainer
 					
 					if (child.hSize.hasSpan()) childsNumSpan++;
 					limitMax += child.hSize.getLimitMax();
+					sumWeight += child.hSize.getSpanSumWeight();
 						
 					sizeLimitVar = child.hSize.setSizeLimit(sizeLimitVar);
 					sizeSpanVar = child.hSize.setSizeSpan(sizeSpanVar);
-					sumWeight += child.hSize.getSpanSumWeight();
 										
 					if (i>0) child.setConstraintLeft( (child._left == childs[i-1]._right) | strength );
 				}
@@ -561,7 +561,6 @@ class LayoutContainer
 					if (hSizeLimitVar != null) child.setConstraintHLimit( (hSizeLimitVar >= 0) | strength );
 					
 					autospace = getAutospaceBox(hSize, child.hSize);
-					
 					var hSizeSpanVar = (autospace == AUTOSPACE_NONE) ? child.hSize.setSizeSpan(null) : new Variable();
 					if (hSizeSpanVar != null) {
 						var _sumWeight = (autospace == AUTOSPACE_NONE) ? child.hSize.getSpanSumWeight() : ((autospace == AUTOSPACE_BOTH) ? 2 : 1);
@@ -589,10 +588,10 @@ class LayoutContainer
 					
 					if (child.vSize.hasSpan()) childsNumSpan++;
 					limitMax += child.vSize.getLimitMax();
+					sumWeight += child.vSize.getSpanSumWeight();
 										
 					sizeLimitVar = child.vSize.setSizeLimit(sizeLimitVar);
-					sizeSpanVar = child.vSize.setSizeSpan(sizeSpanVar);
-					sumWeight += child.vSize.getSpanSumWeight();
+					sizeSpanVar = child.vSize.setSizeSpan(sizeSpanVar);					
 					
 					if (i > 0) child.setConstraintTop( (child._top == childs[i-1]._bottom) | strength );
 				}
@@ -603,6 +602,7 @@ class LayoutContainer
 					var vSizeLimitVar = child.vSize.setSizeLimit(null);
 					if (vSizeLimitVar != null) child.setConstraintVLimit( (vSizeLimitVar >= 0) | strength );
 					
+					autospace = getAutospaceBox(vSize, child.vSize);
 					var vSizeSpanVar = (autospace == AUTOSPACE_NONE) ? child.vSize.setSizeSpan(null) : new Variable();
 					if (vSizeSpanVar != null) {
 						var _sumWeight = (autospace == AUTOSPACE_NONE) ? child.vSize.getSpanSumWeight() : ((autospace == AUTOSPACE_BOTH) ? 2 : 1);

@@ -46,8 +46,8 @@ class SizeSpaced
 	
 	public function hasSpan():Bool {
 		if (middle._span) return true;
-		if (first != null) if (first._span) return true;
-		if (last  != null) if (last._span) return true;
+		if (first != null && first._span) return true;
+		if (last  != null && last._span) return true;
 		return false;
 	}
 	
@@ -59,9 +59,9 @@ class SizeSpaced
 	}
 	
 	public function getSpanSumWeight():Float {
-		var sumWeight:Float = (middle.sizeSpan != null) ? middle._weight : 0.0;
-		if (first != null) if (first.sizeSpan != null) sumWeight += first._weight;
-		if (last  != null) if (last.sizeSpan  != null) sumWeight += last._weight;
+		var sumWeight:Float = (middle._span) ? middle._weight : 0.0;
+		if (first != null && first._span) sumWeight += first._weight;
+		if (last  != null &&  last._span) sumWeight += last._weight;
 		return sumWeight;
 	}
 }
