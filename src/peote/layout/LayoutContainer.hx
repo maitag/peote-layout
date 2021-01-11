@@ -201,7 +201,7 @@ class LayoutContainer
 		solver.addEditVariable(root_height, strength);
 		
 		var innerLimit = addTreeConstraints(solver); // recursive Container
-		//trace(innerLimit._width);
+		trace("root:",innerLimit.width);
 		
 		solver.addConstraint( (root_width >= innerLimit.width) | strengthHigh );
 		solver.addConstraint( (root_height >= innerLimit.height) | strengthHigh );
@@ -538,8 +538,12 @@ class LayoutContainer
 				// ------------------------------------------------------
 				// ------------------- horizontal -----------------------
 				// ------------------------------------------------------
-				if (!Scroll.hasHorizontal(child.scroll)) fixLimit(child.hSize, innerLimit.width);
-
+				if (!Scroll.hasHorizontal(scroll)) fixLimit(child.hSize, innerLimit.width);
+				else {
+					childsLimit.width = hSize.middle._min;
+					trace(childsLimit.width);
+				}
+				
 				if (container == Container.HBOX) // -------- HBOX --------
 				{
 					childsLimit.width += child.hSize.getMin();
@@ -555,24 +559,49 @@ class LayoutContainer
 				}
 				else                             // -------- BOX ---------
 				{
-					if (child.hSize.getMin() > childsLimit.width) childsLimit.width = child.hSize.getMin();
+					if (!Scroll.hasHorizontal(scroll))
+						if (child.hSize.getMin() > childsLimit.width) childsLimit.width = child.hSize.getMin();
 					
 					var hSizeLimitVar = child.hSize.setSizeLimit(null); 
-					if (hSizeLimitVar != null) child.setConstraintHLimit( (hSizeLimitVar >= 0) | strength );
+					if (hSizeLimitVar != null) child.setConstraintHLimit( (hSizeLimitVar >= 0) | strength ); // TODO: also strengtHigh here?
 					
 					autospace = getAutospaceBox(hSize, child.hSize);
 					var hSizeSpanVar = (autospace == AUTOSPACE_NONE) ? child.hSize.setSizeSpan(null) : new Variable();
 					if (hSizeSpanVar != null) {
 						var _sumWeight = (autospace == AUTOSPACE_NONE) ? child.hSize.getSpanSumWeight() : ((autospace == AUTOSPACE_BOTH) ? 2 : 1);
-						child.setConstraintHSpan( (hSizeSpanVar >= 0) | strengthHigh, // check nested boxes+rows here
-							(hSizeSpanVar == (_width - child.hSize.getLimitMax()) / _sumWeight) | strengthLow );
+						child.setConstraintHSpan( (hSizeSpanVar >= 0) | strengthHigh, // origin strengthLow ... check strengthHigh (nested boxes+rows)
+							(hSizeSpanVar == (_width - child.hSize.getLimitMax()) / _sumWeight) | strengthLow ); // origin strengthLow
 					}
 								
 					// TODO: change connections here in depend of yscroll, innerAlign and innerScroll					
-					if (autospace & AUTOSPACE_FIRST == 0) child.setConstraintLeft( (child._left == _x) | strength );
-					else child.setConstraintLeft( (child._left - hSizeSpanVar == _x) | strength );
-					if (autospace & AUTOSPACE_LAST == 0) child.setConstraintRight( (child._right == _x + _width) | strength );
-					else child.setConstraintRight( (child._right + hSizeSpanVar == _x + _width) | strength );
+					if (!Scroll.hasHorizontal(scroll)) {
+						if (autospace & AUTOSPACE_FIRST == 0) child.setConstraintLeft( (child._left == _x) | strength );
+						else child.setConstraintLeft( (child._left - hSizeSpanVar == _x) | strength );
+						if (autospace & AUTOSPACE_LAST == 0) child.setConstraintRight( (child._right == _x + _width) | strength );
+						else child.setConstraintRight( (child._right + hSizeSpanVar == _x + _width) | strength );
+					}
+					else {
+						var oversize = new Variable();
+						solver.addConstraint( (oversize >= 0 ) | strengthHigh);
+						solver.addConstraint( (oversize == 0 ) | strengthLow);
+						if (autospace & AUTOSPACE_FIRST == 0) {
+							if (Align.hasLeft(align)) child.setConstraintLeft( (child._left == _x) | strength );
+							else child.setConstraintLeft( (child._left + oversize == _x) | strength );
+						}
+						else {
+							if (Align.hasLeft(align)) child.setConstraintLeft( (child._left - hSizeSpanVar == _x) | strength );
+							else child.setConstraintLeft( (child._left - hSizeSpanVar + oversize == _x) | strength );
+						}
+						if (autospace & AUTOSPACE_LAST == 0) {
+							if (Align.hasRight(align)) child.setConstraintRight( (child._right == _x + _width) | strength );
+							else child.setConstraintRight( (child._right - oversize == _x + _width) | strength );
+						}
+						else {
+							if (Align.hasRight(align)) child.setConstraintRight( (child._right + hSizeSpanVar == _x + _width) | strength );
+							else child.setConstraintRight( (child._right + hSizeSpanVar - oversize == _x + _width) | strength );
+						}
+					}
+					
 				}
 				
 				child.setConstraintWidth( (child._width == child.hSize.middle.size) | strength );
