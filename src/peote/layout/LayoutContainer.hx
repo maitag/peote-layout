@@ -602,39 +602,47 @@ class LayoutContainer
 						var oversize = new Variable();
 						solver.addConstraint( (oversize >= 0 ) | strengthHigh);
 						solver.addConstraint( (_xScroll >= 0 ) | strengthHigh);
-						
-						solver.addConstraint( (oversize + _xScroll == 0 ) | strengthLow1);
-						
-						solver.addConstraint( (_xScroll == 40 ) | strengthLow2); // set xscroll manuall
 												
+						solver.addConstraint( (_xScroll == 50 ) | strengthLow2); // TODO: set xscroll manuall
 						
-/*						if (Align.hasLeft(align) && Align.hasRight(align))
-							solver.addConstraint( (_xScroll <= oversize + oversize ) | strengthMid); // not scroll outside
-						else
-							solver.addConstraint( (_xScroll <= oversize ) | strengthMid); // not scroll outside
-*/						
-						
-						// TODO: let also scroll relative to right border or center
+						if (Align.hasLeft(align))        //  ----- scroll align left ----
+						{
+							solver.addConstraint( (oversize + _xScroll == 0 ) | strengthLow1);
+							// left
+							if (autospace & AUTOSPACE_FIRST == 0)
+							     child.setConstraintLeft( (child._left + _xScroll == _x               ) | strength );
+							else child.setConstraintLeft( (child._left + _xScroll == _x + hSizeSpanVar) | strength );
+							// right
+							if (autospace & AUTOSPACE_LAST == 0)
+							     child.setConstraintRight( (child._right - oversize == _x + _width               ) | strength );
+							else child.setConstraintRight( (child._right - oversize == _x + _width - hSizeSpanVar) | strength );
+						}
+						else if (Align.hasRight(align))   //  ----- scroll align right ----
+						{
+							solver.addConstraint( (oversize + _xScroll == 0 ) | strengthLow1);
+							// left
+							if (autospace & AUTOSPACE_FIRST == 0)
+							     child.setConstraintLeft( (child._left + oversize == _x               ) | strength );
+							else child.setConstraintLeft( (child._left + oversize == _x + hSizeSpanVar) | strength );
+							// right
+							if (autospace & AUTOSPACE_LAST == 0)
+							     child.setConstraintRight( (child._right - _xScroll == _x + _width               ) | strength );
+							else child.setConstraintRight( (child._right - _xScroll == _x + _width - hSizeSpanVar) | strength );
+						}
+						else                             //  ---- scroll align centered ---    <--- check how useful is this into practice
+						{
+							var oversizeRight = new Variable();
+							solver.addConstraint( (oversize + oversizeRight + _xScroll == 0 ) | strengthLow1);
+							solver.addConstraint( (oversize == oversizeRight ) | strengthLow1);
 
-						if (autospace & AUTOSPACE_FIRST == 0) {
-							//if (Align.hasLeft(align)) child.setConstraintLeft( (child._left == _x) | strength );
-							//else child.setConstraintLeft( (child._left + oversize == _x) | strength );
-							child.setConstraintLeft( (child._left + _xScroll == _x) | strength );
-						}
-						else {
-							//if (Align.hasLeft(align)) child.setConstraintLeft( (child._left - hSizeSpanVar == _x) | strength );
-							//else child.setConstraintLeft( (child._left - hSizeSpanVar + oversize == _x) | strength );
-							child.setConstraintLeft( (child._left - hSizeSpanVar + _xScroll == _x) | strength );
-						}
-						if (autospace & AUTOSPACE_LAST == 0) {
-							//if (Align.hasRight(align)) child.setConstraintRight( (child._right == _x + _width) | strength );
-							//else child.setConstraintRight( (child._right - oversize == _x + _width) | strength );
-							child.setConstraintRight( (child._right - oversize == _x + _width ) | strength );
-						}
-						else {
-							//if (Align.hasRight(align)) child.setConstraintRight( (child._right + hSizeSpanVar == _x + _width) | strength );
-							//else child.setConstraintRight( (child._right + hSizeSpanVar - oversize == _x + _width) | strength );
-							child.setConstraintRight( (child._right + hSizeSpanVar - oversize == _x + _width ) | strength );
+							// left
+							if (autospace & AUTOSPACE_FIRST == 0) 
+							     child.setConstraintLeft( (child._left + oversize + _xScroll == _x               ) | strength );
+							else child.setConstraintLeft( (child._left + oversize + _xScroll == _x + hSizeSpanVar) | strength );
+							// right
+							if (autospace & AUTOSPACE_LAST == 0)
+							     child.setConstraintRight( (child._right - oversizeRight == _x + _width               ) | strength );
+							else child.setConstraintRight( (child._right - oversizeRight == _x + _width - hSizeSpanVar) | strength );
 						}
 					}
 					
