@@ -77,12 +77,34 @@ class LayoutContainer
 		return value;
 	}
 
-	// TODO: for inner size:
-	// scrollWidth, scrollHeight
+	// scrolling
+	public var xScroll(get,set):Null<Float>;
+	inline function get_xScroll() return _xScroll.m_value;
+	inline function set_xScroll(value:Null<Float>):Null<Float> {
+		if (solver == null) throw('Error: can\'t set ${_xScroll.m_name} value of LayoutContainer if its not initialized.');
+		
+		//if (value == null && xScrollIsEditable) {
+		if (value == null && solver.hasEditVariable(_xScroll)) {
+			//xScrollIsEditable = false;
+			solver.removeEditVariable(_xScroll);
+			return null;
+		}
+		
+		//if (!xScrollIsEditable) {
+		if (!solver.hasEditVariable(_xScroll)) {
+			//xScrollIsEditable = true;
+			solver.addEditVariable(_xScroll, strengthLow2);
+			//solver.addEditVariable(_xScroll, strength); // TODO: needs low strenght to automatically reset on resize
+		}
+		solver.suggestValue(_xScroll, value);
+		return value;
+	}
 	
 	public var xScrollMax(get,never):Float;
 	inline function get_xScrollMax():Float {
-		var greatestChildMinSize = getChild(0).hSize.getMin(); // TODO: greatest child
+		// TODO: precalculate greatest child
+		var greatestChildMinSize = 0;
+		for (child in childs) if (child.hSize.getMin() > greatestChildMinSize) greatestChildMinSize = child.hSize.getMin(); 
 		if (_width.m_value >= greatestChildMinSize) return 0;
 		return greatestChildMinSize - _width.m_value;
 	}
@@ -255,11 +277,11 @@ class LayoutContainer
 		solver.addConstraint( (_height == vSize.middle.size) | strength );
 	}
 	
-	public function update(width:Float, height:Float)
+	public function update(width:Null<Float> = null, height:Null<Float> = null)
 	{
 		if (solver != null) {
-			solver.suggestValue(root_width, width);
-			solver.suggestValue(root_height, height);
+			if (width != null) solver.suggestValue(root_width, width);
+			if (height != null) solver.suggestValue(root_height, height);
 			solver.updateVariables();
 			
 			updateLayoutElement(xParentOffset, yParentOffset);
@@ -591,23 +613,23 @@ class LayoutContainer
 							(hSizeSpanVar == (_width - child.hSize.getLimitMax()) / _sumWeight) | strengthLow ); // origin strengthLow
 					}
 								
-					// change connections here in depend of xScroll			
+					// no scroll		
 					if (!Scroll.hasHorizontal(scroll)) {
 						if (autospace & AUTOSPACE_FIRST == 0) child.setConstraintLeft( (child._left == _x) | strength );
 						else child.setConstraintLeft( (child._left - hSizeSpanVar == _x) | strength );
 						if (autospace & AUTOSPACE_LAST == 0) child.setConstraintRight( (child._right == _x + _width) | strength );
 						else child.setConstraintRight( (child._right + hSizeSpanVar == _x + _width) | strength );
 					}
-					else {
+					else { // change connections here in depend of xScroll
 						var oversize = new Variable();
 						solver.addConstraint( (oversize >= 0 ) | strengthHigh);
-						solver.addConstraint( (_xScroll >= 0 ) | strengthHigh);
-												
-						solver.addConstraint( (_xScroll == 50 ) | strengthLow2); // TODO: set xscroll manuall
+						
+						solver.addConstraint( (_xScroll >= 0 ) | strengthHigh);												
+						//solver.addConstraint( (_xScroll == 0 ) | strengthLow2); // todo: set xscroll to 0 on init
 						
 						if (Align.hasLeft(align))        //  ----- scroll align left ----
 						{
-							solver.addConstraint( (oversize + _xScroll == 0 ) | strengthLow1);
+							solver.addConstraint( (oversize + _xScroll == 0 ) | strengthLow1); // TODO: only 0 for the greatest size (the others needs the diff here)
 							// left
 							if (autospace & AUTOSPACE_FIRST == 0)
 							     child.setConstraintLeft( (child._left + _xScroll == _x               ) | strength );
