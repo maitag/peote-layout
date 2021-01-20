@@ -93,7 +93,7 @@ class LayoutContainer
 		//if (!xScrollIsEditable) {
 		if (!solver.hasEditVariable(_xScroll)) {
 			//xScrollIsEditable = true;
-			solver.addEditVariable(_xScroll, strengthLow2);
+			solver.addEditVariable(_xScroll, strengthLow1);
 			//solver.addEditVariable(_xScroll, strength); // TODO: needs low strenght to automatically reset on resize
 		}
 		solver.suggestValue(_xScroll, value);
@@ -153,9 +153,10 @@ class LayoutContainer
 	static var strength1 = Strength.create(0, 600, 0);
 	static var strength2 = Strength.create(0, 300, 0);
 	static var strengthLow = Strength.create(0, 0, 900);
-	static var strengthLow1 = Strength.create(0, 0, 600);
-	static var strengthLow2 = Strength.create(0, 0, 300);
-	static var strengthLow3 = Strength.create(0, 0, 100);
+	static var strengthLow1 = Strength.create(0, 0, 700);
+	static var strengthLow2 = Strength.create(0, 0, 500);
+	static var strengthLow3 = Strength.create(0, 0, 300);
+	static var strengthLow4 = Strength.create(0, 0, 100);
 	
 	// ----------------------------------------------------------------------------------------
 	// storing constraints
@@ -569,6 +570,17 @@ class LayoutContainer
 			
 			var autospace:Int = 0;
 			
+			// TODO: DUMMY ONLY
+			var greatestChildMinSize = 0;
+			for (child in childs) if (child.hSize.getMin() > greatestChildMinSize) greatestChildMinSize = child.hSize.getMin();
+			//trace("greatestChildMinSize:"+greatestChildMinSize);
+			
+			var oversize = new Variable();
+			solver.addConstraint( (oversize == 0 ) | strengthLow2);
+			//solver.addConstraint( (oversize >= 0 ) | strengthHigh);
+			//solver.addConstraint( (_xScroll >= 0 ) | strengthHigh);												
+			
+			
 			for (i in 0...childs.length)
 			{	
 				var child = childs[i];
@@ -581,7 +593,7 @@ class LayoutContainer
 				if (!Scroll.hasHorizontal(scroll)) fixLimit(child.hSize, innerLimit.width);
 				else {
 					childsLimit.width = hSize.middle._min;
-					trace(childsLimit.width);
+					trace(childsLimit.width);// TODO: not do every child here!!! .. put into initialization
 				}
 				
 				if (container == Container.HBOX) // -------- HBOX --------
@@ -621,15 +633,15 @@ class LayoutContainer
 						else child.setConstraintRight( (child._right + hSizeSpanVar == _x + _width) | strength );
 					}
 					else { // change connections here in depend of xScroll
-						var oversize = new Variable();
-						solver.addConstraint( (oversize >= 0 ) | strengthHigh);
-						
-						solver.addConstraint( (_xScroll >= 0 ) | strengthHigh);												
-						//solver.addConstraint( (_xScroll == 0 ) | strengthLow2); // todo: set xscroll to 0 on init
+						//var oversize = new Variable();						
+						//solver.addConstraint( (oversize == 0 ) | strengthLow2);
+						//solver.addConstraint( (oversize >= 0 ) | strengthHigh);
+						//solver.addConstraint( (_xScroll >= 0 ) | strengthHigh);												
+												
+						//trace("greatestChildMinSize - child.hSize.getMin():"+(greatestChildMinSize - child.hSize.getMin()));
 						
 						if (Align.hasLeft(align))        //  ----- scroll align left ----
 						{
-							solver.addConstraint( (oversize + _xScroll == 0 ) | strengthLow1); // TODO: only 0 for the greatest size (the others needs the diff here)
 							// left
 							if (autospace & AUTOSPACE_FIRST == 0)
 							     child.setConstraintLeft( (child._left + _xScroll == _x               ) | strength );
@@ -641,7 +653,6 @@ class LayoutContainer
 						}
 						else if (Align.hasRight(align))   //  ----- scroll align right ----
 						{
-							solver.addConstraint( (oversize + _xScroll == 0 ) | strengthLow1);
 							// left
 							if (autospace & AUTOSPACE_FIRST == 0)
 							     child.setConstraintLeft( (child._left + oversize == _x               ) | strength );
@@ -653,18 +664,14 @@ class LayoutContainer
 						}
 						else                             //  ---- scroll align centered ---    <--- check how useful is this into practice
 						{
-							var oversizeRight = new Variable();
-							solver.addConstraint( (oversize + oversizeRight + _xScroll == 0 ) | strengthLow1);
-							solver.addConstraint( (oversize == oversizeRight ) | strengthLow1);
-
 							// left
 							if (autospace & AUTOSPACE_FIRST == 0) 
-							     child.setConstraintLeft( (child._left + oversize + _xScroll == _x               ) | strength );
-							else child.setConstraintLeft( (child._left + oversize + _xScroll == _x + hSizeSpanVar) | strength );
+							     child.setConstraintLeft( (child._left + oversize/2 + _xScroll == _x               ) | strength );
+							else child.setConstraintLeft( (child._left + oversize/2 + _xScroll == _x + hSizeSpanVar) | strength );
 							// right
 							if (autospace & AUTOSPACE_LAST == 0)
-							     child.setConstraintRight( (child._right - oversizeRight == _x + _width               ) | strength );
-							else child.setConstraintRight( (child._right - oversizeRight == _x + _width - hSizeSpanVar) | strength );
+							     child.setConstraintRight( (child._right - oversize/2 + _xScroll == _x + _width               ) | strength );
+							else child.setConstraintRight( (child._right - oversize/2 + _xScroll == _x + _width - hSizeSpanVar) | strength );
 						}
 					}
 					
