@@ -79,7 +79,11 @@ class LayoutContainer
 
 	// scrolling
 	public var xScroll(get,set):Null<Float>;
-	inline function get_xScroll() return _xScroll.m_value;
+	inline function get_xScroll() {
+		if (Align.hasLeft(align)) return _xScroll.m_value;
+		else if (Align.hasRight(align)) return 200-_xScroll.m_value;
+		else return 100-_xScroll.m_value;
+	}
 	inline function set_xScroll(value:Null<Float>):Null<Float> {
 		if (solver == null) throw('Error: can\'t set ${_xScroll.m_name} value of LayoutContainer if its not initialized.');
 		
@@ -96,7 +100,18 @@ class LayoutContainer
 			solver.addEditVariable(_xScroll, strengthLow1);
 			//solver.addEditVariable(_xScroll, strength); // TODO: needs low strenght to automatically reset on resize
 		}
-		solver.suggestValue(_xScroll, value);
+		
+		// TODO: precalculate greatest child
+		var greatestChildMinSize = 0;
+		for (child in childs) if (child.hSize.getMin() > greatestChildMinSize) greatestChildMinSize = child.hSize.getMin(); 
+		var greatestXscroll = greatestChildMinSize - layout.width._min;
+		
+		if (Align.hasLeft(align))
+			solver.suggestValue(_xScroll, value);
+		else if (Align.hasRight(align))
+			solver.suggestValue(_xScroll, greatestXscroll-value);     // TODO
+		else solver.suggestValue(_xScroll, greatestXscroll/2-value); // TODO
+			
 		return value;
 	}
 	
@@ -572,14 +587,21 @@ class LayoutContainer
 			
 			// TODO: DUMMY ONLY
 			var greatestChildMinSize = 0;
-			for (child in childs) if (child.hSize.getMin() > greatestChildMinSize) greatestChildMinSize = child.hSize.getMin();
+			var greatestChild:LayoutContainer = childs[0];
+			for (child in childs) if (child.hSize.getMin() > greatestChildMinSize) {
+				greatestChild = child;
+				greatestChildMinSize = child.hSize.getMin();
+			}
 			//trace("greatestChildMinSize:"+greatestChildMinSize);
 			
 			var oversize = new Variable();
-			solver.addConstraint( (oversize == 0 ) | strengthLow2);
-			//solver.addConstraint( (oversize >= 0 ) | strengthHigh);
-			//solver.addConstraint( (_xScroll >= 0 ) | strengthHigh);												
-			
+			if (scroll == Scroll.HORIZONTAL) {
+				solver.addConstraint( (oversize == 0 ) | strengthLow2);
+				solver.addConstraint( (oversize >= 0 ) | strengthHigh);
+				if (Align.hasLeft(align) || Align.hasRight(align))
+					solver.addConstraint( (_xScroll >= 0 ) | strengthHigh);
+				else solver.addConstraint( (_xScroll >= -oversize/2 ) | strengthHigh);
+			}
 			
 			for (i in 0...childs.length)
 			{	
@@ -648,7 +670,7 @@ class LayoutContainer
 							else child.setConstraintLeft( (child._left + _xScroll == _x + hSizeSpanVar) | strength );
 							// right
 							if (autospace & AUTOSPACE_LAST == 0)
-							     child.setConstraintRight( (child._right - oversize == _x + _width               ) | strength );
+								 child.setConstraintRight( (child._right - oversize == _x + _width               ) | strength );
 							else child.setConstraintRight( (child._right - oversize == _x + _width - hSizeSpanVar) | strength );
 						}
 						else if (Align.hasRight(align))   //  ----- scroll align right ----
@@ -670,8 +692,8 @@ class LayoutContainer
 							else child.setConstraintLeft( (child._left + oversize/2 + _xScroll == _x + hSizeSpanVar) | strength );
 							// right
 							if (autospace & AUTOSPACE_LAST == 0)
-							     child.setConstraintRight( (child._right - oversize/2 + _xScroll == _x + _width               ) | strength );
-							else child.setConstraintRight( (child._right - oversize/2 + _xScroll == _x + _width - hSizeSpanVar) | strength );
+							     child.setConstraintRight( (child._right - oversize/2  == _x + _width               ) | strength );
+							else child.setConstraintRight( (child._right - oversize/2  == _x + _width - hSizeSpanVar) | strength );
 						}
 					}
 					
