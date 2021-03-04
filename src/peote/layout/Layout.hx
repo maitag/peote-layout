@@ -64,7 +64,7 @@ abstract Layout(LayoutImpl) from LayoutImpl
 		this.relativeChildPositions = relativeChildPositions;
 	}
 	
-	@:from static inline function fromLayoutOptions(p:LayoutOptions):Layout
+	@:from static #if !neko inline #end function fromLayoutOptions(p:LayoutOptions):Layout
 	{
 		var layout:Layout = new LayoutImpl();
 		layout.update(p);
