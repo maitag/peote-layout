@@ -4,11 +4,10 @@ import lime.ui.MouseButton;
 import lime.app.Application;
 
 import peote.view.PeoteView;
-import peote.view.Display;
 import peote.view.Color;
 
 import peote.layout.LayoutContainer;
-import peote.layout.Container;
+import peote.layout.ContainerType;
 import peote.layout.Size;
 
 import layouted.LayoutedSprite;
@@ -50,14 +49,14 @@ class Main extends lime.app.Application
 				
 		
 		// init a layout
-		layoutContainer = new LayoutContainer(Container.BOX, display,
+		layoutContainer = new LayoutContainer(ContainerType.BOX, display,
 		[ 
 			new Box( green,
 			{
 				left: Size.min(100), // can be scale high but not lower as min-value
 				width:Size.limit(300, 400), // can be scale from min to max-value
 				right:Size.max(200), // can be scale from 0 to max-value
-				// right:10 // or can be a fixed value.. same as .limit(10,10)
+				//right:10, // or can be a fixed value.. same as .limit(10,10)
 				
 				// for "span" they are reaching its min and max at the same time while scaling
 				// in a row, but can be scaled higher as max

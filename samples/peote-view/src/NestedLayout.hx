@@ -2,14 +2,12 @@ package;
 
 import lime.ui.MouseButton;
 import lime.app.Application;
-import peote.layout.Align;
-import peote.layout.Scroll;
 
 import peote.view.PeoteView;
 import peote.view.Color;
 
 import peote.layout.LayoutContainer;
-import peote.layout.Container;
+import peote.layout.ContainerType;
 import peote.layout.Size;
 
 import layouted.LayoutedSprite;
@@ -57,7 +55,7 @@ class NestedLayout extends lime.app.Application
 				bottom:	10,
 			},
 			[	// childs -----------------------------------------
-				new VBox( new LayoutedSprite(display, Color.BLUE), Scroll.VERTICAL, // vertically scrolling if not fit
+				new VBox( new LayoutedSprite(display, Color.BLUE),
 				{	left:  Size.span(0, 0.1),
 					width: Size.span(10),
 					right: Size.span(10, 0.1),
@@ -169,9 +167,9 @@ class NestedLayout extends lime.app.Application
 	}
 	public override function onMouseWheel (deltaX:Float, deltaY:Float, deltaMode:lime.ui.MouseWheelMode):Void {
 		if (deltaY != 0) {
-			//layoutContainer.firstChild.xScroll += 10 * deltaY;
-			//trace(layoutContainer.firstChild.xScrollMax); // only get: same as innerHeight - height
-			//trace(layoutContainer.firstChild.innerHeight);
+			//layoutContainer.getChild[0].yScroll += 10 * deltaY;
+			//trace(layoutContainer.getChild[0].yScrollMax); // only get: same as innerHeight - height
+			//trace(layoutContainer.getChild[0].innerHeight);
 		}
 	}
 	// public override function onMouseMoveRelative (x:Float, y:Float):Void {}

@@ -6,9 +6,6 @@ import jasper.Term;
 import jasper.Strength;
 import jasper.Constraint;
 import jasper.Solver;
-import peote.layout.Align;
-import peote.layout.ContainerOptions;
-import peote.layout.Scroll;
 
 import peote.layout.util.SizeSpaced;
 
@@ -115,8 +112,8 @@ class LayoutContainer
 	}
 	
 	// ---------- Variables for Jasper Constraints ------
-	public var _xScroll(default,null):Variable = null;
-	public var _yScroll(default,null):Variable = null;
+	public var _xScroll(default,null):Variable;
+	public var _yScroll(default,null):Variable;
 
 	public var _x(default,null):Variable;
 	public var _y(default,null):Variable;	
@@ -169,10 +166,8 @@ class LayoutContainer
 	
 	// ----------------------------------------------------------------------------------------
 	public var containerType:ContainerType;
-	public var layoutElement:LayoutElement;
-	
+	public var layoutElement:LayoutElement;	
 	public var layout:Layout;
-	public var options:ContainerOptions;
 	
 	public var solver:Null<Solver>;
 	
@@ -188,12 +183,12 @@ class LayoutContainer
 	public function new(
 		containerType:ContainerType = ContainerType.BOX,
 		layoutElement:LayoutElement = null,
-		layoutOptions:Layout = null,
+		layout:Layout = null,
 		childs:Array<LayoutContainer> = null) 
 	{
 		set_containerType(containerType);
 		set_layoutElement(layoutElement);
-		set_layoutOptions(layoutOptions);
+		set_layout(layout);
 		set_childs(childs);
 				
 		_x = new Variable();
@@ -215,21 +210,20 @@ class LayoutContainer
 		// TODO: update
 	}
 	
-	function set_layoutOptions(layoutOptions:Layout)
+	inline function set_layout(_layout:Layout)
 	{
-		if (layoutOptions == null) layoutOptions = {};
-		layout = layoutOptions;
+		layout = (_layout != null) ? _layout : {};
+		
 		hSize = new SizeSpaced(layout.width, layout.left, layout.right);
 		vSize = new SizeSpaced(layout.height, layout.top, layout.bottom);
 		
-		options = layoutOptions;
-		if (options.scrollX != null && options.scrollX) _xScroll = new Variable();
-		if (options.scrollY != null && options.scrollY) _yScroll = new Variable();
+		if (layout.scrollX) _xScroll = new Variable();
+		if (layout.scrollY) _yScroll = new Variable();
 
 		// TODO: update
 	}
 	
-	function set_childs(childs:Array<LayoutContainer>) {
+	inline function set_childs(childs:Array<LayoutContainer>) {
 		if (childs != null) {
 			for (child in childs) child.parent = this;
 		}
@@ -306,7 +300,7 @@ class LayoutContainer
 	{
 		xParentOffset = xOffset;
 		yParentOffset = yOffset;
-		if (layout.relativeChildPositions != null && layout.relativeChildPositions == true) {
+		if (layout.relativeChildPositions) {
 			xOffset += x;
 			yOffset += y;
 		}
@@ -584,7 +578,7 @@ class LayoutContainer
 			var autospace:Int = 0;
 						
 			var oversize = new Variable();
-			if (_xScroll != null) {
+			if (layout.scrollX) {
 				solver.addConstraint( (oversize == 0 ) | strengthLow1);
 				solver.addConstraint( (oversize >= 0 ) | strengthHigh);				
 				// TODO: scroll-mode only if child.hSize.getMin() - hSize.getMin() > 0
@@ -620,7 +614,7 @@ class LayoutContainer
 					if (child.hSize.middle._min > child.hSize.middle._max) child.hSize.middle._min = child.hSize.middle._max;
 				}
 */				
-				if (_xScroll == null) fixLimit(child.hSize, innerLimit.width);
+				if (!layout.scrollX) fixLimit(child.hSize, innerLimit.width);
 				else {
 					childsLimit.width = hSize.middle._min;
 					trace(childsLimit.width);// TODO: not do every child here!!! .. put into initialization
@@ -641,32 +635,31 @@ class LayoutContainer
 				}
 				else                             // -------- BOX ---------
 				{
-					if (_xScroll == null)
+					if (! layout.scrollX)
 						if (child.hSize.getMin() > childsLimit.width) childsLimit.width = child.hSize.getMin();
 					
 					var hSizeLimitVar = child.hSize.setSizeLimit(null);
 					if (hSizeLimitVar != null) {
 						child.setConstraintHLimit( (hSizeLimitVar >= 0) | strength ); // TODO: also strengtHigh here?
-						//if (Scroll.hasHorizontal(scroll)) child.setConstraintHLimit( (hSizeLimitVar == 0) | strengthLow ); 
-						if (_xScroll != null) child.setConstraintHLimit( (hSizeLimitVar >= oversize) | strengthLow ); 
+						if (layout.scrollX) child.setConstraintHLimit( (hSizeLimitVar >= oversize) | strengthLow ); 
 					}
 					
 					autospace = getAutospaceBox(hSize, child.hSize);
 					var hSizeSpanVar = (autospace == AUTOSPACE_NONE) ? child.hSize.setSizeSpan(null) : new Variable();
 					if (hSizeSpanVar != null) {
 						var _sumWeight = (autospace == AUTOSPACE_NONE) ? child.hSize.getSpanSumWeight() : ((autospace == AUTOSPACE_BOTH) ? 2 : 1);
-						if (_xScroll == null) {
+						if (! layout.scrollX) {
 							child.setConstraintHSpan( (hSizeSpanVar >= 0) | strengthHigh, // origin strengthLow ... check strengthHigh (nested boxes+rows)
 								(hSizeSpanVar == (_width - child.hSize.getLimitMax()) / _sumWeight) | strengthLow ); // origin strengthLow
 						}
-						else { // CHECK:
+						else { // CHECK:+oversize
 							child.setConstraintHSpan( (hSizeSpanVar >= 0) | strengthHigh,
 								(hSizeSpanVar == (_width +oversize - child.hSize.getLimitMax()) / _sumWeight) | strengthLow );
 						}
 					}
 								
 					// no scroll		
-					if (_xScroll == null) {
+					if (! layout.scrollX) {
 						if (autospace & AUTOSPACE_FIRST == 0) child.setConstraintLeft( (child._left == _x) | strength );
 						else child.setConstraintLeft( (child._left - hSizeSpanVar == _x) | strength );
 						if (autospace & AUTOSPACE_LAST == 0) child.setConstraintRight( (child._right == _x + _width) | strength );
@@ -681,7 +674,7 @@ class LayoutContainer
 						
 						
 						//CHECK: do this only for the greatest child and if not constrain left and right to that one
-						if (Align.hasLeft(options.alignOnOversize))        //  ----- scroll align left ----
+						if (layout.hAlignOnOversize == HAlign.LEFT)        //  ----- scroll align left ----
 						{
 							// left
 							if (autospace & AUTOSPACE_FIRST == 0)
@@ -692,7 +685,7 @@ class LayoutContainer
 								 child.setConstraintRight( (child._right - oversize + _xScroll == _x + _width               ) | strength );
 							else child.setConstraintRight( (child._right - oversize + _xScroll == _x + _width - hSizeSpanVar) | strength );
 						}
-						else if (Align.hasRight(options.alignOnOversize))   //  ----- scroll align right ----
+						else if (layout.hAlignOnOversize  == HAlign.RIGHT)   //  ----- scroll align right ----
 						{
 							// left
 							if (autospace & AUTOSPACE_FIRST == 0)
@@ -723,7 +716,7 @@ class LayoutContainer
 				// ------------------------------------------------------
 				// ------------------- vertical -------------------------
 				// ------------------------------------------------------
-				if (_yScroll == null) fixLimit(child.vSize, innerLimit.height);
+				if (!layout.scrollY) fixLimit(child.vSize, innerLimit.height);
 					
 				if (containerType == ContainerType.VBOX) // -------- VBOX --------
 				{
@@ -828,25 +821,25 @@ class LayoutContainer
 // ------------------------------------------------------------------------------------------
 @:forward
 abstract Box(LayoutContainer) from LayoutContainer to LayoutContainer {
-	public inline function new(layoutElement:LayoutElement = null, layoutOptions:Layout = null, innerLayoutContainer:Array<LayoutContainer> = null) 
+	public inline function new(layoutElement:LayoutElement = null, layout:Layout = null, innerLayoutContainer:Array<LayoutContainer> = null) 
 	{
-		this = new LayoutContainer(ContainerType.BOX, layoutElement, layoutOptions, innerLayoutContainer);
+		this = new LayoutContainer(ContainerType.BOX, layoutElement, layout, innerLayoutContainer);
 	}
 }
 
 @:forward
 abstract HBox(LayoutContainer) from LayoutContainer to LayoutContainer {
-	public inline function new(layoutElement:LayoutElement = null, layoutOptions:Layout = null, innerLayoutContainer:Array<LayoutContainer> = null) 
+	public inline function new(layoutElement:LayoutElement = null, layout:Layout = null, innerLayoutContainer:Array<LayoutContainer> = null) 
 	{
-		this = new LayoutContainer(ContainerType.HBOX, layoutElement, layoutOptions, innerLayoutContainer);
+		this = new LayoutContainer(ContainerType.HBOX, layoutElement, layout, innerLayoutContainer);
 	}
 }
 
 @:forward
 abstract VBox(LayoutContainer) from LayoutContainer to LayoutContainer {
-	public inline function new(layoutElement:LayoutElement = null, layoutOptions:Layout = null, innerLayoutContainer:Array<LayoutContainer> = null) 
+	public inline function new(layoutElement:LayoutElement = null, layout:Layout = null, innerLayoutContainer:Array<LayoutContainer> = null) 
 	{
-		this = new LayoutContainer(ContainerType.VBOX, layoutElement, layoutOptions, innerLayoutContainer);
+		this = new LayoutContainer(ContainerType.VBOX, layoutElement, layout, innerLayoutContainer);
 	}
 }
 
