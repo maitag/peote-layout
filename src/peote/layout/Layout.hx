@@ -4,6 +4,10 @@ package peote.layout;
 @:publicFields
 private class LayoutImpl
 {
+	#if peotelayout_debug
+	var name(default, null):String = "";
+	#end
+	
 	// inner size
 	var width (default, null):Size;
 	var height(default, null):Size;
@@ -35,6 +39,9 @@ private class LayoutImpl
 abstract Layout(LayoutImpl) from LayoutImpl
 {
 	public inline function new(
+		#if peotelayout_debug
+		name:String,
+		#end
 		width:Size, height:Size, left:Size, right:Size, top:Size, bottom:Size,
 		scrollX:Bool,
 		scrollY:Bool,
@@ -47,6 +54,9 @@ abstract Layout(LayoutImpl) from LayoutImpl
 		relativeChildPositions:Bool)
 	{
 		this = new LayoutImpl();
+		#if peotelayout_debug
+		this.name = name;
+		#end
 		this.width  = width;
 		this.height = height;
 		this.left   = left;
@@ -74,6 +84,9 @@ abstract Layout(LayoutImpl) from LayoutImpl
 	public inline function update(p:LayoutOptions):Void
 	{
 		if (p == null) return;
+		#if peotelayout_debug
+		if (p.name  != null) this.name  = p.name;
+		#end
 		if (p.width  != null) this.width  = p.width;
 		if (p.height != null) this.height = p.height;
 		if (p.left   != null) this.left   = p.left;

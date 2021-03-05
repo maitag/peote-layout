@@ -2,6 +2,10 @@ package peote.layout;
 
 typedef LayoutOptions =
 {
+	#if peotelayout_debug
+	?name:String,
+	#end
+	
 	// inner size
 	?width :Size,
 	?height:Size,

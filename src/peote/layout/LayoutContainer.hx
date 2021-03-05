@@ -14,15 +14,6 @@ typedef InnerLimit = { width:Int, height:Int }
 
 class LayoutContainer
 {
-	// masked by parent layoutcontainer
-	public var isHidden:Bool = false;
-	public var isMasked:Bool = false;
-	public var maskX(default,null):Float;
-	public var maskY(default,null):Float;
-	public var maskWidth(default,null):Float;
-	public var maskHeight(default,null):Float;
-		
-	
 	// Position and Size (suggesting/accessing jasper-vars)
 	var xParentOffset:Float = 0;
 	public var x(get,set):Null<Float>;
@@ -148,23 +139,8 @@ class LayoutContainer
 	public var hSize:SizeSpaced;
 	public var vSize:SizeSpaced;
 			
-	static var strengthHigh = Strength.create(900, 0, 0);
-	static var strengthHigh1 = Strength.create(600, 0, 0);
-	static var strengthHigh2 = Strength.create(300, 0, 0);
-	static var strength = Strength.create(0, 900, 0);
-	static var strength1 = Strength.create(0, 600, 0);
-	static var strength2 = Strength.create(0, 300, 0);
-	static var strengthLow = Strength.create(0, 0, 900);
-	static var strengthLow1 = Strength.create(0, 0, 700);
-	static var strengthLow2 = Strength.create(0, 0, 500);
-	static var strengthLow3 = Strength.create(0, 0, 300);
-	static var strengthLow4 = Strength.create(0, 0, 100);
-	
 	// ----------------------------------------------------------------------------------------
-	// storing constraints
-	public var customConstraints:Array<Constraint>;
 	
-	// ----------------------------------------------------------------------------------------
 	public var containerType:ContainerType;
 	public var layoutElement:LayoutElement;	
 	public var layout:Layout;
@@ -224,13 +200,24 @@ class LayoutContainer
 	}
 	
 	inline function set_childs(childs:Array<LayoutContainer>) {
+		#if peotelayout_debug
+		trace("new:"+this.layout.name);
+		#end
 		if (childs != null) {
-			for (child in childs) child.parent = this;
+			for (child in childs) {
+				#if peotelayout_debug
+				trace("  child:" + child.layout.name);
+				#end
+				child.parent = this;
+			}
 		}
 		this.childs = childs;
 		// TODO: update
 	}
 	
+	// ---------------------------------------------------------------
+	// --------------- init Solver -----------------------------------
+	// ---------------------------------------------------------------
 	var root_width:Variable;
 	var root_height:Variable;
 	
@@ -285,92 +272,6 @@ class LayoutContainer
 		solver.addConstraint( (_height == vSize.middle.size) | strength );
 	}
 	
-	public function update(width:Null<Float> = null, height:Null<Float> = null)
-	{
-		if (solver != null) {
-			if (width != null) solver.suggestValue(root_width, width);
-			if (height != null) solver.suggestValue(root_height, height);
-			solver.updateVariables();
-			
-			updateLayoutElement(xParentOffset, yParentOffset);
-		}
-	}
-	
-	function updateLayoutElement(xOffset:Float, yOffset:Float)
-	{
-		xParentOffset = xOffset;
-		yParentOffset = yOffset;
-		if (layout.relativeChildPositions) {
-			xOffset += x;
-			yOffset += y;
-		}
-		
-		updateMask();		
-		
-		if (layoutElement != null) layoutElement.updateByLayout(this);
-		
-		if (childs != null) 
-			for (child in childs) child.updateLayoutElement(xOffset, yOffset); // recursive
-	}
-	
-	function updateMask()
-	{
-		isMasked = false;
-		isHidden = false;
-
-		if (isRoot) {
-			maskX = 0;
-			maskY = 0;
-			maskWidth = width;
-			maskHeight = height;
-		}
-		else {
-			if (parent.isHidden) {
-				isMasked = true;
-				isHidden = true;
-			}
-			else
-			{				
-				maskX = parent._x.m_value + parent.maskX - _x.m_value;
-				if (maskX > 0) {
-					isMasked = true;
-					maskWidth = width - maskX;
-					if (maskWidth < 0) isHidden = true;
-					else if (maskWidth > parent.maskWidth) maskWidth = parent.maskWidth;
-				}
-				else {
-					maskWidth = parent.maskWidth + maskX;
-					if (maskWidth >= width) maskWidth = width;
-					else {
-						isMasked = true;
-						if (maskWidth < 0) isHidden = true;
-					}
-					maskX = 0;
-				}
-				
-				if (!isHidden) {
-					maskY = parent._y.m_value + parent.maskY - _y.m_value;
-					if (maskY > 0) {
-						isMasked = true;
-						maskHeight = height - maskY;
-						if (maskHeight < 0) isHidden = true;
-						else if (maskHeight > parent.maskHeight) maskHeight = parent.maskHeight;
-					}
-					else {
-						maskHeight = parent.maskHeight + maskY;
-						if (maskHeight >= height) maskHeight = height;
-						else {
-							isMasked = true;
-							if (maskHeight < 0) isHidden = true;
-						}
-						maskY = 0;
-					}
-				}
-			}
-		}
-	}
-	
-	
 	// TODO:
 	public function getChild(childNumber:Int):LayoutContainer {
 		return childs[childNumber];
@@ -392,6 +293,12 @@ class LayoutContainer
 		
 	}
 	
+	// -----------------------------------------------------------------------
+	// --------------- custom Constraints ------------------------------------
+	// -----------------------------------------------------------------------
+	
+	public var customConstraints:Array<Constraint>; // storing constraints
+
 	public inline function addConstraint(constraint:Constraint) {
 		if (customConstraints == null) customConstraints = new Array<Constraint>();
 		customConstraints.push(constraint);
@@ -411,9 +318,21 @@ class LayoutContainer
 		for (constraint in constraints)	removeConstraint(constraint);
 	}
 	
-	// -----------------------------------------------------------------------------------------------------
-	// -----------------------------------------------------------------------------------------------------
-	// -----------------------------------------------------------------------------------------------------
+	// --------------------------------------------------------------------------
+	// --------------------- CONSTRAINTS ----------------------------------------
+	// --------------------------------------------------------------------------
+	static var strengthHigh = Strength.create(900, 0, 0);
+	//static var strengthHigh1 = Strength.create(600, 0, 0);
+	//static var strengthHigh2 = Strength.create(300, 0, 0);
+	static var strength = Strength.create(0, 900, 0);
+	//static var strength1 = Strength.create(0, 600, 0);
+	//static var strength2 = Strength.create(0, 300, 0);
+	static var strengthLow = Strength.create(0, 0, 900);
+	static var strengthLow1 = Strength.create(0, 0, 700);
+	//static var strengthLow2 = Strength.create(0, 0, 500);
+	//static var strengthLow3 = Strength.create(0, 0, 300);
+	//static var strengthLow4 = Strength.create(0, 0, 100);
+		
 
 	static inline function fixLimit(childSize:SizeSpaced, limit:Int) 
 	{
@@ -813,7 +732,105 @@ class LayoutContainer
 		}
 		return childsLimit;
 	}
+
+		public function update(width:Null<Float> = null, height:Null<Float> = null)
+	{
+		if (solver != null) {
+			if (width != null) solver.suggestValue(root_width, width);
+			if (height != null) solver.suggestValue(root_height, height);
+			solver.updateVariables();
+			
+			updateLayoutElement(xParentOffset, yParentOffset);
+		}
+	}
 	
+	// ---------------------------------------------------------
+	// ---------- Update LayoutElement and Mask ----------------
+	// ---------------------------------------------------------
+	
+	// masked by parent layoutcontainer
+	public var isHidden:Bool = false;
+	public var isMasked:Bool = false;
+	public var maskX(default,null):Float;
+	public var maskY(default,null):Float;
+	public var maskWidth(default,null):Float;
+	public var maskHeight(default,null):Float;
+	
+	function updateLayoutElement(xOffset:Float, yOffset:Float)
+	{
+		xParentOffset = xOffset;
+		yParentOffset = yOffset;
+		if (layout.relativeChildPositions) {
+			xOffset += x;
+			yOffset += y;
+		}
+		
+		updateMask();		
+		
+		if (layoutElement != null) layoutElement.updateByLayout(this);
+		
+		if (childs != null) 
+			for (child in childs) child.updateLayoutElement(xOffset, yOffset); // recursive
+	}
+	
+	function updateMask()
+	{
+		isMasked = false;
+		isHidden = false;
+
+		if (isRoot) {
+			maskX = 0;
+			maskY = 0;
+			maskWidth = width;
+			maskHeight = height;
+		}
+		else {
+			if (parent.isHidden) {
+				isMasked = true;
+				isHidden = true;
+			}
+			else
+			{				
+				maskX = parent._x.m_value + parent.maskX - _x.m_value;
+				if (maskX > 0) {
+					isMasked = true;
+					maskWidth = width - maskX;
+					if (maskWidth < 0) isHidden = true;
+					else if (maskWidth > parent.maskWidth) maskWidth = parent.maskWidth;
+				}
+				else {
+					maskWidth = parent.maskWidth + maskX;
+					if (maskWidth >= width) maskWidth = width;
+					else {
+						isMasked = true;
+						if (maskWidth < 0) isHidden = true;
+					}
+					maskX = 0;
+				}
+				
+				if (!isHidden) {
+					maskY = parent._y.m_value + parent.maskY - _y.m_value;
+					if (maskY > 0) {
+						isMasked = true;
+						maskHeight = height - maskY;
+						if (maskHeight < 0) isHidden = true;
+						else if (maskHeight > parent.maskHeight) maskHeight = parent.maskHeight;
+					}
+					else {
+						maskHeight = parent.maskHeight + maskY;
+						if (maskHeight >= height) maskHeight = height;
+						else {
+							isMasked = true;
+							if (maskHeight < 0) isHidden = true;
+						}
+						maskY = 0;
+					}
+				}
+			}
+		}
+	}
+	
+
 }
 
 // ------------------------------------------------------------------------------------------
