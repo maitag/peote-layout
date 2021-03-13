@@ -4,6 +4,7 @@ import lime.ui.MouseButton;
 import lime.app.Application;
 
 import peote.view.PeoteView;
+import peote.view.Display;
 import peote.view.Color;
 
 import peote.layout.LayoutContainer;
@@ -13,7 +14,7 @@ import peote.layout.Size;
 import layouted.LayoutedSprite;
 import layouted.LayoutedDisplay;
 
-class Main extends lime.app.Application
+class ManualConstraints extends lime.app.Application
 {
 	var peoteView:PeoteView;
 	var display:LayoutedDisplay;
@@ -32,7 +33,7 @@ class Main extends lime.app.Application
 	// ------------------------------------------------------------
 	// --------------- SAMPLE STARTS HERE -------------------------
 	// ------------------------------------------------------------	
-	var layoutContainer:LayoutContainer;
+	var rootLayoutContainer:LayoutContainer;
 	
 	public function initPeoteView(window:lime.ui.Window)
 	{
@@ -49,53 +50,41 @@ class Main extends lime.app.Application
 				
 		
 		// init a layout
-		layoutContainer = new LayoutContainer(ContainerType.BOX, display,
-		#if peotelayout_debug
-		{ 	name:"root",
-			limitMinWidthToChilds: false
-		},
-		#end
-		[ 
-			new Box( green,
-			{
-				#if peotelayout_debug
-				name:"green",
-				#end
-				left: Size.min(100), // can be scale high but not lower as min-value
-				width:Size.limit(350, 400), // can be scale from min to max-value
-				right:Size.max(200), // can be scale from 0 to max-value
-				//right:10, // or can be a fixed value.. same as .limit(10,10)
+		var redBox = new Box(red);
+		var blueBox = new Box(blue);
+		var yellowBox = new Box(yellow);
+		redBox.layout = {left:100};
+		
+		var greenBox = new HBox(green,
+			[	redBox,
+				blueBox,
+				yellowBox
+			]
+		);
 				
-				// for "span" they are reaching its min and max at the same time while scaling
-				// in a row, but can be scaled higher as max
-				top:   Size.span(50, 100),
-				height:Size.span(200, 400),
-				bottom:Size.span(50, 100),
-			},
-			// childs
-			[
-				// Box is shortcut for LayoutContainer(ContainerType.BOX, ...)
-				new Box( red,   {left:0, width:300, height:100, bottom:Size.min(100) #if peotelayout_debug ,name:"red"#end} ),
-				new Box( blue,  {right:0, width:300, height:100, bottom:0 #if peotelayout_debug ,name:"blue"#end} ),
-				new Box( yellow,{width:100, height:Size.limit(100, 300) #if peotelayout_debug ,name:"yellow"#end} )
-			])
-		]);
+		var displayLC = new Box(display,
+			[ 
+				greenBox
+			]
+		);
 		
-		layoutContainer.init();
+		displayLC.init();
 		
-		layoutContainer.update(peoteView.width, peoteView.height);
+		displayLC.update(peoteView.width, peoteView.height);
 		
+		rootLayoutContainer = displayLC;
 		
+		// custom constraints: siehe Kommentare in LayoutContainer -> addConstraintsHBOX 
+		//displayLC.addConstraints([
+			//(redBox._width == blueBox._width-50) | Strength.create(0, 900, 0),
+			//(yellowBox._width == greenBox._width / 2) | Strength.create(0, 900, 0),
+		//]);		
+		//greenBox.removeConstraints(); // no param -> remove all
 		
-		// TODO: show/hide all layoutElements
-		// greenLC.hide();
-		// greenLC.show();
+		//var redConstraint:Constraint = (redBox._width == redBox._height) | Strength.create(0, 0, 900);
+		//redBox.addConstraint(redConstraint);
+		//redBox.removeConstraint(redConstraint);
 		
-		// TODO: changing layout dynamically
-		// greenLC.layout.height = 100;
-		// greenLC.layout.bottom = 200;
-		
-		// TODO: adding removing childs dynamically
 	
 
 	}
@@ -120,15 +109,15 @@ class Main extends lime.app.Application
 	public override function onWindowResize (width:Int, height:Int):Void
 	{
 		peoteView.resize(width, height);
-		if (layoutContainer != null) layoutContainer.update(width, height);
+		if (rootLayoutContainer != null) rootLayoutContainer.update(width, height);
 	}
 
 	// ----------------- MOUSE EVENTS ------------------------------
 	var sizeEmulation = false;
 	
 	public override function onMouseMove (x:Float, y:Float) {
-		if (sizeEmulation && layoutContainer != null) {
-			layoutContainer.update(x, y);
+		if (sizeEmulation && rootLayoutContainer != null) {
+			rootLayoutContainer.update(x, y);
 		}
 	}
 	//public override function onMouseDown (x:Float, y:Float, button:MouseButton) {};
@@ -136,7 +125,7 @@ class Main extends lime.app.Application
 		sizeEmulation = !sizeEmulation; 
 		if (sizeEmulation) onMouseMove(x, y);
 		else {
-			layoutContainer.update(peoteView.width, peoteView.height);
+			rootLayoutContainer.update(peoteView.width, peoteView.height);
 		}
 	}
 	// public override function onMouseWheel (deltaX:Float, deltaY:Float, deltaMode:lime.ui.MouseWheelMode):Void {}

@@ -23,6 +23,13 @@ class SizeSpaced
 		last  = sizeLast;
 	}
 	
+	public function hasSpan():Bool {
+		if (middle._span) return true;
+		if (first != null && first._span) return true;
+		if (last  != null && last._span) return true;
+		return false;
+	}
+	
 	public function setSizeLimit(sizeLimitVar:Null<Variable>):Null<Variable> {
 		sizeLimitVar = middle.setSizeLimit(sizeLimitVar);
 		if (first != null) sizeLimitVar = first.setSizeLimit(sizeLimitVar);
@@ -37,18 +44,11 @@ class SizeSpaced
 		return sizeSpanVar;
 	}
 	
-	public function getMin():Int {
+	public function getLimitMin():Int {
 		var min:Int = middle._min;
 		if (first != null) min += first._min;
 		if (last  != null) min += last._min;
 		return min;
-	}
-	
-	public function hasSpan():Bool {
-		if (middle._span) return true;
-		if (first != null && first._span) return true;
-		if (last  != null && last._span) return true;
-		return false;
 	}
 	
 	public function getLimitMax():Int {

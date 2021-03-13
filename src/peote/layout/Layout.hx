@@ -40,18 +40,18 @@ abstract Layout(LayoutImpl) from LayoutImpl
 {
 	public inline function new(
 		#if peotelayout_debug
-		name:String,
+		?name:String = "",
 		#end
-		width:Size, height:Size, left:Size, right:Size, top:Size, bottom:Size,
-		scrollX:Bool,
-		scrollY:Bool,
-		hAlignOnOversize:HAlign,
-		vAlignOnOversize:VAlign,
-		limitMinWidthToChilds:Bool,
-		limitMaxWidthToChilds:Bool,
-		limitMinHeightToChilds:Bool,
-		limitMaxHeightToChilds:Bool,
-		relativeChildPositions:Bool)
+		?width:Size, ?height:Size, ?left:Size, ?right:Size, ?top:Size, ?bottom:Size,
+		scrollX:Bool = false,
+		scrollY:Bool = false,
+		hAlignOnOversize:HAlign = HAlign.AUTO,
+		vAlignOnOversize:VAlign = VAlign.AUTO,
+		limitMinWidthToChilds:Bool = true,
+		limitMaxWidthToChilds:Bool = false,
+		limitMinHeightToChilds:Bool = true,
+		limitMaxHeightToChilds:Bool = false,
+		relativeChildPositions:Bool = false)
 	{
 		this = new LayoutImpl();
 		#if peotelayout_debug

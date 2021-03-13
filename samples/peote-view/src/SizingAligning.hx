@@ -39,7 +39,6 @@ class SizingAligning extends lime.app.Application
 
 		display = new LayoutedDisplay(Color.GREY1);	
 		peoteView.addDisplay(display);
-
 		
 		// Sizing and Aligning in row-containers
 		

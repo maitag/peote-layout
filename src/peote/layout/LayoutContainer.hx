@@ -97,7 +97,7 @@ class LayoutContainer
 	inline function get_xScrollMax():Float {
 		// TODO: precalculate greatest child
 		var greatestChildMinSize = 0;
-		for (child in childs) if (child.hSize.getMin() > greatestChildMinSize) greatestChildMinSize = child.hSize.getMin(); 
+		for (child in childs) if (child.hSize.getLimitMin() > greatestChildMinSize) greatestChildMinSize = child.hSize.getLimitMin(); 
 		if (_width.m_value >= greatestChildMinSize) return 0;
 		return greatestChildMinSize - _width.m_value;
 	}
@@ -162,8 +162,8 @@ class LayoutContainer
 		layout:Layout = null,
 		childs:Array<LayoutContainer> = null) 
 	{
-		set_containerType(containerType);
-		set_layoutElement(layoutElement);
+		this.containerType = containerType;
+		this.layoutElement = layoutElement;
 		set_layout(layout);
 		set_childs(childs);
 				
@@ -175,17 +175,7 @@ class LayoutContainer
 		_centerX = new Term(_x) + (_width / 2.0);
 		_centerY = new Term(_y) + (_height / 2.0);
 	}
-	
-	inline function set_containerType(containerType:ContainerType) {
-		this.containerType = containerType;
-		// TODO: update
-	}
-	
-	inline function set_layoutElement(layoutElement:LayoutElement) {
-		this.layoutElement = layoutElement;
-		// TODO: update
-	}
-	
+		
 	inline function set_layout(_layout:Layout)
 	{
 		layout = (_layout != null) ? _layout : {};
@@ -203,17 +193,144 @@ class LayoutContainer
 		#if peotelayout_debug
 		trace("new:"+this.layout.name);
 		#end
-		if (childs != null) {
+		if (childs != null && childs.length > 0) {
 			for (child in childs) {
 				#if peotelayout_debug
 				trace("  child:" + child.layout.name);
 				#end
 				child.parent = this;
+				calculateChildLimits(child);
 			}
+/*				
+				//var isHOversize = false;
+				if (limitMinWidthToChilds) {
+					if (child.hSize.middle._min < innerLimit.width) {
+						child.hSize.middle._min = innerLimit.width;
+						if (child.hSize.middle._max != null && child.hSize.middle._max < child.hSize.middle._min)
+							child.hSize.middle._max = child.hSize.middle._min);
+					}						
+				} 
+				else if (child.hSize.middle._min < innerLimit.width) child.isHOversize = true;
+				
+				
+				if (limitMaxWidthToChilds) {
+					if (child.hSize.middle._max == null) child.hSize.middle._max = innerLimit.widthMax;
+					if (child.hSize.middle._max > innerLimit.widthMax) child.hSize.middle._max = innerLimit.widthMax;
+					if (child.hSize.middle._min > child.hSize.middle._max) child.hSize.middle._min = child.hSize.middle._max;
+				}
+*/				
+			
+			// Fixing limits
+			if (containerType == ContainerType.HBOX) {
+				if (hSize.middle._min < childsSumHMin) {
+					if (layout.limitMinWidthToChilds) {
+						hSize.middle._min = childsSumHMin;
+						if (hSize.middle._max != null && hSize.middle._max < childsSumHMin)
+							hSize.middle._max = childsSumHMin;
+					}
+					else { // OVERSIZE
+						//childsSumHMin = hSize.middle._min;
+					}
+				}
+			} else { // BOX
+				// FIX MIN
+				if (hSize.middle._min < childsHighestHMin) {
+					if (layout.limitMinWidthToChilds) {
+						hSize.middle._min = childsHighestHMin;
+						if (hSize.middle._max != null && hSize.middle._max < childsHighestHMin)
+							hSize.middle._max = childsHighestHMin;
+					}
+					else { // OVERSIZE 
+					}
+				}
+				// FIX MAX
+				if (hSize.middle._max > childsHighestHMax) {
+					if (layout.limitMaxWidthToChilds) {
+						hSize.middle._max = childsHighestHMax;
+					}
+				}
+				
+			}
+		}		
+		else {
+			childsSumHMin = hSize.getLimitMin();
+			childsSumHMax = hSize.getLimitMax();
+			childsSumVMin = vSize.getLimitMin();		
+			childsSumVMax = vSize.getLimitMax();			
 		}
+		
+		#if peotelayout_debug
+		trace(""
+			//+"\nchildsNumHSpan:"+childsNumHSpan
+			//+"\nchildsNumVSpan:"+childsNumVSpan
+			+"\nchildsSumHMin:"+childsSumHMin
+			//+"\nchildsSumHMax:"+childsSumHMax
+			//+"\nchildsSumVMin:"+childsSumVMin
+			//+"\nchildsSumVMax:"+childsSumVMax
+			+"\nchildsHighestHMin:"+childsHighestHMin
+			//+"\nchildsHighestVMin:"+childsHighestVMin
+			//+"\nchildsSumHWeight:"+childsSumHWeight
+			//+"\nchildsSumVWeight:"+childsSumVWeight
+		);
+		#end
+		
 		this.childs = childs;
 		// TODO: update
 	}
+	// TODO:
+	
+	var childsNumHSpan:Int = 0;
+	var childsNumVSpan:Int = 0;
+	
+	var childsSumHMin:Int = 0;
+	var childsSumVMin:Int = 0;
+	
+	var childsSumHMax:Int = 0;
+	var childsSumVMax:Int = 0;
+	
+	var childsHighestHMin:Int = 0;
+	var childsHighestVMin:Int = 0;
+	
+	var childsHighestHMax:Int = 0;
+	var childsHighestVMax:Int = 0;
+	
+	var childsSumHWeight:Float = 0.0;
+	var childsSumVWeight:Float = 0.0;
+	
+	//var sizeLimitVar:Null<Variable> = null;
+	//var sizeSpanVar:Null<Variable> = null;
+	
+	function calculateChildLimits(child:LayoutContainer)
+	{
+		if (child.hSize.hasSpan()) childsNumHSpan++;
+		if (child.vSize.hasSpan()) childsNumVSpan++;
+		
+		childsSumHMin += child.hSize.getLimitMin();
+		childsSumHMax += child.hSize.getLimitMax();
+		childsSumVMin += child.vSize.getLimitMin();		
+		childsSumVMax += child.vSize.getLimitMax();
+		
+		if (child.hSize.getLimitMin() > childsHighestHMin) childsHighestHMin = child.hSize.getLimitMin();
+		if (child.hSize.getLimitMax() > childsHighestHMax) childsHighestHMax = child.hSize.getLimitMax();
+		if (child.vSize.getLimitMin() > childsHighestVMin) childsHighestVMin = child.vSize.getLimitMin();
+		if (child.vSize.getLimitMax() > childsHighestVMax) childsHighestVMax = child.vSize.getLimitMax();
+		
+		childsSumHWeight += child.hSize.getSpanSumWeight();
+		childsSumVWeight += child.vSize.getSpanSumWeight();		
+	}
+			
+	public function getChild(childNumber:Int):LayoutContainer {
+		return childs[childNumber];
+	}
+	
+	public function addChild(child:LayoutContainer) {
+		
+	}
+	
+	public function removeChild(child:LayoutContainer) {
+		
+	}
+	
 	
 	// ---------------------------------------------------------------
 	// --------------- init Solver -----------------------------------
@@ -231,23 +348,28 @@ class LayoutContainer
 		solver.addEditVariable(root_width, strength);
 		solver.addEditVariable(root_height, strength);
 		
-		var innerLimit = addTreeConstraints(solver); // recursive Container
-		trace("root:",innerLimit.width);
+		addTreeConstraints(solver); // recursive Container
 		
-		solver.addConstraint( (root_width >= innerLimit.width) | strengthHigh );
-		solver.addConstraint( (root_height >= innerLimit.height) | strengthHigh );
+		solver.addConstraint( (root_width >= childsHighestHMin) | strengthHigh );
+		//solver.addConstraint( (root_height >= childsSumVMin) | strengthHigh );
 		
 		// --------------------------- root-container horizontal -----------------------------			
-		fixLimit(hSize, innerLimit.width);
-		fixSpacer(null, hSize);
+		//fixLimit(hSize, innerLimit.width);
+		//fixSpacer(null, hSize);
 		
 		var hSizeLimitVar = hSize.setSizeLimit(null);
 		if (hSizeLimitVar != null) solver.addConstraint( (hSizeLimitVar >= 0) | strength );
 		
-		var hSizeSpanVar = hSize.setSizeSpan(null);
+		var autospace = AUTOSPACE_BOTH;
+		if (hSize.hasSpan()) autospace = AUTOSPACE_NONE;
+		else if (hSize.first == null && hSize.last != null) autospace = AUTOSPACE_FIRST;
+		else if (hSize.last == null && hSize.first != null) autospace = AUTOSPACE_LAST;		
+		
+		var hSizeSpanVar = (autospace == AUTOSPACE_NONE) ? hSize.setSizeSpan(null) : new Variable();
 		if (hSizeSpanVar != null) {
+			var _sumWeight = (autospace == AUTOSPACE_NONE) ? hSize.getSpanSumWeight() : ((autospace == AUTOSPACE_BOTH) ? 2 : 1);
 			solver.addConstraint( (hSizeSpanVar >= 0) | strengthHigh );
-			solver.addConstraint( (hSizeSpanVar == (root_width - hSize.getLimitMax()) / hSize.getSpanSumWeight() ) | strengthLow );
+			solver.addConstraint( (hSizeSpanVar == (root_width - hSize.getLimitMax()) / _sumWeight ) | strengthLow );
 		}
 		solver.addConstraint( (_left == 0) | strength );
 		solver.addConstraint( (_right == root_width) | strength );
@@ -255,8 +377,8 @@ class LayoutContainer
 		solver.addConstraint( (_width == hSize.middle.size) | strength );
 				
 		// ---------------------------- root-container vertical ------------------------------			
-		fixLimit(vSize, innerLimit.height);
-		fixSpacer(null, vSize);
+		//fixLimit(vSize, innerLimit.height);
+		//fixSpacer(null, vSize);
 				
 		var vSizeLimitVar = vSize.setSizeLimit(null);
 		if (vSizeLimitVar != null) solver.addConstraint( (vSizeLimitVar >= 0) | strength );
@@ -273,18 +395,6 @@ class LayoutContainer
 	}
 	
 	// TODO:
-	public function getChild(childNumber:Int):LayoutContainer {
-		return childs[childNumber];
-	}
-	
-	public function addChild(child:LayoutContainer) {
-		
-	}
-	
-	public function removeChild(child:LayoutContainer) {
-		
-	}
-	
 	public function show() {
 		
 	}
@@ -332,33 +442,7 @@ class LayoutContainer
 	//static var strengthLow2 = Strength.create(0, 0, 500);
 	//static var strengthLow3 = Strength.create(0, 0, 300);
 	//static var strengthLow4 = Strength.create(0, 0, 100);
-		
-
-	static inline function fixLimit(childSize:SizeSpaced, limit:Int) 
-	{
-		if (childSize.middle._min < limit) {
-			childSize.middle._min = limit;
-			if (childSize.middle._max != null) childSize.middle._max = Std.int(Math.max(childSize.middle._max, childSize.middle._min));
-		}		
-	}
 	
-	static inline function fixSpacer(size:SizeSpaced, childSize:SizeSpaced) 
-	{
-		if (!childSize.hasSpan()) {
-			if (size == null || (size.middle._span || childSize.getLimitMax() < ( (size.middle._max != null) ? size.middle._max : size.middle._min) ))
-			{
-				if (childSize.first != null && childSize.last != null) {
-					childSize.first._span = true;
-					childSize.last._span = true;
-				}
-				else {
-					if (childSize.first == null) childSize.first = Size.min();
-					if (childSize.last  == null) childSize.last = Size.min();
-				}
-			}					
-		}		
-	}
-
 	static inline var AUTOSPACE_NONE:Int = 0;
 	static inline var AUTOSPACE_FIRST:Int = 1;
 	static inline var AUTOSPACE_LAST:Int = 2;
@@ -434,70 +518,21 @@ class LayoutContainer
 		solver.addConstraint(c2);
 	}
 	
-	// TODO:
-/*	
-	var childsNumHSpan:Int = 0;
-	var childsNumVSpan:Int = 0;
-	
-	var childsSumHMin:Int = 0;
-	var childsSumVMin:Int = 0;
-	
-	var childsSumHMax:Int = 0;
-	var childsSumVMax:Int = 0;
-	
-	var childsHighestHMin:Int = 0;
-	var childsHighestVMin:Int = 0;
-	
-	var childsSumHWeight:Int = 0;
-	var childsSumVWeight:Int = 0;
-	
-	var sizeLimitVar:Null<Variable> = null;
-	var sizeSpanVar:Null<Variable> = null;
-	
-	function setLimits()
-	{
-		childsNumHSpan = 0;
-		childsNumVSpan = 0;
-		if (childs != null)
-			for (child in childs)
-			{
-				child.setLimits() // recursive childs
-				
-				if (child.hSize.hasSpan()) childsNumHSpan++;
-				if (child.vSize.hasSpan()) childsNumVSpan++;
-				
-				childsSumHMin += child.hSize.getMin();
-				childsSumVMin += child.vSize.getMin();
-				
-				childsSumHMax += child.hSize.getLimitMax();
-				childsSumVMax += child.vSize.getLimitMax();
-				
-				if (child.hSize.getMin() > childsHighestHMin) childsHighestHMin = child.hSize.getMin();
-				if (child.vSize.getMin() > childsHighestVMin) childsHighestVMin = child.vSize.getMin();
-				
-				childsSumHWeight += child.hSize.getSumWeight();
-				childsSumVWeight += child.vSize.getSumWeight();
-			}
-	}
-*/		
-	function addTreeConstraints(solver:Solver):InnerLimit
+
+	function addTreeConstraints(solver:Solver)
 	{
 		this.solver = solver;
 		
-		var childsLimit = {width:0, height:0};
 		if (childs != null)
 		{
 			var sizeLimitVar:Null<Variable> = null;
 			var sizeSpanVar:Null<Variable> = null;			
 			
-			var childsNumSpan:Int = 0;
-			var limitMax:Int = 0;
-			var sumWeight:Float = 0.0;		
-			
 			var autospace:Int = 0;
 						
 			var oversize = new Variable();
 			if (layout.scrollX) {
+				//solver.addConstraint( (oversize == 0 ) | strengthHigh);
 				solver.addConstraint( (oversize == 0 ) | strengthLow1);
 				solver.addConstraint( (oversize >= 0 ) | strengthHigh);				
 				// TODO: scroll-mode only if child.hSize.getMin() - hSize.getMin() > 0
@@ -509,57 +544,24 @@ class LayoutContainer
 			{	
 				var child = childs[i];
 				
-				var innerLimit = child.addTreeConstraints(solver); // recursive childs
+				child.addTreeConstraints(solver); // recursive childs
 				
 				// ------------------------------------------------------
 				// ------------------- horizontal -----------------------
 				// ------------------------------------------------------
 				
-/*				
-				//var isHOversize = false;
-				if (limitMinWidthToChilds) {
-					if (child.hSize.middle._min < innerLimit.width) {
-						child.hSize.middle._min = innerLimit.width;
-						if (child.hSize.middle._max != null && child.hSize.middle._max < child.hSize.middle._min)
-							child.hSize.middle._max = child.hSize.middle._min);
-					}						
-				} 
-				else if (child.hSize.middle._min < innerLimit.width) child.isHOversize = true;
-				
-				
-				if (limitMaxWidthToChilds) {
-					if (child.hSize.middle._max == null) child.hSize.middle._max = innerLimit.widthMax;
-					if (child.hSize.middle._max > innerLimit.widthMax) child.hSize.middle._max = innerLimit.widthMax;
-					if (child.hSize.middle._min > child.hSize.middle._max) child.hSize.middle._min = child.hSize.middle._max;
-				}
-*/				
-				if (!layout.scrollX) fixLimit(child.hSize, innerLimit.width);
-				else {
-					childsLimit.width = hSize.middle._min;
-					trace(childsLimit.width);// TODO: not do every child here!!! .. put into initialization
-				}
-				
 				if (containerType == ContainerType.HBOX) // -------- HBOX --------
 				{
-					childsLimit.width += child.hSize.getMin();
-					
-					if (child.hSize.hasSpan()) childsNumSpan++;
-					limitMax += child.hSize.getLimitMax();
-					sumWeight += child.hSize.getSpanSumWeight();
-						
 					sizeLimitVar = child.hSize.setSizeLimit(sizeLimitVar);
-					sizeSpanVar = child.hSize.setSizeSpan(sizeSpanVar);
-										
+					sizeSpanVar = child.hSize.setSizeSpan(sizeSpanVar);										
 					if (i>0) child.setConstraintLeft( (child._left == childs[i-1]._right) | strength );
 				}
 				else                             // -------- BOX ---------
 				{
-					if (! layout.scrollX)
-						if (child.hSize.getMin() > childsLimit.width) childsLimit.width = child.hSize.getMin();
-					
 					var hSizeLimitVar = child.hSize.setSizeLimit(null);
 					if (hSizeLimitVar != null) {
 						child.setConstraintHLimit( (hSizeLimitVar >= 0) | strength ); // TODO: also strengtHigh here?
+						// TODO: OVERSIZE
 						if (layout.scrollX) child.setConstraintHLimit( (hSizeLimitVar >= oversize) | strengthLow ); 
 					}
 					
@@ -577,7 +579,7 @@ class LayoutContainer
 						}
 					}
 								
-					// no scroll		
+					// TODO: no OVERSIZE?
 					if (! layout.scrollX) {
 						if (autospace & AUTOSPACE_FIRST == 0) child.setConstraintLeft( (child._left == _x) | strength );
 						else child.setConstraintLeft( (child._left - hSizeSpanVar == _x) | strength );
@@ -629,31 +631,20 @@ class LayoutContainer
 					}
 					
 				}
-				
+				// TODO: ==??==
 				child.setConstraintWidth( (child._width == child.hSize.middle.size) | strength );
 												
 				// ------------------------------------------------------
 				// ------------------- vertical -------------------------
 				// ------------------------------------------------------
-				if (!layout.scrollY) fixLimit(child.vSize, innerLimit.height);
-					
 				if (containerType == ContainerType.VBOX) // -------- VBOX --------
 				{
-					childsLimit.height += child.vSize.getMin();
-					
-					if (child.vSize.hasSpan()) childsNumSpan++;
-					limitMax += child.vSize.getLimitMax();
-					sumWeight += child.vSize.getSpanSumWeight();
-										
 					sizeLimitVar = child.vSize.setSizeLimit(sizeLimitVar);
 					sizeSpanVar = child.vSize.setSizeSpan(sizeSpanVar);					
-					
 					if (i > 0) child.setConstraintTop( (child._top == childs[i-1]._bottom) | strength );
 				}
 				else                             // -------- BOX ---------
 				{
-					if (child.vSize.getMin() > childsLimit.height) childsLimit.height = child.vSize.getMin();
-					
 					var vSizeLimitVar = child.vSize.setSizeLimit(null);
 					if (vSizeLimitVar != null) child.setConstraintVLimit( (vSizeLimitVar >= 0) | strength );
 					
@@ -665,13 +656,13 @@ class LayoutContainer
 							(vSizeSpanVar == (_height - child.vSize.getLimitMax()) / _sumWeight) | strengthLow );
 					}
 					
-					// TODO: change connections here in depend of yscroll, innerAlign and innerScroll
+					// TODO: same a horizontal
 					if (autospace & AUTOSPACE_FIRST == 0) child.setConstraintTop( (child._top == _y) | strength );
 					else child.setConstraintTop( (child._top - vSizeSpanVar == _y) | strength );
 					if (autospace & AUTOSPACE_LAST == 0) child.setConstraintBottom( (child._bottom == _y + _height) | strength );
 					else child.setConstraintBottom( (child._bottom + vSizeSpanVar == _y + _height) | strength );
 				}
-				
+				// TODO: ==??==
 				child.setConstraintHeight( (child._height == child.vSize.middle.size) | strength );
 			}			
 			
@@ -684,19 +675,21 @@ class LayoutContainer
 					setConstraintRowColLimit( (sizeLimitVar >= 0) | strength );
 				}
 				
+				var autospaceSumWeight:Int = 0;
+				
 				if (containerType == ContainerType.HBOX)
 				{
-					if (childsNumSpan == 0) {
-						autospace = getAutospace(hSize, limitMax, childs[0].hSize, childs[childs.length - 1].hSize);
+					if (childsNumHSpan == 0) {
+						autospace = getAutospace(hSize, childsSumHMax, childs[0].hSize, childs[childs.length - 1].hSize);
 						if (autospace != AUTOSPACE_NONE) {
-							sumWeight += (autospace == AUTOSPACE_BOTH) ? 2 : 1;
+							autospaceSumWeight = (autospace == AUTOSPACE_BOTH) ? 2 : 1;
 							if (sizeSpanVar == null) sizeSpanVar = new Variable();
 						}
 					}
 					else autospace = AUTOSPACE_NONE;
 					
 					if (sizeSpanVar != null) {
-						setConstraintRowColSpan( (sizeSpanVar >= 0) | strength, (sizeSpanVar == (_width - limitMax) / sumWeight ) | strengthLow );
+						setConstraintRowColSpan( (sizeSpanVar >= 0) | strength, (sizeSpanVar == (_width - childsSumHMax) / (childsSumHWeight + autospaceSumWeight) ) | strengthLow );
 					}
 			
 					// TODO: change connections here in depend of yscroll, innerAlign and innerScroll
@@ -708,17 +701,17 @@ class LayoutContainer
 				}
 				else // --------- Container.VBOX --------
 				{					
-					if (childsNumSpan == 0) {
-						autospace = getAutospace(vSize, limitMax, childs[0].vSize, childs[childs.length - 1].vSize);
+					if (childsNumVSpan == 0) {
+						autospace = getAutospace(vSize, childsSumVMax, childs[0].vSize, childs[childs.length - 1].vSize);
 						if (autospace != AUTOSPACE_NONE) {
-							sumWeight += (autospace == AUTOSPACE_BOTH) ? 2 : 1;
+							autospaceSumWeight = (autospace == AUTOSPACE_BOTH) ? 2 : 1;
 							if (sizeSpanVar == null) sizeSpanVar = new Variable();
 						}
 					}
 					else autospace = AUTOSPACE_NONE;
 					
 					if (sizeSpanVar != null) {
-						setConstraintRowColSpan( (sizeSpanVar >= 0) | strength, (sizeSpanVar == (_height - limitMax) / sumWeight ) | strengthLow );
+						setConstraintRowColSpan( (sizeSpanVar >= 0) | strength, (sizeSpanVar == (_height - childsSumVMax) / (childsSumVWeight + autospaceSumWeight) ) | strengthLow );
 					}
 			
 					// TODO: change connections here in depend of yscroll, innerAlign and innerScroll
@@ -728,12 +721,12 @@ class LayoutContainer
 					else childs[childs.length-1].setConstraintBottom( (childs[childs.length-1]._bottom + sizeSpanVar == _y + _height) | strength );
 				}
 			}
-
+			
+			
 		}
-		return childsLimit;
 	}
 
-		public function update(width:Null<Float> = null, height:Null<Float> = null)
+	public function update(width:Null<Float> = null, height:Null<Float> = null)
 	{
 		if (solver != null) {
 			if (width != null) solver.suggestValue(root_width, width);
