@@ -488,8 +488,7 @@ class LayoutContainer
 	}
 	
 	// -----------------------------------------------------------------------------------------------------
-	// TODO: same for align as for autospace here... 
-	
+
 	inline function setConstraintsNeightboars(
 			setConstraintFirst:Constraint->Void, setConstraintLast:Constraint->Void, 
 			first:Expression, last:Expression, parentPos:Variable, parentSize:Variable,
@@ -522,8 +521,8 @@ class LayoutContainer
 		{
 			if (align == Align.AUTO) {
 				// do same as for auto spacing
-				if (autospace == AUTOSPACE_FIRST) align = Align.FIRST;
-				else if (autospace == AUTOSPACE_LAST) align = Align.LAST;
+				if (autospace == AUTOSPACE_FIRST) align = Align.LAST;
+				else if (autospace == AUTOSPACE_LAST) align = Align.FIRST;
 				else align = Align.CENTER;
 			}
 			
@@ -644,11 +643,11 @@ class LayoutContainer
 		if (childs != null)
 		{
 			// TODO: make global
-			var sizeLimitVar:Null<Variable> = null;
-			var sizeSpanVar:Null<Variable> = null;			
+			var sizeLimitVar:Null<Variable> = null; // TODO: innerHLimitVar + innerVLimitVar
+			var sizeSpanVar:Null<Variable> = null;	// TODO: innerSpanVar	+ innerVSpanVar	
 			
-			var hOversize:Null<Variable> = null;
-			var vOversize:Null<Variable> = null;
+			var hOversize:Null<Variable> = null; // TODO: innerHOversizeVar
+			var vOversize:Null<Variable> = null; // TODO: innerVOversizeVar
 			
 			var autospace:Int = 0;
 						
@@ -676,9 +675,7 @@ class LayoutContainer
 				
 				child.addTreeConstraints(solver); // recursive childs
 				
-				// ------------------------------------------------------
 				// ------------------- horizontal -----------------------
-				// ------------------------------------------------------
 				
 				if (containerType == ContainerType.HBOX) // -------- HBOX --------
 				{
@@ -686,9 +683,9 @@ class LayoutContainer
 					sizeSpanVar = child.hSize.setSizeSpan(sizeSpanVar);								
 					if (i>0) child.setConstraintLeft( (child._left == childs[i-1]._right) | strength );
 				}
-				else                             // -------- BOX ---------
+				else                                     // -------- BOX ---------
 				{
-					var hSizeLimitVar = child.hSize.setSizeLimit(null);
+					var hSizeLimitVar = child.hSize.setSizeLimit(null); // TODO: child.outerHLimitVar
 					if (hSizeLimitVar != null) {
 						child.setConstraintHLimit( (hSizeLimitVar >= 0) | strengthHigh );
 						// TODO
@@ -696,7 +693,7 @@ class LayoutContainer
 					}
 					
 					autospace = getAutospaceBox(hSize, child.hSize);
-					var hSizeSpanVar = (autospace == AUTOSPACE_NONE) ? child.hSize.setSizeSpan(null) : new Variable();
+					var hSizeSpanVar = (autospace == AUTOSPACE_NONE) ? child.hSize.setSizeSpan(null) : new Variable();  // TODO: child.outerHSpanVar
 					if (hSizeSpanVar != null) {
 						var _sumWeight = (autospace == AUTOSPACE_NONE) ? child.hSize.getSpanSumWeight() : ((autospace == AUTOSPACE_BOTH) ? 2 : 1);
 						child.setConstraintHSpan(
@@ -717,18 +714,17 @@ class LayoutContainer
 				// TODO: ==??==
 				child.setConstraintWidth( (child._width == child.hSize.middle.size) | strength );
 												
-				// ------------------------------------------------------
 				// ------------------- vertical -------------------------
-				// ------------------------------------------------------
+				
 				if (containerType == ContainerType.VBOX) // -------- VBOX --------
 				{
 					sizeLimitVar = child.vSize.setSizeLimit(sizeLimitVar);
 					sizeSpanVar = child.vSize.setSizeSpan(sizeSpanVar);					
 					if (i > 0) child.setConstraintTop( (child._top == childs[i-1]._bottom) | strength );
 				}
-				else                             // -------- BOX ---------
+				else                                     // -------- BOX ---------
 				{
-					var vSizeLimitVar = child.vSize.setSizeLimit(null);
+					var vSizeLimitVar = child.vSize.setSizeLimit(null);  // TODO: child.outerVLimitVar
 					if (vSizeLimitVar != null) {
 						child.setConstraintVLimit( (vSizeLimitVar >= 0) | strengthHigh );
 						// TODO
@@ -736,7 +732,7 @@ class LayoutContainer
 					}
 					
 					autospace = getAutospaceBox(vSize, child.vSize);
-					var vSizeSpanVar = (autospace == AUTOSPACE_NONE) ? child.vSize.setSizeSpan(null) : new Variable();
+					var vSizeSpanVar = (autospace == AUTOSPACE_NONE) ? child.vSize.setSizeSpan(null) : new Variable(); // TODO: child.outerVSpanVar
 					if (vSizeSpanVar != null) {
 						var _sumWeight = (autospace == AUTOSPACE_NONE) ? child.vSize.getSpanSumWeight() : ((autospace == AUTOSPACE_BOTH) ? 2 : 1);
 						child.setConstraintVSpan(
@@ -763,21 +759,21 @@ class LayoutContainer
 			// ----------------------------------------------------------------
 			if (containerType != ContainerType.BOX && childs.length > 0)
 			{
-				if (sizeLimitVar != null) {
-					setConstraintRowColLimit( (sizeLimitVar >= 0) | strength );
-					// TODO
-					//if (isHOversize) child.setConstraintRowColLimit( (sizeLimitVar >= vOversize) | strengthLow ); 
-				}
-				
 				var autospaceSumWeight:Int = 0;
 				
 				if (containerType == ContainerType.HBOX)
 				{
+					if (sizeLimitVar != null) {  // TODO: innerHLimitVar
+						setConstraintRowColLimit( (sizeLimitVar >= 0) | strength );
+						// TODO
+						//if (isHOversize) child.setConstraintRowColLimit( (sizeLimitVar >= vOversize) | strengthLow ); 
+					}
+				
 					if (childsNumHSpan == 0) {
 						autospace = getAutospace(hSize, childsSumHMax, childs[0].hSize, childs[childs.length - 1].hSize);
 						if (autospace != AUTOSPACE_NONE) {
 							autospaceSumWeight = (autospace == AUTOSPACE_BOTH) ? 2 : 1;
-							if (sizeSpanVar == null) sizeSpanVar = new Variable();
+							if (sizeSpanVar == null) sizeSpanVar = new Variable();  // TODO: innerHSpanVar
 						}
 					}
 					else autospace = AUTOSPACE_NONE;
@@ -796,11 +792,17 @@ class LayoutContainer
 				}
 				else // --------- Container.VBOX --------
 				{					
+					if (sizeLimitVar != null) {  // TODO: innerVLimitVar
+						setConstraintRowColLimit( (sizeLimitVar >= 0) | strength );
+						// TODO
+						//if (isHOversize) child.setConstraintRowColLimit( (sizeLimitVar >= vOversize) | strengthLow ); 
+					}
+				
 					if (childsNumVSpan == 0) {
 						autospace = getAutospace(vSize, childsSumVMax, childs[0].vSize, childs[childs.length - 1].vSize);
 						if (autospace != AUTOSPACE_NONE) {
 							autospaceSumWeight = (autospace == AUTOSPACE_BOTH) ? 2 : 1;
-							if (sizeSpanVar == null) sizeSpanVar = new Variable();
+							if (sizeSpanVar == null) sizeSpanVar = new Variable();  // TODO: innerHSpanVar
 						}
 					}
 					else autospace = AUTOSPACE_NONE;
@@ -829,6 +831,9 @@ class LayoutContainer
 			if (width != null) solver.suggestValue(root_width, width);
 			if (height != null) solver.suggestValue(root_height, height);
 			solver.updateVariables();
+			
+			
+			// TODO: fire all onOversize Events
 			
 			updateLayoutElement(xParentOffset, yParentOffset);
 		}
