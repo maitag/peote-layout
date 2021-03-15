@@ -2,9 +2,8 @@ package;
 
 import lime.ui.MouseButton;
 import lime.app.Application;
-import peote.layout.HAlign;
+import peote.layout.Align;
 import peote.layout.Layout;
-import peote.layout.VAlign;
 
 import peote.view.PeoteView;
 import peote.view.Color;
@@ -60,9 +59,14 @@ class Test extends lime.app.Application
 				
 		// init a layout
 		layoutContainer = new LayoutContainer(ContainerType.BOX, display,
-		#if peotelayout_debug
-		{ name:"root",limitMinWidthToChilds: false },
-		#end
+		{
+			#if peotelayout_debug
+			name:"root",
+			#end
+			width:Size.min(100),
+			hAlignOnOversize:Align.CENTER,
+			limitMinWidthToChilds: false,
+		},
 		[ 
 			new Box( green,
 			{	
@@ -79,14 +83,14 @@ class Test extends lime.app.Application
 				limitMinHeightToChilds: true, // minimum height >= childs minimum
 				limitMaxHeightToChilds: false, // maximum height >= childs maximum
 				
-				hAlignOnOversize:HAlign.LEFT, // force the aligning for all childs on oversizing
+				hAlignOnOversize:Align.LAST, // force the aligning for all childs on oversizing
 				
 				// ----- inner size (width, height) and outer spacer (left, right, top, bottom):
 				top:0,
 				height:200,
 				left: 30,
 				//width:Size.limit(100, 400),
-				width:Size.min(100),
+				width:Size.min(200),
 				right:30,
 			},
 			// childs
@@ -115,8 +119,8 @@ class Test extends lime.app.Application
 					#if peotelayout_debug
 					name:"blue",
 					#end
-					top:100,
-					//height:100,
+					top:120,
+					height:90,
 					//left:100,
 					//left:Size.limit(50, 100),
 					//left:Size.max(100),

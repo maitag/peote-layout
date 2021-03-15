@@ -22,8 +22,8 @@ private class LayoutImpl
 	var scrollX(default, null):Bool = false;
 	var scrollY(default, null):Bool = false;
 	
-	var hAlignOnOversize(default, null):HAlign = HAlign.AUTO;
-	var vAlignOnOversize(default, null):VAlign = VAlign.AUTO;
+	var hAlignOnOversize(default, null):Align = Align.AUTO;
+	var vAlignOnOversize(default, null):Align = Align.AUTO;
 	
 	var limitMinWidthToChilds(default, null):Bool = true;
 	var limitMaxWidthToChilds(default, null):Bool = false;
@@ -45,8 +45,8 @@ abstract Layout(LayoutImpl) from LayoutImpl
 		?width:Size, ?height:Size, ?left:Size, ?right:Size, ?top:Size, ?bottom:Size,
 		scrollX:Bool = false,
 		scrollY:Bool = false,
-		hAlignOnOversize:HAlign = HAlign.AUTO,
-		vAlignOnOversize:VAlign = VAlign.AUTO,
+		hAlignOnOversize:Align = Align.AUTO,
+		vAlignOnOversize:Align = Align.AUTO,
 		limitMinWidthToChilds:Bool = true,
 		limitMaxWidthToChilds:Bool = false,
 		limitMinHeightToChilds:Bool = true,
