@@ -96,7 +96,7 @@ class SizingAligning extends lime.app.Application
 			[	
 				new Box( new LayoutedSprite(display, Color.GREY3), {width:Size.limit(50,  250)} ),
 				new Box( new LayoutedSprite(display, Color.GREY4), {width:Size.limit(100, 250)} ),
-				new Box( new LayoutedSprite(display, Color.GREY5), {width:Size.limit(200, 250)} ),
+				new Box( new LayoutedSprite(display, Color.GREY5), {width:Size.limit(150, 250)} ),
 			]),
 			new HBox( new LayoutedSprite(display, Color.MAGENTA), // mixing min, max and limit
 			[	
@@ -112,13 +112,13 @@ class SizingAligning extends lime.app.Application
 			[	
 				new Box( new LayoutedSprite(display, Color.GREY3), {width:Size.span(50,  250)} ),
 				new Box( new LayoutedSprite(display, Color.GREY4), {width:Size.span(100, 250)} ),
-				new Box( new LayoutedSprite(display, Color.GREY5), {width:Size.span(200, 250)} ),
+				new Box( new LayoutedSprite(display, Color.GREY5), {width:Size.span(150, 250)} ),
 			]),
 			new HBox( new LayoutedSprite(display, Color.GREEN),
 			[	
 				new Box( new LayoutedSprite(display, Color.GREY3), {width:Size.span(50,  100)} ),
 				new Box( new LayoutedSprite(display, Color.GREY4), {width:Size.span(100, 200)} ),
-				new Box( new LayoutedSprite(display, Color.GREY5), {width:Size.span(200, 400)} ),
+				new Box( new LayoutedSprite(display, Color.GREY5), {width:Size.span(150, 400)} ),
 			]),
 			new HBox( new LayoutedSprite(display, Color.BLUE), // span with weightning
 			[	
@@ -126,6 +126,8 @@ class SizingAligning extends lime.app.Application
 				new Box( new LayoutedSprite(display, Color.GREY4), {width:Size.span(1.0)} ),
 				new Box( new LayoutedSprite(display, Color.GREY5), {width:Size.span(2.0)} ),
 			]),
+			
+			
 		]);
 		
 		

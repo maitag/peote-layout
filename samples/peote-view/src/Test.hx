@@ -65,9 +65,10 @@ class Test extends lime.app.Application
 			#end
 			width:Size.min(100),
 			alignChildsOnOversizeX:Align.CENTER,
-			limitMinWidthToChilds: false,
+			//limitMinWidthToChilds: false,
 		},
 		[ 
+			
 			new Box( green,
 			{	
 				#if peotelayout_debug
@@ -89,8 +90,8 @@ class Test extends lime.app.Application
 				top:0,
 				height:200,
 				left: 30,
-				//width:Size.limit(100, 400),
-				width:Size.min(200),
+				width:Size.limit(100, 700),
+				//width:Size.min(200),
 				right:30,
 			},
 			// childs
@@ -101,9 +102,9 @@ class Test extends lime.app.Application
 					#end
 					top:0,
 					height:100,
-					//left:0,
+					//left:50,
 					//left:Size.limit(50, 100),
-					left:Size.max(100),
+					//left:Size.max(100),
 					//left:Size.min(50),
 					width:Size.limit(200, 300),
 					//width:Size.min(200),
@@ -119,14 +120,14 @@ class Test extends lime.app.Application
 					#if peotelayout_debug
 					name:"blue",
 					#end
-					top:120,
+					top:110,
 					height:90,
 					//left:100,
 					//left:Size.limit(50, 100),
 					//left:Size.max(100),
 					left:Size.min(100),
 					//width:Size.limit(200, 300),
-					width:Size.min(200),
+					width:Size.min(150),
 					//width:300,
 					//right:0,
 					//right:Size.limit(10, 100),
@@ -145,52 +146,63 @@ class Test extends lime.app.Application
 				]
 				),
 			]),
+			
 			// ----------------------------------------------
-/*			new Box( green1, 
+			
+			new Box( green1, 
 			{
 				top:200,
 				height:200,
-				left: 33,
-				//width:Size.limit(100, 400),
-				width:Size.min(100),
-				right:33,
+				left: 30,
+				width:Size.limit(100, 500),
+				//width:Size.min(100),
+				right:30,
+				
+				alignChildsOnOversizeX:Align.FIRST, // force the aligning for all childs on oversizing
+				limitMinWidthToChilds: false, // minimum width >= childs minimum
 			},
 			// childs
 			[
 				new Box( red1, {
 					top:0,
 					height:100,
-					width:200,
+					width:100,
 				}),
 				new Box( blue1, {
 					top:100,
 					height:100,
-					width:300,
+					width:Size.limit(200, 300),
 				}),
 			]),
+			
 			// ----------------------------------------------
+			
 			new Box( green2, 
 			{
 				top:400,
 				height:200,
-				left: 33,
-				//width:Size.limit(100, 400),
+				left: 30,
+				//width:Size.limit(100, 500),
 				width:Size.min(100),
-				right:33,
+				right:30,
+				alignChildsOnOversizeX:Align.CENTER, // force the aligning for all childs on oversizing
+				limitMinWidthToChilds: false, // minimum width >= childs minimum
 			},
 			// childs
 			[
 				new Box( red2, {
 					top:0,
 					height:100,
-					width:200,
+					width:Size.limit(200,400),
+					//width:200,
 				}),
 				new Box( blue2, {
 					top:100,
 					height:100,
-					width:300,
+					width:Size.max(300),
 				}),
-			]),*/
+			]),
+			
 			
 		]);
 		
