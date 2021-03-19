@@ -133,14 +133,14 @@ class Test extends lime.app.Application
 					//right:Size.limit(10, 100),
 					//right:Size.min(50),
 					//right:Size.max(50),
-					//hAlignOnOversize:Align.LAST, // force the aligning for all childs on oversizing
+					//alignChildsOnOversizeX:Align.LAST, // force the aligning for all childs on oversizing
 					limitMinWidthToChilds: false, // minimum width >= childs minimum
 				},
 				[
 					new Box( yellow, {
 						left:Size.limit(0,10),
 						width:Size.limit(250, 300),
-						//right:Size.max(30),
+						//right:Size.max(10),
 						height:50
 					}),
 				]
@@ -177,7 +177,7 @@ class Test extends lime.app.Application
 			
 			// ----------------------------------------------
 			
-			new Box( green2, 
+			new HBox( green2, 
 			{
 				top:400,
 				height:200,
@@ -191,15 +191,16 @@ class Test extends lime.app.Application
 			// childs
 			[
 				new Box( red2, {
-					top:0,
 					height:100,
-					width:Size.limit(200,400),
+					left:Size.max(50),
+					width:Size.limit(200,300),
 					//width:200,
 				}),
 				new Box( blue2, {
-					top:100,
 					height:100,
-					width:Size.max(300),
+					left:Size.limit(10,50),
+					width:Size.limit(100, 200),
+					right:Size.min(100),
 				}),
 			]),
 			

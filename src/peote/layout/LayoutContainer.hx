@@ -659,20 +659,20 @@ class LayoutContainer
 			if (isHOversize) {
 				innerHOversizeVar = new Variable();
 				solver.addConstraint( (innerHOversizeVar >= 0 ) | strengthHigh);				
-				solver.addConstraint( (innerHOversizeVar <= childsHighestHMin - hSize.middle._min  ) | strengthHigh);
+				//solver.addConstraint( (innerHOversizeVar <= childsHighestHMin - hSize.middle._min  ) | strength1);
 				
-				//solver.addConstraint( (innerHOversizeVar + _width == hSize.middle._min) | strengthLow3); // check strength here
+				//solver.addConstraint( (innerHOversizeVar + _width == hSize.middle._min) | strengthLow); // check strength here
 				solver.addConstraint( (innerHOversizeVar + hSize.middle.size == hSize.middle._min) | strengthLow); // check strength here
 				//solver.addConstraint( (innerHOversizeVar == 0 ) | strengthLow);
 			}
 			if (isVOversize) {
 				innerVOversizeVar = new Variable();
 				solver.addConstraint( (innerVOversizeVar >= 0 ) | strengthHigh);				
-				solver.addConstraint( (innerVOversizeVar <= childsHighestVMin - vSize.middle._min  ) | strengthHigh);
+				//solver.addConstraint( (innerVOversizeVar <= childsHighestVMin - vSize.middle._min  ) | strength1);
 				
 				//solver.addConstraint( (innerVOversizeVar + _height == vSize.middle._min) | strengthLow); // check strength here
 				solver.addConstraint( (innerVOversizeVar + vSize.middle.size == vSize.middle._min) | strengthLow); // check strength here
-				//solver.addConstraint( (innerVOversizeVar == 0 ) | strengthLow1);				
+				//solver.addConstraint( (innerVOversizeVar == 0 ) | strengthLow);				
 			}
 			
 			for (i in 0...childs.length)
@@ -694,9 +694,6 @@ class LayoutContainer
 					child.outerHLimitVar = child.hSize.setSizeLimit(null);
 					if (child.outerHLimitVar != null) {
 						child.setConstraintHLimit( (child.outerHLimitVar >= 0) | strengthHigh );
-						// check
-						//if (isHOversize) child.setConstraintHLimit( (child.outerHLimitVar >= innerHOversizeVar) | strengthLow ); 
-						//solver.addConstraint( (child.outerHLimitVar == 0 ) | strengthLow2);
 					}
 					
 					autospace = getAutospaceBox(hSize, child.hSize);
@@ -734,9 +731,6 @@ class LayoutContainer
 					child.outerVLimitVar = child.vSize.setSizeLimit(null);
 					if (child.outerVLimitVar != null) {
 						child.setConstraintVLimit( (child.outerVLimitVar >= 0) | strengthHigh );
-						// check
-						//if (isVOversize) child.setConstraintVLimit( (child.outerVLimitVar >= innerVOversizeVar) | strengthLow ); 
-						//solver.addConstraint( (child.outerVLimitVar == 0 ) | strengthLow1);
 					}
 					
 					autospace = getAutospaceBox(vSize, child.vSize);
@@ -772,10 +766,7 @@ class LayoutContainer
 				if (containerType == ContainerType.HBOX)
 				{
 					if (innerHLimitVar != null) {
-						setConstraintRowColLimit( (innerHLimitVar >= 0) | strength );
-						// check
-						//if (isHOversize) child.setConstraintRowColLimit( (sizeLimitVar >= vOversize) | strengthLow ); 
-						solver.addConstraint( (innerHLimitVar == 0 ) | strengthLow1);
+						setConstraintRowColLimit( (innerHLimitVar >= 0) | strengthHigh );
 					}
 				
 					if (childsNumHSpan == 0) {
@@ -788,7 +779,11 @@ class LayoutContainer
 					else autospace = AUTOSPACE_NONE;
 					
 					if (innerHSpanVar != null) {
-						setConstraintRowColSpan( (innerHSpanVar >= 0) | strength, (innerHSpanVar == (_width - childsSumHMax) / (childsSumHWeight + autospaceSumWeight) ) | strengthLow );
+						setConstraintRowColSpan(
+							(innerHSpanVar >= 0) | strengthHigh,
+							(isHOversize) ?	(innerHSpanVar == (_width + innerHOversizeVar - childsSumHMax) / (childsSumHWeight + autospaceSumWeight) ) | strengthLow1
+							              : (innerHSpanVar == (_width                     - childsSumHMax) / (childsSumHWeight + autospaceSumWeight) ) | strengthLow1
+						);
 					}
 			
 					setConstraintsNeightboars(
@@ -803,9 +798,6 @@ class LayoutContainer
 				{					
 					if (innerVLimitVar != null) {
 						setConstraintRowColLimit( (innerVLimitVar >= 0) | strength );
-						// check
-						//if (isHOversize) child.setConstraintRowColLimit( (sizeLimitVar >= vOversize) | strengthLow ); 
-						solver.addConstraint( (innerVLimitVar == 0 ) | strengthLow1);
 					}
 				
 					if (childsNumVSpan == 0) {
@@ -818,7 +810,7 @@ class LayoutContainer
 					else autospace = AUTOSPACE_NONE;
 					
 					if (innerVSpanVar != null) {
-						setConstraintRowColSpan( (innerVSpanVar >= 0) | strength, (innerVSpanVar == (_height - childsSumVMax) / (childsSumVWeight + autospaceSumWeight) ) | strengthLow );
+						setConstraintRowColSpan( (innerVSpanVar >= 0) | strength, (innerVSpanVar == (_height - childsSumVMax) / (childsSumVWeight + autospaceSumWeight) ) | strengthLow1 );
 					}
 			
 					setConstraintsNeightboars(
