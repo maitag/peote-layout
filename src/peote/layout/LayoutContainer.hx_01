@@ -299,7 +299,6 @@ class LayoutContainer
 		#if peotelayout_debug
 		trace(""
 			+"\nisHOversize:"+isHOversize
-			+"\nhSize.middle._min:"+hSize.middle._min
 			//+"\nchildsNumHSpan:"+childsNumHSpan
 			//+"\nchildsNumVSpan:"+childsNumVSpan
 			+"\nchildsSumHMin:"+childsSumHMin
@@ -350,7 +349,7 @@ class LayoutContainer
 	// --------------- init Solver -----------------------------------
 	// ---------------------------------------------------------------
 	var root_width:Variable;
-	var root_height:Variable;	
+	var root_height:Variable;
 	
 	// TODO: init automatically if not already
 	public function init() // TODO !
@@ -364,12 +363,23 @@ class LayoutContainer
 		
 		addTreeConstraints(solver); // recursive Container
 		
-		
-		solver.addConstraint( (root_width >= hSize.middle._min) | strength );
+		//solver.addConstraint( (root_width >= hSize.middle._min) | strength );
 		solver.addConstraint( (root_height >= vSize.middle._min) | strength );
 		//solver.addConstraint( (root_width >= childsHighestHMin) | strengthHigh );
 		//solver.addConstraint( (root_height >= childsHighestVMin) | strengthHigh );
 		
+		// TODO: fix limits
+		var root_isHOversize = true;
+		var root_innerHOversizeVar:Null<Variable> = null;
+		
+		if (root_isHOversize) {
+			trace("kk",hSize.middle._min);
+			root_innerHOversizeVar = new Variable();
+			solver.addConstraint( (root_innerHOversizeVar >= 0 ) | strengthHigh);				
+			solver.addConstraint( (root_innerHOversizeVar + root_width == hSize.middle._min) | strengthLow); // check strength here
+			//solver.addConstraint( (root_innerHOversizeVar + root_width == 100) | strengthLow); // check strength here
+			//solver.addConstraint( (root_innerHOversizeVar == 0) | strengthLow); // check strength here
+		}
 		// --------------------------- root-container horizontal -----------------------------
 		outerHLimitVar = hSize.setSizeLimit(null);
 		if (outerHLimitVar != null) setConstraintHLimit( (outerHLimitVar >= 0) | strengthHigh );
@@ -383,25 +393,34 @@ class LayoutContainer
 		if (outerHSpanVar != null) {
 			var _sumWeight = (autospace == AUTOSPACE_NONE) ? hSize.getSpanSumWeight() : ((autospace == AUTOSPACE_BOTH) ? 2 : 1);
 			setConstraintHSpan(
-				(outerHSpanVar >= 0) | strengthHigh,
-				(isHOversize) ?	(outerHSpanVar == (root_width + innerHOversizeVar- hSize.getLimitMax()) / _sumWeight) | strengthLow
-				:               (outerHSpanVar == (root_width                    - hSize.getLimitMax()) / _sumWeight) | strengthLow
+				(outerHSpanVar >= 0) | strengthHigh, // TODO: 
+				(root_isHOversize) ? (outerHSpanVar == (root_width + root_innerHOversizeVar - hSize.getLimitMax()) / _sumWeight) | strengthLow1
+				                   : (outerHSpanVar == (root_width                          - hSize.getLimitMax()) / _sumWeight) | strengthLow1
 			);
 			
 		}
-		
+/*		solver.addConstraint( (_left == 0) | strength );
+		// TODO:
+		if (root_isHOversize) {
+			if (outerHSpanVar != null)
+				solver.addConstraint( (_right + root_innerHOversizeVar == root_width + outerHSpanVar) | strength );
+			else 
+				solver.addConstraint( (_right + root_innerHOversizeVar == root_width) | strength );
+		}
+		else solver.addConstraint( (_right == root_width) | strength );
+*/		
 		var root_x = new Variable();
 		solver.addConstraint( (root_x == 0) | strengthHigh );
 		
 		setConstraintsNeightboars(
 			setConstraintLeft, setConstraintRight,
 			_left, _right, root_x, root_width,
-			false, false,
-			outerHSpanVar, null, null,
+			root_isHOversize, false,
+			outerHSpanVar, root_innerHOversizeVar, null,
 			Align.FIRST, autospace
 		);
 
-		solver.addConstraint( (_width == hSize.middle.size) | strengthHigh );
+		solver.addConstraint( (_width == hSize.middle.size) | strength );
 				
 		// ---------------------------- root-container vertical ------------------------------				
 		var vSizeLimitVar = vSize.setSizeLimit(null);
@@ -462,7 +481,7 @@ class LayoutContainer
 	// --------------------- CONSTRAINTS ----------------------------------------
 	// --------------------------------------------------------------------------
 	static var strengthHigh = Strength.create(900, 0, 0);
-	static var strengthHigh1 = Strength.create(600, 0, 0);
+	//static var strengthHigh1 = Strength.create(600, 0, 0);
 	//static var strengthHigh2 = Strength.create(300, 0, 0);
 	static var strength = Strength.create(0, 900, 0);
 	static var strength1 = Strength.create(0, 600, 0);
@@ -673,9 +692,7 @@ class LayoutContainer
 			if (isHOversize) {
 				innerHOversizeVar = new Variable();
 				solver.addConstraint( (innerHOversizeVar >= 0 ) | strengthHigh);				
-				//solver.addConstraint( (innerHOversizeVar + hSize.middle.size == hSize.middle._min) | strengthLow); // check strength here
-				//solver.addConstraint( (innerHOversizeVar + hSize.middle.size == hSize.middle._min) | strength1); // check strength here
-				solver.addConstraint( (innerHOversizeVar == 0) | strength1); // check strength here
+				solver.addConstraint( (innerHOversizeVar + hSize.middle.size == hSize.middle._min) | strengthLow); // check strength here
 			}
 			if (isVOversize) {
 				innerVOversizeVar = new Variable();
@@ -710,9 +727,8 @@ class LayoutContainer
 						var _sumWeight = (autospace == AUTOSPACE_NONE) ? child.hSize.getSpanSumWeight() : ((autospace == AUTOSPACE_BOTH) ? 2 : 1);
 						child.setConstraintHSpan(
 							(child.outerHSpanVar >= 0) | strengthHigh,
-							// CHECK: is thih need here ?
-							(isHOversize) ?	(child.outerHSpanVar == (_width + innerHOversizeVar - child.hSize.getLimitMax()) / _sumWeight) | strengthLow
-							              : (child.outerHSpanVar == (_width                     - child.hSize.getLimitMax()) / _sumWeight) | strengthLow
+							(isHOversize) ?	(child.outerHSpanVar == (_width + innerHOversizeVar - child.hSize.getLimitMax()) / _sumWeight) | strengthLow1
+							              : (child.outerHSpanVar == (_width                     - child.hSize.getLimitMax()) / _sumWeight) | strengthLow1
 						);
 					}
 					
@@ -725,7 +741,7 @@ class LayoutContainer
 					);
 				}
 				// TODO: ==??==
-				child.setConstraintWidth( (child._width == child.hSize.middle.size) | strengthHigh );
+				child.setConstraintWidth( (child._width == child.hSize.middle.size) | strength );
 												
 				// ------------------- vertical -------------------------
 				
@@ -847,7 +863,7 @@ class LayoutContainer
 			if (height != null) solver.suggestValue(root_height, height);
 			solver.updateVariables();
 			
-			//trace(root_innerHOversizeVar.m_value, outerHSpanVar.m_value, root_width.m_value);
+			
 			// TODO: fire all onOversize Events
 			
 			updateLayoutElement(xParentOffset, yParentOffset);

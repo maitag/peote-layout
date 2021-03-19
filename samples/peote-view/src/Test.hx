@@ -63,9 +63,12 @@ class Test extends lime.app.Application
 			#if peotelayout_debug
 			name:"root",
 			#end
+			//left: 10,
+			//right: 10,
 			width:Size.min(100),
-			alignChildsOnOversizeX:Align.CENTER,
-			//limitMinWidthToChilds: false,
+			//width:200,
+			alignChildsOnOversizeX:Align.FIRST,
+			limitMinWidthToChilds: false, // TODO
 		},
 		[ 
 			
@@ -80,22 +83,22 @@ class Test extends lime.app.Application
 	
 				// limit minimum/maximum to be not smaller than min/max childs size (false per default)
 				limitMinWidthToChilds: false, // minimum width >= childs minimum
-				limitMaxWidthToChilds: false, // maximum width >= childs maximum
-				limitMinHeightToChilds: true, // minimum height >= childs minimum
-				limitMaxHeightToChilds: false, // maximum height >= childs maximum
+				//limitMaxWidthToChilds: false, // maximum width >= childs maximum
+				//limitMinHeightToChilds: true, // minimum height >= childs minimum
+				//limitMaxHeightToChilds: false, // maximum height >= childs maximum
 				
 				alignChildsOnOversizeX:Align.LAST, // force the aligning for all childs on oversizing
 				
 				// ----- inner size (width, height) and outer spacer (left, right, top, bottom):
 				top:0,
 				height:200,
-				left: 30,
+				left: Size.limit(0, 30),
 				width:Size.limit(100, 700),
 				//width:Size.min(200),
 				right:30,
 			},
 			// childs
-			[
+			[	
 				new Box( red, {
 					#if peotelayout_debug
 					name:"red",
@@ -127,28 +130,44 @@ class Test extends lime.app.Application
 					//left:Size.max(100),
 					left:Size.min(100),
 					//width:Size.limit(200, 300),
-					width:Size.min(150),
+					width:Size.min(100),
 					//width:300,
 					//right:0,
 					//right:Size.limit(10, 100),
 					//right:Size.min(50),
 					//right:Size.max(50),
-					//alignChildsOnOversizeX:Align.LAST, // force the aligning for all childs on oversizing
+					alignChildsOnOversizeX:Align.LAST, // force the aligning for all childs on oversizing
 					limitMinWidthToChilds: false, // minimum width >= childs minimum
 				},
 				[
 					new Box( yellow, {
+						#if peotelayout_debug
+						name:"yellow",
+						#end
 						left:Size.limit(0,10),
 						width:Size.limit(250, 300),
 						//right:Size.max(10),
-						height:50
-					}),
+						height:50,
+						limitMinWidthToChilds: false, // minimum width >= childs minimum
+						alignChildsOnOversizeX:Align.LAST,
+					},
+					[
+						new Box( red1, {
+							#if peotelayout_debug
+							name:"red1",
+							#end
+							width:280,
+							//right:0,
+							height:30,
+						})
+					]
+					),
 				]
 				),
 			]),
 			
 			// ----------------------------------------------
-			
+/*			
 			new Box( green1, 
 			{
 				top:200,
@@ -158,7 +177,7 @@ class Test extends lime.app.Application
 				//width:Size.min(100),
 				right:30,
 				
-				alignChildsOnOversizeX:Align.FIRST, // force the aligning for all childs on oversizing
+				alignChildsOnOversizeX:Align.CENTER, // force the aligning for all childs on oversizing
 				limitMinWidthToChilds: false, // minimum width >= childs minimum
 			},
 			// childs
@@ -185,7 +204,7 @@ class Test extends lime.app.Application
 				//width:Size.limit(100, 500),
 				width:Size.min(100),
 				right:30,
-				alignChildsOnOversizeX:Align.CENTER, // force the aligning for all childs on oversizing
+				alignChildsOnOversizeX:Align.FIRST, // force the aligning for all childs on oversizing
 				limitMinWidthToChilds: false, // minimum width >= childs minimum
 			},
 			// childs
@@ -204,7 +223,7 @@ class Test extends lime.app.Application
 				}),
 			]),
 			
-			
+*/			
 		]);
 		
 		layoutContainer.init();

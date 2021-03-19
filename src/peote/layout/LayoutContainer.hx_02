@@ -379,17 +379,26 @@ class LayoutContainer
 		else if (hSize.first == null && hSize.last != null) autospace = AUTOSPACE_FIRST;
 		else if (hSize.last == null && hSize.first != null) autospace = AUTOSPACE_LAST;		
 		
+		trace("kk",hSize.middle._min, autospace);
 		outerHSpanVar = (autospace == AUTOSPACE_NONE) ? hSize.setSizeSpan(null) : new Variable();
 		if (outerHSpanVar != null) {
 			var _sumWeight = (autospace == AUTOSPACE_NONE) ? hSize.getSpanSumWeight() : ((autospace == AUTOSPACE_BOTH) ? 2 : 1);
 			setConstraintHSpan(
 				(outerHSpanVar >= 0) | strengthHigh,
-				(isHOversize) ?	(outerHSpanVar == (root_width + innerHOversizeVar- hSize.getLimitMax()) / _sumWeight) | strengthLow
-				:               (outerHSpanVar == (root_width                    - hSize.getLimitMax()) / _sumWeight) | strengthLow
+				(outerHSpanVar == (root_width - hSize.getLimitMax()) / _sumWeight) | strengthLow
 			);
 			
 		}
-		
+		// TODO:
+/*		solver.addConstraint( (_left == 0) | strength );
+		if (root_isHOversize) {
+			if (outerHSpanVar != null)
+				solver.addConstraint( (_right - root_innerHOversizeVar - outerHSpanVar == root_width - outerHSpanVar) | strength );
+			else 
+				solver.addConstraint( (_right - root_innerHOversizeVar == root_width) | strength );
+		}
+		else solver.addConstraint( (_right == root_width) | strength );
+*/		
 		var root_x = new Variable();
 		solver.addConstraint( (root_x == 0) | strengthHigh );
 		
@@ -710,8 +719,8 @@ class LayoutContainer
 						var _sumWeight = (autospace == AUTOSPACE_NONE) ? child.hSize.getSpanSumWeight() : ((autospace == AUTOSPACE_BOTH) ? 2 : 1);
 						child.setConstraintHSpan(
 							(child.outerHSpanVar >= 0) | strengthHigh,
-							// CHECK: is thih need here ?
 							(isHOversize) ?	(child.outerHSpanVar == (_width + innerHOversizeVar - child.hSize.getLimitMax()) / _sumWeight) | strengthLow
+							//(isHOversize) ?	(child.outerHSpanVar == (_width  - child.hSize.getLimitMax()) / _sumWeight) | strengthLow
 							              : (child.outerHSpanVar == (_width                     - child.hSize.getLimitMax()) / _sumWeight) | strengthLow
 						);
 					}
