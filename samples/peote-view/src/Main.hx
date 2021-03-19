@@ -62,7 +62,7 @@ class Main extends lime.app.Application
 				name:"green",
 				#end
 				left: Size.min(100), // can be scale high but not lower as min-value
-				width:Size.limit(350, 400), // can be scale from min to max-value
+				width:Size.limit(300, 400), // can be scale from min to max-value
 				right:Size.max(200), // can be scale from 0 to max-value
 				//right:10, // or can be a fixed value.. same as .limit(10,10)
 				

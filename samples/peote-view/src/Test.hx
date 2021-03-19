@@ -64,7 +64,7 @@ class Test extends lime.app.Application
 			name:"root",
 			#end
 			width:Size.min(100),
-			hAlignOnOversize:Align.CENTER,
+			alignChildsOnOversizeX:Align.CENTER,
 			limitMinWidthToChilds: false,
 		},
 		[ 
@@ -83,7 +83,7 @@ class Test extends lime.app.Application
 				limitMinHeightToChilds: true, // minimum height >= childs minimum
 				limitMaxHeightToChilds: false, // maximum height >= childs maximum
 				
-				hAlignOnOversize:Align.LAST, // force the aligning for all childs on oversizing
+				alignChildsOnOversizeX:Align.LAST, // force the aligning for all childs on oversizing
 				
 				// ----- inner size (width, height) and outer spacer (left, right, top, bottom):
 				top:0,
@@ -105,7 +105,7 @@ class Test extends lime.app.Application
 					//left:Size.limit(50, 100),
 					left:Size.max(100),
 					//left:Size.min(50),
-					width:Size.limit(200, 250),
+					width:Size.limit(200, 300),
 					//width:Size.min(200),
 					//width:Size.max(200),
 					//width:Size.limit(200, 300),

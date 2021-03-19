@@ -20,13 +20,13 @@ typedef LayoutOptions =
 	?scrollX:Bool, // false by default
 	?scrollY:Bool, // false by default
 	
-	?hAlignOnOversize:Align, // force the aligning for all childs on horizontal oversizing
-	?vAlignOnOversize:Align, // force the aligning for all childs on vertical oversizing
+	?alignChildsOnOversizeX:Align, // force the aligning for all childs on horizontal oversizing
+	?alignChildsOnOversizeY:Align, // force the aligning for all childs on vertical oversizing
 	
 	?limitMinWidthToChilds:Bool, // true by default
 	?limitMaxWidthToChilds:Bool, // false by default
 	?limitMinHeightToChilds:Bool, // true by default
 	?limitMaxHeightToChilds:Bool, // false by default
 	
-	?relativeChildPositions:Bool // false by default	
+	?relativeChildPositions:Bool // false by default
 }

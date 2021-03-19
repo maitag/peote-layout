@@ -22,8 +22,8 @@ private class LayoutImpl
 	var scrollX(default, null):Bool = false;
 	var scrollY(default, null):Bool = false;
 	
-	var hAlignOnOversize(default, null):Align = Align.AUTO;
-	var vAlignOnOversize(default, null):Align = Align.AUTO;
+	var alignChildsOnOversizeX(default, null):Align = Align.AUTO;
+	var alignChildsOnOversizeY(default, null):Align = Align.AUTO;
 	
 	var limitMinWidthToChilds(default, null):Bool = true;
 	var limitMaxWidthToChilds(default, null):Bool = false;
@@ -43,10 +43,9 @@ abstract Layout(LayoutImpl) from LayoutImpl
 		?name:String = "",
 		#end
 		?width:Size, ?height:Size, ?left:Size, ?right:Size, ?top:Size, ?bottom:Size,
-		scrollX:Bool = false,
-		scrollY:Bool = false,
-		hAlignOnOversize:Align = Align.AUTO,
-		vAlignOnOversize:Align = Align.AUTO,
+		scrollX:Bool = false, scrollY:Bool = false,
+		alignChildsOnOversizeX:Align = Align.AUTO,
+		alignChildsOnOversizeY:Align = Align.AUTO,
 		limitMinWidthToChilds:Bool = true,
 		limitMaxWidthToChilds:Bool = false,
 		limitMinHeightToChilds:Bool = true,
@@ -65,12 +64,12 @@ abstract Layout(LayoutImpl) from LayoutImpl
 		this.bottom = bottom;
 		this.scrollX = scrollX;
 		this.scrollY = scrollY;
-		this.hAlignOnOversize = hAlignOnOversize;
+		this.alignChildsOnOversizeX = alignChildsOnOversizeX;
+		this.alignChildsOnOversizeY = alignChildsOnOversizeY;
 		this.limitMinWidthToChilds = limitMinWidthToChilds;
 		this.limitMaxWidthToChilds = limitMaxWidthToChilds;
 		this.limitMinHeightToChilds = limitMinHeightToChilds;
 		this.limitMaxHeightToChilds = limitMaxHeightToChilds;
-		this.relativeChildPositions = relativeChildPositions;
 		this.relativeChildPositions = relativeChildPositions;
 	}
 	
@@ -95,8 +94,8 @@ abstract Layout(LayoutImpl) from LayoutImpl
 		if (p.bottom != null) this.bottom = p.bottom;
 		if (p.scrollX != null) this.scrollX = p.scrollX;
 		if (p.scrollY != null) this.scrollY = p.scrollY;
-		if (p.hAlignOnOversize != null) this.hAlignOnOversize = p.hAlignOnOversize;
-		if (p.vAlignOnOversize != null) this.vAlignOnOversize = p.vAlignOnOversize;
+		if (p.alignChildsOnOversizeX != null) this.alignChildsOnOversizeX = p.alignChildsOnOversizeX;
+		if (p.alignChildsOnOversizeY != null) this.alignChildsOnOversizeY = p.alignChildsOnOversizeY;
 		if (p.limitMinWidthToChilds  != null) this.limitMinWidthToChilds  = p.limitMinWidthToChilds;
 		if (p.limitMaxWidthToChilds  != null) this.limitMaxWidthToChilds  = p.limitMaxWidthToChilds;
 		if (p.limitMinHeightToChilds != null) this.limitMinHeightToChilds = p.limitMinHeightToChilds;
