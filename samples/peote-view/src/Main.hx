@@ -13,6 +13,8 @@ import peote.layout.Size;
 import layouted.LayoutedSprite;
 import layouted.LayoutedDisplay;
 
+import peote.layout.Align;
+
 class Main extends lime.app.Application
 {
 	var peoteView:PeoteView;
@@ -52,11 +54,13 @@ class Main extends lime.app.Application
 		layoutContainer = new LayoutContainer(ContainerType.BOX, display,
 		#if peotelayout_debug
 		{ 	name:"root",
-			limitMinWidthToChilds: false
+			//width:Size.min(300),
+			//limitMinWidthToChilds: false, // allow oversizing of the inner containers
+			//alignChildsOnOversizeX:Align.LAST, // for all childs to align at right if the inner containers not fit into
 		},
 		#end
 		[ 
-			new Box( green,
+			new Box( green, // same as new LayoutContainer(ContainerType.BOX, green, ...)
 			{
 				#if peotelayout_debug
 				name:"green",
