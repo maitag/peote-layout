@@ -67,7 +67,7 @@ class Test extends lime.app.Application
 			//right: 10,
 			width:Size.min(100),
 			//width:200,
-			alignChildsOnOversizeX:Align.FIRST,
+			alignChildsOnOversizeX:Align.CENTER,
 			limitMinWidthToChilds: false, // TODO
 		},
 		[ 
@@ -87,16 +87,19 @@ class Test extends lime.app.Application
 				//limitMinHeightToChilds: true, // minimum height >= childs minimum
 				//limitMaxHeightToChilds: false, // maximum height >= childs maximum
 				
-				alignChildsOnOversizeX:Align.CENTER, // force the aligning for all childs on oversizing
+				//alignChildsOnOversizeX:Align.LAST, // force the aligning for all childs on oversizing
+				alignChildsOnOversizeX:Align.AUTO, // force the aligning for all childs on oversizing
 				
 				// ----- inner size (width, height) and outer spacer (left, right, top, bottom):
 				top:0,
 				height:200,
-				left: Size.limit(0, 30),
+				left: 30,
+				//left: Size.limit(0, 30),
 				width:Size.limit(100, 700),
 				//width:Size.min(200),
 				right:30,
-			},
+			}
+			,
 			// childs
 			[	
 				new Box( red, {
@@ -105,7 +108,7 @@ class Test extends lime.app.Application
 					#end
 					top:0,
 					height:100,
-					//left:50,
+					left:0,
 					//left:Size.limit(50, 100),
 					//left:Size.max(100),
 					//left:Size.min(50),
@@ -126,13 +129,13 @@ class Test extends lime.app.Application
 					top:110,
 					height:90,
 					//left:100,
-					//left:Size.limit(50, 100),
+					left:Size.limit(0, 50),
 					//left:Size.max(100),
-					left:Size.min(100),
-					//width:Size.limit(200, 300),
-					width:Size.min(100),
+					//left:Size.min(50),
+					width:Size.limit(150, 400),
+					//width:Size.min(100),
 					//width:300,
-					//right:0,
+					right:0,
 					//right:Size.limit(10, 100),
 					//right:Size.min(50),
 					//right:Size.max(50),
@@ -144,7 +147,7 @@ class Test extends lime.app.Application
 						#if peotelayout_debug
 						name:"yellow",
 						#end
-						left:Size.limit(0,10),
+						left:Size.limit(0,100),
 						width:Size.limit(250, 300),
 						//right:Size.max(10),
 						height:50,
@@ -164,7 +167,8 @@ class Test extends lime.app.Application
 					),
 				]
 				),
-			]),
+			]
+			),
 			
 			// ----------------------------------------------
 /*			
