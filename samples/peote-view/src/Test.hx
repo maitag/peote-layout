@@ -45,16 +45,17 @@ class Test extends lime.app.Application
 
 		// add some graphic elements
 		var green = new LayoutedSprite(display, Color.GREEN);
-		var red = new LayoutedSprite(display, Color.RED+200);
+		var red = new LayoutedSprite(display, Color.RED);
 		var blue = new LayoutedSprite(display, Color.BLUE);
 		var yellow = new LayoutedSprite(display, Color.YELLOW);
+		var cyan = new LayoutedSprite(display, Color.CYAN);
 				
 		var green1 = new LayoutedSprite(display, Color.GREEN);
-		var red1 = new LayoutedSprite(display, Color.RED+200);
+		var red1 = new LayoutedSprite(display, Color.RED);
 		var blue1 = new LayoutedSprite(display, Color.BLUE);
 				
 		var green2 = new LayoutedSprite(display, Color.GREEN);
-		var red2 = new LayoutedSprite(display, Color.RED+200);
+		var red2 = new LayoutedSprite(display, Color.RED);
 		var blue2 = new LayoutedSprite(display, Color.BLUE);
 				
 		// init a layout
@@ -88,7 +89,7 @@ class Test extends lime.app.Application
 				//limitMaxHeightToChilds: false, // maximum height >= childs maximum
 				
 				//alignChildsOnOversizeX:Align.LAST, // force the aligning for all childs on oversizing
-				alignChildsOnOversizeX:Align.AUTO, // force the aligning for all childs on oversizing
+				alignChildsOnOversizeX:Align.AUTO, // auto is default
 				
 				// ----- inner size (width, height) and outer spacer (left, right, top, bottom):
 				top:0,
@@ -98,8 +99,7 @@ class Test extends lime.app.Application
 				width:Size.limit(100, 700),
 				//width:Size.min(200),
 				right:30,
-			}
-			,
+			},
 			// childs
 			[	
 				new Box( red, {
@@ -135,7 +135,7 @@ class Test extends lime.app.Application
 					width:Size.limit(150, 400),
 					//width:Size.min(100),
 					//width:300,
-					right:0,
+					right:10,
 					//right:Size.limit(10, 100),
 					//right:Size.min(50),
 					//right:Size.max(50),
@@ -155,23 +155,20 @@ class Test extends lime.app.Application
 						alignChildsOnOversizeX:Align.LAST,
 					},
 					[
-						new Box( red1, {
+						new Box( cyan, {
 							#if peotelayout_debug
-							name:"red1",
+							name:"cyan",
 							#end
 							width:280,
 							//right:0,
 							height:30,
 						})
-					]
-					),
-				]
-				),
-			]
-			),
+					]),
+				]),
+			]),
 			
 			// ----------------------------------------------
-/*			
+			
 			new Box( green1, 
 			{
 				top:200,
@@ -181,7 +178,7 @@ class Test extends lime.app.Application
 				//width:Size.min(100),
 				right:30,
 				
-				alignChildsOnOversizeX:Align.CENTER, // force the aligning for all childs on oversizing
+				//alignChildsOnOversizeX:Align.FIRST, // force the aligning for all childs on oversizing
 				limitMinWidthToChilds: false, // minimum width >= childs minimum
 			},
 			// childs
@@ -208,26 +205,29 @@ class Test extends lime.app.Application
 				//width:Size.limit(100, 500),
 				width:Size.min(100),
 				right:30,
-				alignChildsOnOversizeX:Align.FIRST, // force the aligning for all childs on oversizing
+				//alignChildsOnOversizeX:Align.FIRST, // force the aligning for all childs on oversizing
 				limitMinWidthToChilds: false, // minimum width >= childs minimum
 			},
 			// childs
 			[
 				new Box( red2, {
 					height:100,
-					left:Size.max(50),
+					//left:0,
+					//left:Size.min(10),
+					//left:Size.max(50),
 					width:Size.limit(200,300),
 					//width:200,
 				}),
 				new Box( blue2, {
 					height:100,
-					left:Size.limit(10,50),
+					//left:Size.limit(10,50),
 					width:Size.limit(100, 200),
-					right:Size.min(100),
+					//right:Size.min(100),
+					right:0
 				}),
 			]),
 			
-*/			
+			
 		]);
 		
 		layoutContainer.init();

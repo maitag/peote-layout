@@ -42,54 +42,53 @@ class NestedLayout extends lime.app.Application
 		display = new LayoutedDisplay(Color.GREY1);	
 		peoteView.addDisplay(display);
 
+				
 		var sameLimit = Size.limit(80, 150);
 		
 		// init a complex layout
 		layoutContainer = new Box( display,
 		[	// childs -----------------------------------------
 			new HBox( new LayoutedSprite(display, Color.GREEN),
-			{
-				left:  	Size.min(10),
+			{	left:  	Size.min(10),
 				width: 	Size.limit(100, 1900),
 				right: 	Size.max(50),
 				top:   	10,
 				bottom:	10,
-				limitMinWidthToChilds: false
 			},
 			[	// childs -----------------------------------------
 				new VBox( new LayoutedSprite(display, Color.BLUE),
-				{					
-					left:  Size.span(0, 0.1),
+				{	left:  Size.span(0, 0.1),
 					width: Size.span(10),
 					right: Size.span(10, 0.1),
-					limitMinHeightToChilds: false
+					//limitMinHeightToChilds: false
 				},
 				[	// childs -----------------------------------------
 					new Box( new LayoutedSprite(display, Color.RED), 
 					{	left:   Size.span(10),
 						width:  Size.limit(100, 200),
-						height: Size.limit(120, 200),
+						height: 120,                        // TODO: PROBLEM !!!!!!!!!!!!!!!!  121 works
+						//height: Size.limit(130, 200),
 						bottom: 10,
 					}),
 					new Box( new LayoutedSprite(display, Color.RED), 
 					{	left:   Size.span(10),
 						width:  Size.span(100, 200),
-						height: Size.limit(150, 200),
+						height: Size.limit(200, 200),
 						bottom: 10,
 					}),
 					new Box( new LayoutedSprite(display, Color.RED), 
 					{	left:   Size.span(10),
 						width:  Size.span(100, 200),
-						height: Size.limit(180, 200),
+						height: Size.limit(200, 200),
 					}),
 				]),
 				
 				new VBox( new LayoutedSprite(display, Color.BLUE),
-				{
-					left:  Size.span(0, 0.2),
+				{	left:  Size.span(0, 0.2),
 					width: Size.span(100),
 					right: Size.span(10, 0.3),
-				},
+				}
+				,
 				[	// childs -----------------------------------------
 					new Box( new LayoutedSprite(display, Color.YELLOW), 
 					{	left:   Size.span(10, 0.5 ),
@@ -101,7 +100,9 @@ class NestedLayout extends lime.app.Application
 					[	// childs -----------------------------------------
 						new VBox( new LayoutedSprite(display, Color.MAGENTA),
 						{	width:  Size.limit(100, 250),
-							height: Size.max(400),
+							height: Size.limit(200,400),                      // TODO: PROBLEM (399 works)
+							//height: Size.max(400),                            // TODO: PROBLEM   (399 works)
+							//height: 400,                                  // works
 						},
 						[	// childs -----------------------------------------
 							new Box( new LayoutedSprite(display, Color.GREY6),
@@ -116,19 +117,22 @@ class NestedLayout extends lime.app.Application
 								bottom: 20,
 							}),
 						]),
-					]),
-					new Box( new LayoutedSprite(display, Color.CYAN),
-					{
-						left:   Size.span(10, 1.5 ),
+					]
+					),
+					new Box( new LayoutedSprite(display, Color.CYAN), 
+					{	left:   Size.span(10, 1.5 ),
 						width:  Size.span(100),
 						height: Size.span(50,  0.5),
 						top:    Size.span(10,  0.1),
 					}),					
-				]),				
-			])
+				]
+				),
+				
+			]
+			
+			)
 		]);
 		
-				
 		layoutContainer.init();
 		
 		layoutContainer.update(peoteView.width, peoteView.height);

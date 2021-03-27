@@ -17,7 +17,7 @@ class LayoutedDisplay extends Display implements LayoutElement
 	public function new(color:Color=0x00000000) 
 	{
 		super(0, 0, 0, 0, color);		
-		buffer = new Buffer<LayoutedSprite>(100);
+		buffer = new Buffer<LayoutedSprite>(16,8);
 		program = new Program(buffer);
 		LayoutedSprite.initProgram(program);
 		addProgram(program);
@@ -49,6 +49,9 @@ class LayoutedDisplay extends Display implements LayoutElement
 	var layoutWasHidden = false;
 	public function updateByLayout(layoutContainer:peote.layout.LayoutContainer) 
 	{
+		
+		// TODO: same here as into LayoutedSprite
+		
 		if (!layoutWasHidden && layoutContainer.isHidden) { // if it is full outside of the Mask (so invisible)
 			hideByLayout();
 			layoutWasHidden = true;

@@ -71,6 +71,7 @@ class LayoutedSprite implements LayoutElement implements Element
 		");		
 		program.setColorFormula('compose(bgcolor, borderColor, borderSize, borderRadius, vec4(maskX, maskY, maskWidth, maskHeight))');// parsed by color and custom identifiers		
 		program.alphaEnabled = true;
+		program.discardAtAlpha(0.7);
 	}
 	
 	
@@ -81,35 +82,12 @@ class LayoutedSprite implements LayoutElement implements Element
 	public function new(display:LayoutedDisplay, color:Color) {
 		this.color = color;
 		this.display = display;
-		showByLayout();
 	}
 	
-	
-	
-	/* INTERFACE peote.layout.LayoutElement */	
-
-	public function showByLayout() {
-		if (!isVisible) {
-			isVisible = true;
-			(display.buffer:Buffer<LayoutedSprite>).addElement(this);
-		}
-	}
-	
-	public function hideByLayout() {
-		if (isVisible) {
-			isVisible = false;
-			(display.buffer:Buffer<LayoutedSprite>).removeElement(this);
-		}			
-	}
-	
-	public function updateByLayout(layoutContainer:LayoutContainer) 
-	{
-		if (isVisible && layoutContainer.isHidden) { // if it is full outside of the Mask (so invisible)
-			hideByLayout();
-		}
-		else {
+	public inline function update(layoutContainer:LayoutContainer) {
 			x = Math.round(layoutContainer.x);
 			y = Math.round(layoutContainer.y);
+			z = Math.round(layoutContainer.depth);
 			w = Math.round(layoutContainer.width);
 			h = Math.round(layoutContainer.height);
 			
@@ -125,13 +103,57 @@ class LayoutedSprite implements LayoutElement implements Element
 				maskWidth = w;
 				maskHeight = h;
 			}
-			
-			if (!isVisible) showByLayout()
-			else (display.buffer:Buffer<LayoutedSprite>).updateElement(this);
-
-		}
 	}
 	
+	public inline function show() {
+		isVisible = true;
+		(display.buffer:Buffer<LayoutedSprite>).addElement(this);
+	}
+	
+	public inline function hide() {
+		isVisible = false;
+		(display.buffer:Buffer<LayoutedSprite>).removeElement(this);
+	}
+
+	
+	/* INTERFACE peote.layout.LayoutElement */	
+
+	public inline function showByLayout() {
+		if (!isVisible) show();
+	}
+	
+	public inline function hideByLayout() {
+		if (isVisible) hide();
+	}
+	
+	public inline function updateByLayout(layoutContainer:LayoutContainer) {
+		
+		// TODO: layoutContainer.updateMask() from here to make it only on-need
+		
+		if (isVisible)
+		{ 
+			if (layoutContainer.isHidden) // if it is full outside of the Mask (so invisible)
+			{
+				#if peotelayout_debug
+				trace("removed", layoutContainer.layout.name);
+				#end
+				hide();
+			}
+			else {
+				update(layoutContainer);
+				(display.buffer:Buffer<LayoutedSprite>).updateElement(this);
+			}
+		}
+		else if (!layoutContainer.isHidden) // not full outside of the Mask anymore
+		{
+			#if peotelayout_debug
+			trace("showed", layoutContainer.layout.name);
+			#end
+			update(layoutContainer);
+			show();
+		}
+		
+	}
 	
 	
 }
