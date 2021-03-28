@@ -45,6 +45,7 @@ class NestedLayout extends lime.app.Application
 		var sameLimit = Size.limit(80, 150);
 		
 		// init a complex layout
+		
 		layoutContainer = new Box( display,
 		[	// childs -----------------------------------------
 			new HBox( new LayoutedSprite(display, Color.GREEN),
@@ -54,7 +55,7 @@ class NestedLayout extends lime.app.Application
 				right: 	Size.max(50),
 				top:   	10,
 				bottom:	10,
-				limitMinWidthToChilds: false
+				limitMinWidthToChilds: false, // let is oversize horizontally
 			},
 			[	// childs -----------------------------------------
 				new VBox( new LayoutedSprite(display, Color.BLUE),
@@ -62,7 +63,7 @@ class NestedLayout extends lime.app.Application
 					left:  Size.span(0, 0.1),
 					width: Size.span(10),
 					right: Size.span(10, 0.1),
-					limitMinHeightToChilds: false
+					limitMinHeightToChilds: false, // let is oversize vertically
 				},
 				[	// childs -----------------------------------------
 					new Box( new LayoutedSprite(display, Color.RED), 
@@ -126,8 +127,7 @@ class NestedLayout extends lime.app.Application
 					}),					
 				]),				
 			])
-		]);
-		
+		]);		
 				
 		layoutContainer.init();
 		

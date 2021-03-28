@@ -52,14 +52,15 @@ class Main extends lime.app.Application
 		
 		// init a layout
 		layoutContainer = new LayoutContainer(ContainerType.BOX, display,
-		#if peotelayout_debug
-		{ 	name:"root",
+		{
+			#if peotelayout_debug
+			name:"root",
+			#end
 			//width:Size.min(300),
 			//limitMinWidthToChilds: false, // allow oversizing of the inner containers
 			//alignChildsOnOversizeX:Align.LAST, // for all childs to align at right if the inner containers not fit into
 		},
-		#end
-		[ 
+		[	// green child
 			new Box( green, // same as new LayoutContainer(ContainerType.BOX, green, ...)
 			{
 				#if peotelayout_debug
@@ -76,32 +77,39 @@ class Main extends lime.app.Application
 				height:Size.span(200, 400),
 				bottom:Size.span(50, 100),
 			},
-			// childs
-			[
-				// Box is shortcut for LayoutContainer(ContainerType.BOX, ...)
-				new Box( red,   {left:0, width:300, height:100, bottom:Size.min(100) #if peotelayout_debug ,name:"red"#end} ),
-				new Box( blue,  {right:0, width:300, height:100, bottom:0 #if peotelayout_debug ,name:"blue"#end} ),
-				new Box( yellow,{width:100, height:Size.limit(100, 300) #if peotelayout_debug ,name:"yellow"#end} )
-			])
+			[	// red, blue and yellow childs
+				new Box( red, {
+					#if peotelayout_debug
+					name:"red",
+					#end
+					left:0,
+					width:300,
+					height:100,
+					bottom:Size.min(100),
+				}),
+				new Box( blue, {
+					#if peotelayout_debug
+					name:"blue",
+					#end
+					right:0,
+					width:300,
+					height:100,
+					bottom:0,
+				}),
+				new Box( yellow, {
+					#if peotelayout_debug
+					name:"yellow",
+					#end
+					width:100,
+					height:Size.limit(100, 300),
+				}),
+			]),
 		]);
 		
 		layoutContainer.init();
 		
 		layoutContainer.update(peoteView.width, peoteView.height);
 		
-		
-		
-		// TODO: show/hide all layoutElements
-		// greenLC.hide();
-		// greenLC.show();
-		
-		// TODO: changing layout dynamically
-		// greenLC.layout.height = 100;
-		// greenLC.layout.bottom = 200;
-		
-		// TODO: adding removing childs dynamically
-	
-
 	}
 	
 	// ------------------------------------------------------------

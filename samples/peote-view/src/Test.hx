@@ -108,7 +108,7 @@ class Test extends lime.app.Application
 					#end
 					top:0,
 					height:100,
-					left:0,
+					left:10,
 					//left:Size.limit(50, 100),
 					//left:Size.max(100),
 					//left:Size.min(50),

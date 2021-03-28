@@ -50,8 +50,6 @@ class LayoutedDisplay extends Display implements LayoutElement
 	public function updateByLayout(layoutContainer:peote.layout.LayoutContainer) 
 	{
 		
-		// TODO: same here as into LayoutedSprite
-		
 		if (!layoutWasHidden && layoutContainer.isHidden) { // if it is full outside of the Mask (so invisible)
 			hideByLayout();
 			layoutWasHidden = true;

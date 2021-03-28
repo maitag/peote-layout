@@ -206,10 +206,7 @@ class LayoutContainer
 	var childsHighestVMax:Int = 0;	
 	var childsSumHWeight:Float = 0.0;
 	var childsSumVWeight:Float = 0.0;
-	
-	//var sizeLimitVar:Null<Variable> = null;
-	//var sizeSpanVar:Null<Variable> = null;
-	
+		
 	inline function set_childs(childs:Array<LayoutContainer>) {
 		#if peotelayout_debug
 		trace("----- " + this.layout.name + "-----");
@@ -356,7 +353,7 @@ class LayoutContainer
 	var root_height:Variable;	
 	
 	// TODO: init automatically if not already
-	public function init() // TODO !
+	public function init()
 	{
 		solver = new Solver();
 		
@@ -369,7 +366,7 @@ class LayoutContainer
 		solver.addConstraint( (root_width >= hSize.middle._min) | strengthHigh );
 		solver.addConstraint( (root_height >= vSize.middle._min) | strengthHigh );
 		
-		addTreeConstraints(solver, 0); // recursive Container
+		addTreeConstraints(solver, 0); // <- recursive Container
 			
 		// --------------------------- root-container horizontal -----------------------------
 		
@@ -397,7 +394,7 @@ class LayoutContainer
 			setConstraintRight( (_right == root_width) | strength );
 		else setConstraintRight( (_right == root_width - outerHSpanVar) | strength );
 
-		solver.addConstraint( (_width == hSize.middle.size) | strength ); // CHECK PROBLEM HERE WITH strengthHigh
+		solver.addConstraint( (_width == hSize.middle.size) | strength );
 				
 		// ---------------------------- root-container vertical ------------------------------
 		
@@ -425,7 +422,7 @@ class LayoutContainer
 			setConstraintBottom( (_bottom == root_height) | strength );
 		else setConstraintBottom( (_bottom == root_height - outerVSpanVar) | strength );
 		
-		solver.addConstraint( (_height == vSize.middle.size) | strength ); // CHECK PROBLEM HERE WITH strengthHigh
+		solver.addConstraint( (_height == vSize.middle.size) | strength );
 	}
 	
 	// TODO:
@@ -469,16 +466,15 @@ class LayoutContainer
 	//static var strengthHigh1 = Strength.create(600, 0, 0);
 	//static var strengthHigh2 = Strength.create(300, 0, 0);
 	static var strength = Strength.create(0, 900, 0);
-	static var strength1 = Strength.create(0, 600, 0);
-	static var strength2 = Strength.create(0, 300, 0);
+	//static var strength1 = Strength.create(0, 600, 0);
+	//static var strength2 = Strength.create(0, 300, 0);
+	static var strengthOversize = Strength.create(0, 100, 0);
 	static var strengthLow = Strength.create(0, 0, 900);
-	static var strengthLow1 = Strength.create(0, 0, 700);
-	//static var strengthLow2 = Strength.create(0, 0, 500);
-	//static var strengthLow3 = Strength.create(0, 0, 300);
-	//static var strengthLow4 = Strength.create(0, 0, 100);
+	//static var strengthLow1 = Strength.create(0, 0, 600);
+	//static var strengthLow2 = Strength.create(0, 0, 300);
 	
 	static inline var AUTOSPACE_NONE:Int = 0;
-	static inline var AUTOSPACE_FIRST:Int = 1;
+	static inline var AUTOSPACE_FIRST:Int= 1;
 	static inline var AUTOSPACE_LAST:Int = 2;
 	static inline var AUTOSPACE_BOTH:Int = 3;
 
@@ -677,6 +673,7 @@ class LayoutContainer
 		{
 			var autospace:Int = 0;
 			
+			// horizontal oversize-align for box (if not autoalign) or hbox
 			if (isHOversize && (layout.alignChildsOnOversizeX != Align.AUTO || containerType != ContainerType.BOX)) {
 				innerHOversizeVar = new Variable();
 				solver.addConstraint( (innerHOversizeVar >= 0 ) | strengthHigh);
@@ -685,9 +682,10 @@ class LayoutContainer
 					solver.addConstraint( (innerHOversizeVar <= childsHighestHMin - hSize.middle._min) | strengthHigh);				
 				else solver.addConstraint( (innerHOversizeVar <= childsSumHMin - hSize.middle._min) | strengthHigh);
 					
-				solver.addConstraint( (innerHOversizeVar == 0) | Strength.create(0, 100 , 0));		
+				solver.addConstraint( (innerHOversizeVar == 0) | strengthOversize);		
 			}
 			
+			// vertical oversize-align for box (if not autoalign) or hbox
 			if (isVOversize && (layout.alignChildsOnOversizeY != Align.AUTO || containerType != ContainerType.BOX)) {
 				innerVOversizeVar = new Variable();
 				solver.addConstraint( (innerVOversizeVar >= 0 ) | strengthHigh);	
@@ -696,16 +694,18 @@ class LayoutContainer
 					solver.addConstraint( (innerVOversizeVar <= childsHighestVMin - vSize.middle._min) | strengthHigh);				
 				else solver.addConstraint( (innerVOversizeVar <= childsSumVMin - vSize.middle._min) | strengthHigh);	
 					
-				solver.addConstraint( (innerVOversizeVar == 0) | Strength.create(0, 100, 0));
+				solver.addConstraint( (innerVOversizeVar == 0) | strengthOversize);
 			}
 			
 			for (i in 0...childs.length)
 			{	
 				var child = childs[i];
 				
-				child.addTreeConstraints(solver, depth); // recursive childs
+				child.addTreeConstraints(solver, depth); // <- recursive childs
 				
-				// ------------------- horizontal -----------------------
+				// ----------------------------------------------------------------
+				// ------------------------- horizontal ---------------------------
+				// ----------------------------------------------------------------
 				
 				if (containerType == ContainerType.HBOX) // -------- HBOX --------
 				{
@@ -727,7 +727,7 @@ class LayoutContainer
 						child.outerHOversizeVar = new Variable();
 						solver.addConstraint( (child.outerHOversizeVar >= 0 ) | strengthHigh);						
 						solver.addConstraint( (child.outerHOversizeVar <= child.hSize.getLimitMin() - hSize.middle._min) | strengthHigh);				
-						solver.addConstraint( (child.outerHOversizeVar == 0) | Strength.create(0, 100, 0));
+						solver.addConstraint( (child.outerHOversizeVar == 0) | strengthOversize);
 						
 						if (autospace == AUTOSPACE_FIRST) align = Align.LAST;
 						else if (autospace == AUTOSPACE_LAST) align = Align.FIRST;
@@ -752,10 +752,12 @@ class LayoutContainer
 						_xScroll, align, autospace
 					);
 				}
-				// TODO: ==??==
-				child.setConstraintWidth( (child._width == child.hSize.middle.size) | strength ); // strengtHigh can give resolving PROBLEM
+				
+				child.setConstraintWidth( (child._width == child.hSize.middle.size) | strength );
 												
-				// ------------------- vertical -------------------------
+				// ----------------------------------------------------------------
+				// ------------------------- vertical -----------------------------
+				// ----------------------------------------------------------------
 				
 				if (containerType == ContainerType.VBOX) // -------- VBOX --------
 				{
@@ -777,7 +779,7 @@ class LayoutContainer
 						child.outerVOversizeVar = new Variable();
 						solver.addConstraint( (child.outerVOversizeVar >= 0 ) | strengthHigh);						
 						solver.addConstraint( (child.outerVOversizeVar <= child.vSize.getLimitMin() - vSize.middle._min) | strengthHigh);				
-						solver.addConstraint( (child.outerVOversizeVar == 0) | Strength.create(0, 100, 0));
+						solver.addConstraint( (child.outerVOversizeVar == 0) | strengthOversize);
 						
 						if (autospace == AUTOSPACE_FIRST) align = Align.LAST;
 						else if (autospace == AUTOSPACE_LAST) align = Align.FIRST;
@@ -802,8 +804,8 @@ class LayoutContainer
 						_yScroll, align, autospace
 					);
 				}
-				// TODO: ==??==
-				child.setConstraintHeight( (child._height == child.vSize.middle.size) | strength ); // strengtHigh gives resolving PROBLEM at NestedLAyoutSample!!!
+				
+				child.setConstraintHeight( (child._height == child.vSize.middle.size) | strength );
 			}			
 			
 			// ----------------------------------------------------------------

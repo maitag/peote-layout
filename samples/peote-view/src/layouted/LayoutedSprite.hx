@@ -15,7 +15,7 @@ class LayoutedSprite implements LayoutElement implements Element
 	@color("bgcolor") public var color:Color = 0xffff00ff; // using different identifier "bgcolor" for setColorFormula()
 	
 	@custom @varying public var borderRadius:Float = 25.0; // using propertyname as identifier for setColorFormula()
-	@custom("borderSize") @varying public var bSize:Float = 5.0;// using different identifier "borderSize" for setColorFormula()
+	@custom("borderSize") @varying public var bSize:Float = 5.0; // using different identifier "borderSize" for setColorFormula()
 	
 	@posX public var x:Int=0;
 	@posY public var y:Int=0;	
@@ -71,7 +71,7 @@ class LayoutedSprite implements LayoutElement implements Element
 		");		
 		program.setColorFormula('compose(bgcolor, borderColor, borderSize, borderRadius, vec4(maskX, maskY, maskWidth, maskHeight))');// parsed by color and custom identifiers		
 		program.alphaEnabled = true;
-		program.discardAtAlpha(0.7);
+		program.discardAtAlpha(0.7); // z-ordering and alpha needs to tweak here !  (needs auto-sorting via peote-view or new feature there)
 	}
 	
 	
