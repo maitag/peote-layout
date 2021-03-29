@@ -69,7 +69,7 @@ class Test extends lime.app.Application
 			width:Size.min(100),
 			//width:200,
 			alignChildsOnOversizeX:Align.CENTER,
-			limitMinWidthToChilds: false, // TODO
+			limitMinWidthToChilds: false,
 		},
 		[ 
 			

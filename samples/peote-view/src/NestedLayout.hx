@@ -8,7 +8,6 @@ import peote.view.PeoteView;
 import peote.view.Color;
 
 import peote.layout.LayoutContainer;
-import peote.layout.ContainerType;
 import peote.layout.Size;
 
 import layouted.LayoutedSprite;
@@ -56,6 +55,7 @@ class NestedLayout extends lime.app.Application
 				top:   	10,
 				bottom:	10,
 				limitMinWidthToChilds: false, // let is oversize horizontally
+				alignChildsOnOversizeX:Align.FIRST,
 			},
 			[	// childs -----------------------------------------
 				new VBox( new LayoutedSprite(display, Color.BLUE),
