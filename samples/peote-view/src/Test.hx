@@ -40,7 +40,9 @@ class Test extends lime.app.Application
 	{
 		peoteView = new PeoteView(window.context, window.width, window.height);
 
-		display = new LayoutedDisplay(Color.GREY1);	
+		display = new LayoutedDisplay(Color.GREY1);
+		display.width = 2000;
+		display.height = 2000;
 		peoteView.addDisplay(display);
 
 		// add some graphic elements
@@ -59,16 +61,19 @@ class Test extends lime.app.Application
 		var blue2 = new LayoutedSprite(display, Color.BLUE);
 				
 		// init a layout
-		layoutContainer = new LayoutContainer(ContainerType.BOX, display,
+		layoutContainer = new LayoutContainer(ContainerType.BOX, blue2,
 		{
 			#if peotelayout_debug
 			name:"root",
 			#end
-			//left: 10,
+			//left: Size.max(100),
+			//left: 100,
 			//right: 10,
-			width:Size.min(100),
+			//right: Size.max(100),
+			//width:Size.min(50), // TODO: Order of oversizing ! (-> test 50)
+			width:Size.limit(50, 800),
 			//width:200,
-			alignChildsOnOversizeX:Align.CENTER,
+			//alignChildsOnOversizeX:Align.CENTER,
 			limitMinWidthToChilds: false,
 		},
 		[ 
@@ -88,17 +93,17 @@ class Test extends lime.app.Application
 				//limitMinHeightToChilds: true, // minimum height >= childs minimum
 				//limitMaxHeightToChilds: false, // maximum height >= childs maximum
 				
-				//alignChildsOnOversizeX:Align.LAST, // force the aligning for all childs on oversizing
-				alignChildsOnOversizeX:Align.AUTO, // auto is default
+				//alignChildsOnOversizeX:Align.FIRST, // force the aligning for all childs on oversizing
+				//alignChildsOnOversizeX:Align.AUTO, // auto is default
 				
 				// ----- inner size (width, height) and outer spacer (left, right, top, bottom):
 				top:0,
 				height:200,
-				left: 30,
+				//left: 30,
 				//left: Size.limit(0, 30),
 				width:Size.limit(100, 700),
 				//width:Size.min(200),
-				right:30,
+				//right:30,
 			},
 			// childs
 			[	
@@ -204,6 +209,7 @@ class Test extends lime.app.Application
 				left: 30,
 				//width:Size.limit(100, 500),
 				width:Size.min(100),
+				//width:Size.max(500),
 				right:30,
 				//alignChildsOnOversizeX:Align.FIRST, // force the aligning for all childs on oversizing
 				limitMinWidthToChilds: false, // minimum width >= childs minimum

@@ -135,7 +135,7 @@ class LayoutedSprite implements LayoutElement implements Element
 			if (layoutContainer.isHidden) // if it is full outside of the Mask (so invisible)
 			{
 				#if peotelayout_debug
-				trace("removed", layoutContainer.layout.name);
+				//trace("removed", layoutContainer.layout.name);
 				#end
 				hide();
 			}
@@ -147,7 +147,7 @@ class LayoutedSprite implements LayoutElement implements Element
 		else if (!layoutContainer.isHidden) // not full outside of the Mask anymore
 		{
 			#if peotelayout_debug
-			trace("showed", layoutContainer.layout.name);
+			//trace("showed", layoutContainer.layout.name);
 			#end
 			update(layoutContainer);
 			show();
