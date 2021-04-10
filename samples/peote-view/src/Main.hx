@@ -56,6 +56,7 @@ class Main extends lime.app.Application
 			#if peotelayout_debug
 			name:"root",
 			#end
+			// relativeChildPositions:true, // need sometimes for peoteView Display (because all sprites are into and relative to)
 			//width:Size.min(300),
 			//limitMinWidthToChilds: false, // allow oversizing of the inner containers
 			//alignChildsOnOversizeX:Align.LAST, // for all childs to align at right if the inner containers not fit into

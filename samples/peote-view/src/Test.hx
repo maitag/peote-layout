@@ -41,8 +41,6 @@ class Test extends lime.app.Application
 		peoteView = new PeoteView(window.context, window.width, window.height);
 
 		display = new LayoutedDisplay(Color.GREY1);
-		display.width = 2000;
-		display.height = 2000;
 		peoteView.addDisplay(display);
 
 		// add some graphic elements
@@ -61,11 +59,13 @@ class Test extends lime.app.Application
 		var blue2 = new LayoutedSprite(display, Color.BLUE);
 				
 		// init a layout
-		layoutContainer = new LayoutContainer(ContainerType.BOX, blue2,
+		layoutContainer = new LayoutContainer(ContainerType.BOX, display,
 		{
 			#if peotelayout_debug
 			name:"root",
 			#end
+			relativeChildPositions:true, // need for peoteView Display (because all sprites are into and relative to)
+			
 			//left: Size.max(100),
 			//left: 100,
 			//right: 10,
