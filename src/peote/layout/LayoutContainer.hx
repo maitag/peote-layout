@@ -192,8 +192,15 @@ class LayoutContainer
 		// TODO: update
 	}
 	
-	var isHOversize:Bool = false;
-	var isVOversize:Bool = false;
+	
+	var innerHOversizeWeight:Int = 0;
+	var outerHOversizeWeight:Int = 0;	
+	var innerVOversizeWeight:Int = 0;
+	var outerVOversizeWeight:Int = 0;	
+	var isInnerHOversize:Bool = false;
+	var isInnerVOversize:Bool = false;
+	var isOuterHOversize:Bool = false;
+	var isOuterVOversize:Bool = false;
 	var childsNumHSpan:Int = 0;
 	var childsNumVSpan:Int = 0;	
 	var childsSumHMin:Int = 0;
@@ -230,7 +237,9 @@ class LayoutContainer
 						if (hSize.middle._max != null && hSize.middle._max < childsSumHMin)
 							hSize.middle._max = childsSumHMin;
 					}
-					else {  isHOversize = true;
+					else {
+						isInnerHOversize = true;//TODO
+						innerHOversizeWeight++; 
 					}
 				}
 				// FIX MAX
@@ -247,8 +256,10 @@ class LayoutContainer
 						if (hSize.middle._max != null && hSize.middle._max < childsHighestHMin)
 							hSize.middle._max = childsHighestHMin;
 					}
-					else { isHOversize = true;
-					}
+					else if (layout.alignChildsOnOversizeX != Align.AUTO) {
+						isInnerHOversize = true;
+						innerHOversizeWeight++; //TODO
+					}						
 				}
 				// FIX MAX
 				if (layout.limitMaxWidthToChilds && childsHighestHMax != 0) {
@@ -267,7 +278,9 @@ class LayoutContainer
 						if (vSize.middle._max != null && vSize.middle._max < childsSumVMin)
 							vSize.middle._max = childsSumVMin;
 					}
-					else {  isVOversize = true;
+					else {
+						isInnerVOversize = true;
+						innerVOversizeWeight++; 
 					}
 				}
 				// FIX MAX
@@ -284,7 +297,9 @@ class LayoutContainer
 						if (vSize.middle._max != null && vSize.middle._max < childsHighestVMin)
 							vSize.middle._max = childsHighestVMin;
 					}
-					else { isVOversize = true;
+					else if (layout.alignChildsOnOversizeY != Align.AUTO) {
+						isInnerVOversize = true;
+						innerVOversizeWeight++;
 					}
 				}
 				// FIX MAX
@@ -298,7 +313,8 @@ class LayoutContainer
 		
 		#if peotelayout_debug
 		trace(""
-			+"\nisHOversize:"+isHOversize
+			+"\nisInnerHOversize:"+isInnerHOversize
+			+"\ninnerHOversizeWeight:"+innerHOversizeWeight
 			+"\nhSize.middle._min:"+hSize.middle._min
 			//+"\nchildsNumHSpan:"+childsNumHSpan
 			//+"\nchildsNumVSpan:"+childsNumVSpan
@@ -320,17 +336,34 @@ class LayoutContainer
 	inline function calculateChildLimits(child:LayoutContainer)
 	{
 		if (child.hSize.hasSpan()) childsNumHSpan++;
-		if (child.vSize.hasSpan()) childsNumVSpan++;		
+		if (child.vSize.hasSpan()) childsNumVSpan++;
 		childsSumHMin += child.hSize.getLimitMin();
 		childsSumHMax += child.hSize.getLimitMax();
-		childsSumVMin += child.vSize.getLimitMin();		
-		childsSumVMax += child.vSize.getLimitMax();		
+		childsSumVMin += child.vSize.getLimitMin();
+		childsSumVMax += child.vSize.getLimitMax();
 		if (child.hSize.getLimitMin() > childsHighestHMin) childsHighestHMin = child.hSize.getLimitMin();
 		if (child.hSize.getLimitMax() > childsHighestHMax) childsHighestHMax = child.hSize.getLimitMax();
 		if (child.vSize.getLimitMin() > childsHighestVMin) childsHighestVMin = child.vSize.getLimitMin();
 		if (child.vSize.getLimitMax() > childsHighestVMax) childsHighestVMax = child.vSize.getLimitMax();		
 		childsSumHWeight += child.hSize.getSpanSumWeight();
-		childsSumVWeight += child.vSize.getSpanSumWeight();		
+		childsSumVWeight += child.vSize.getSpanSumWeight();
+		
+		// TODO
+		if (!layout.limitMinWidthToChilds && containerType == ContainerType.BOX 
+			&& layout.alignChildsOnOversizeX == Align.AUTO && child.hSize.getLimitMin() > hSize.middle._min) {
+			child.isOuterHOversize = true;
+			child.outerHOversizeWeight = child.innerHOversizeWeight + 1;
+			innerHOversizeWeight += child.outerHOversizeWeight;
+		}
+		else innerHOversizeWeight += child.innerHOversizeWeight;
+		
+		if (!layout.limitMinHeightToChilds && containerType == ContainerType.BOX 
+			&& layout.alignChildsOnOversizeY == Align.AUTO && child.vSize.getLimitMin() > vSize.middle._min) {
+			child.isOuterVOversize = true;
+			child.outerVOversizeWeight = child.innerVOversizeWeight + 1;
+			innerVOversizeWeight += child.outerVOversizeWeight;
+		}
+		else innerVOversizeWeight += child.innerVOversizeWeight;
 	}
 			
 	public function getChild(childNumber:Int):LayoutContainer {
@@ -678,7 +711,7 @@ class LayoutContainer
 	var outerHOversizeVar:Null<Variable> = null;
 	var outerVOversizeVar:Null<Variable> = null;
 
-	function addTreeConstraints(solver:Solver, depth:Int, hOversizeWeight:Float = 500, vOversizeWeight:Float = 500)
+	function addTreeConstraints(solver:Solver, depth:Int)
 	{
 		this.solver = solver;
 		this.depth = depth++;
@@ -692,62 +725,31 @@ class LayoutContainer
 			var vOversizeWeightSubtractor = 0;
 			
 			// horizontal oversize-align for box (if not autoalign) or hbox
-			if (isHOversize && (layout.alignChildsOnOversizeX != Align.AUTO || containerType != ContainerType.BOX)) {
+			if (isInnerHOversize) {
 				innerHOversizeVar = new Variable();
-				solver.addConstraint( (innerHOversizeVar >= 0 ) | strengthHigh);
-				
+				solver.addConstraint( (innerHOversizeVar >= 0 ) | strengthHigh);				
 				//trace(depth,layout.name + ":innerOversize", childsHighestHMin-hSize.middle._min, hOversizeWeight);
 				if (containerType == ContainerType.BOX)
 					solver.addConstraint( (innerHOversizeVar <= childsHighestHMin - hSize.middle._min) | strengthHigh);				
-				else solver.addConstraint( (innerHOversizeVar <= childsSumHMin - hSize.middle._min) | strengthHigh);
-					
-				//solver.addConstraint( (innerHOversizeVar == 0) | strengthOversize);
-				solver.addConstraint( (innerHOversizeVar == 0) | Strength.create(0, hOversizeWeight, 0));
-				hOversizeWeightSubtractor = 2;
-			}
-			
-			if (isHOversize && layout.alignChildsOnOversizeX == Align.AUTO && containerType == ContainerType.BOX) {
-				var _oversized:Int = 0;
-				for (child in childs) if (child.hSize.getLimitMin() > hSize.middle._min) _oversized++;
-				if (_oversized > 0) {
-					hOversizeWeight = hOversizeWeight / _oversized; // without for-loop:  / childs.length;
-					if (hOversizeWeight < 1) hOversizeWeight = 1;
-					hOversizeWeightSubtractor = 2;
-				}
-			}
-			
+				else solver.addConstraint( (innerHOversizeVar <= childsSumHMin - hSize.middle._min) | strengthHigh);					
+				solver.addConstraint( (innerHOversizeVar == 0) | Strength.create(0, innerHOversizeWeight, 0));
+			}			
 			
 			// vertical oversize-align for box (if not autoalign) or hbox
-			if (isVOversize && (layout.alignChildsOnOversizeY != Align.AUTO || containerType != ContainerType.BOX)) {
+			if (isInnerVOversize) {
 				innerVOversizeVar = new Variable();
-				solver.addConstraint( (innerVOversizeVar >= 0 ) | strengthHigh);	
-				
+				solver.addConstraint( (innerVOversizeVar >= 0 ) | strengthHigh);
 				if (containerType == ContainerType.BOX)
-					solver.addConstraint( (innerVOversizeVar <= childsHighestVMin - vSize.middle._min) | strengthHigh);				
-				else solver.addConstraint( (innerVOversizeVar <= childsSumVMin - vSize.middle._min) | strengthHigh);	
-					
-				//solver.addConstraint( (innerVOversizeVar == 0) | strengthOversize);
-				solver.addConstraint( (innerVOversizeVar == 0) | Strength.create(0, vOversizeWeight, 0));
-				vOversizeWeightSubtractor = 2;
+					solver.addConstraint( (innerVOversizeVar <= childsHighestVMin - vSize.middle._min) | strengthHigh);		
+				else solver.addConstraint( (innerVOversizeVar <= childsSumVMin - vSize.middle._min) | strengthHigh);					
+				solver.addConstraint( (innerVOversizeVar == 0) | Strength.create(0, innerVOversizeWeight, 0));
 			}
-			
-			if (isVOversize && layout.alignChildsOnOversizeY == Align.AUTO && containerType == ContainerType.BOX) {
-				var _oversized:Int = 0;
-				for (child in childs) if (child.vSize.getLimitMin() > vSize.middle._min) _oversized++;
-				if (_oversized > 0) {
-					vOversizeWeight = vOversizeWeight / _oversized; // without for-loop:  / childs.length;
-					if (vOversizeWeight < 1) vOversizeWeight = 1;
-					vOversizeWeightSubtractor = 2;
-				}
-			}
-			
-			
-			
+						
 			for (i in 0...childs.length)
 			{	
 				var child = childs[i];
 				
-				child.addTreeConstraints(solver, depth, hOversizeWeight-hOversizeWeightSubtractor, vOversizeWeight-vOversizeWeightSubtractor); // <- recursive childs
+				child.addTreeConstraints(solver, depth); // <- recursive childs
 				
 				// ----------------------------------------------------------------
 				// ------------------------- horizontal ---------------------------
@@ -771,18 +773,12 @@ class LayoutContainer
 					autospace = getAutospaceBox(hSize, child.hSize);					
 					alignOnOversize = layout.alignChildsOnOversizeX;
 					
-					if (isHOversize && alignOnOversize == Align.AUTO) {
+					if (child.isOuterHOversize) {
 						child.outerHOversizeVar = new Variable();
 						//trace(depth, child.layout.name + ":outerOversize", child.hSize.getLimitMin()-hSize.middle._min, hOversizeWeight);
-						if (child.hSize.getLimitMin() > hSize.middle._min) {
-							solver.addConstraint( (child.outerHOversizeVar >= 0 ) | strengthHigh);	
-							solver.addConstraint( (child.outerHOversizeVar <= child.hSize.getLimitMin() - hSize.middle._min) | strengthHigh);				
-							//solver.addConstraint( (child.outerHOversizeVar == 0) | strengthOversize);
-							solver.addConstraint( (child.outerHOversizeVar == 0) | Strength.create(0, hOversizeWeight, 0));
-						} 
-						else {
-							solver.addConstraint( (child.outerHOversizeVar == 0 ) | strengthHigh);	
-						}
+						solver.addConstraint( (child.outerHOversizeVar >= 0 ) | strengthHigh);	
+						solver.addConstraint( (child.outerHOversizeVar <= child.hSize.getLimitMin() - hSize.middle._min) | strengthHigh);				
+						solver.addConstraint( (child.outerHOversizeVar == 0) | Strength.create(0, child.outerHOversizeWeight, 0));
 						alignOnOversize = (autospace != AUTOSPACE_NONE) ? autospace : getAutospaceAlign(child.hSize, child.hSize);
 					}
 					
@@ -799,9 +795,9 @@ class LayoutContainer
 					setConstraintsNeighbors(
 						child.setConstraintLeft, child.setConstraintRight,
 						child._left, child._right, _x, _width,
-						isHOversize, layout.scrollX,
+						(isInnerHOversize || child.isOuterHOversize), layout.scrollX,
 						child.outerHSpanVar, 
-						(layout.alignChildsOnOversizeX == Align.AUTO) ? child.outerHOversizeVar : innerHOversizeVar,
+						(isInnerHOversize) ? innerHOversizeVar : child.outerHOversizeVar,
 						_xScroll, alignOnOversize, autospace
 					);
 				}
@@ -831,13 +827,11 @@ class LayoutContainer
 					autospace = getAutospaceBox(vSize, child.vSize);
 					alignOnOversize = layout.alignChildsOnOversizeY;
 					
-					if (isVOversize && alignOnOversize == Align.AUTO) {
+					if (child.isOuterVOversize) {
 						child.outerVOversizeVar = new Variable();
 						solver.addConstraint( (child.outerVOversizeVar >= 0 ) | strengthHigh);						
 						solver.addConstraint( (child.outerVOversizeVar <= child.vSize.getLimitMin() - vSize.middle._min) | strengthHigh);				
-						//solver.addConstraint( (child.outerVOversizeVar == 0) | strengthOversize);
-						solver.addConstraint( (child.outerVOversizeVar == 0) | Strength.create(0, vOversizeWeight, 0));
-						
+						solver.addConstraint( (child.outerVOversizeVar == 0) | Strength.create(0, child.outerVOversizeWeight, 0));
 						alignOnOversize = (autospace != AUTOSPACE_NONE) ? autospace : getAutospaceAlign(child.vSize, child.vSize);
 					}
 					
@@ -853,9 +847,9 @@ class LayoutContainer
 					setConstraintsNeighbors(
 						child.setConstraintTop, child.setConstraintBottom, 
 						child._top, child._bottom, _y, _height,
-						isVOversize, layout.scrollY,
+						(isInnerVOversize || child.isOuterVOversize), layout.scrollY,
 						child.outerVSpanVar, 
-						(layout.alignChildsOnOversizeY == Align.AUTO) ? child.outerVOversizeVar : innerVOversizeVar,
+						(isInnerVOversize) ? innerVOversizeVar : child.outerVOversizeVar,
 						_yScroll, alignOnOversize, autospace
 					);
 				}
@@ -886,7 +880,7 @@ class LayoutContainer
 					
 					alignOnOversize = layout.alignChildsOnOversizeX;
 					
-					if (isHOversize && alignOnOversize == Align.AUTO) {
+					if (isInnerHOversize && alignOnOversize == Align.AUTO) {
 						alignOnOversize = (autospace != AUTOSPACE_NONE) ? autospace : getAutospaceAlign(childs[0].hSize, childs[childs.length - 1].hSize);
 					}
 					
@@ -900,7 +894,7 @@ class LayoutContainer
 					setConstraintsNeighbors(
 						setConstraintLeft, setConstraintRight, 
 						childs[0]._left, childs[childs.length-1]._right, _x, _width,
-						isHOversize, layout.scrollX,
+						isInnerHOversize, layout.scrollX,
 						innerHSpanVar, innerHOversizeVar, _xScroll,
 						alignOnOversize, autospace
 					);
@@ -920,7 +914,7 @@ class LayoutContainer
 					
 					alignOnOversize = layout.alignChildsOnOversizeY;
 					
-					if (isVOversize && alignOnOversize == Align.AUTO) {
+					if (isInnerVOversize && alignOnOversize == Align.AUTO) {
 						alignOnOversize = (autospace != AUTOSPACE_NONE) ? autospace : getAutospaceAlign(childs[0].vSize, childs[childs.length - 1].vSize);
 					}
 					
@@ -934,7 +928,7 @@ class LayoutContainer
 					setConstraintsNeighbors(
 						setConstraintTop, setConstraintBottom, 
 						childs[0]._top, childs[childs.length-1]._bottom, _y, _height,
-						isVOversize, layout.scrollY,
+						isInnerVOversize, layout.scrollY,
 						innerVSpanVar, innerVOversizeVar, _yScroll,
 						alignOnOversize, autospace
 					);
