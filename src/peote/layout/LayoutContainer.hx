@@ -481,9 +481,12 @@ class LayoutContainer
 	// --------------------- CONSTRAINTS ----------------------------------------
 	// --------------------------------------------------------------------------
 	static var strengthEditVar = Strength.STRONG;	
-	static var strengthHigh = Strength.REQUIRED;
-	static var strengthNeighbor = Strength.REQUIRED;
-	static var strengthWidthHeight = Strength.STRONG;	
+	//static var strengthHigh = Strength.REQUIRED; // <- bug at deepNestingDemo
+	static var strengthHigh = Strength.STRONG;
+	//static var strengthNeighbor = Strength.REQUIRED;
+	static var strengthNeighbor = Strength.STRONG;
+	//static var strengthWidthHeight = Strength.STRONG;	
+	static var strengthWidthHeight = Strength.MEDIUM;	
 	static var strengthSpan = Strength.WEAK;
 	
 	static inline var AUTOSPACE_NONE:Int = 0;
