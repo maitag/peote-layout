@@ -421,8 +421,7 @@ class LayoutContainer
 		if (autospace & AUTOSPACE_LAST == 0) setConstraintRight( (_right == root_width) | strengthNeighbor );
 		else setConstraintRight( (_right == root_width - outerHSpanVar) | strengthNeighbor );
 
-		// check out if it is faster to use lower strength here because of LIMITs-rounding error if multiple childs!
-		setConstraintWidth( (_width == hSize.middle.size) | strengthWidthHeight );
+		setConstraintWidth();
 				
 		// ---------------------------- root-container vertical ------------------------------		
 		outerVLimitVar = vSize.setSizeLimit(null);
@@ -441,8 +440,7 @@ class LayoutContainer
 		if (autospace & AUTOSPACE_LAST == 0) setConstraintBottom( (_bottom == root_height) | strengthNeighbor );
 		else setConstraintBottom( (_bottom == root_height - outerVSpanVar) | strengthNeighbor );
 		
-		// check out if it is faster to use lower strength here because of LIMITs-rounding error if multiple childs!
-		setConstraintHeight( (_height == vSize.middle.size) | strengthWidthHeight );
+		setConstraintHeight();
 	}
 	
 	// TODO:
@@ -632,11 +630,13 @@ class LayoutContainer
 		solver.addConstraint(c);
 	}
 	
-	inline function setConstraintWidth(c:Constraint) {
-		solver.addConstraint(c);
+	inline function setConstraintWidth() {
+		var c1:Constraint = (_width == hSize.middle.size) | strengthWidthHeight;
+		solver.addConstraint(c1);
 	}
-	inline function setConstraintHeight(c:Constraint) {
-		solver.addConstraint(c);
+	inline function setConstraintHeight() {
+		var c1:Constraint = (_height == vSize.middle.size) | strengthWidthHeight;
+		solver.addConstraint(c1);
 	}
 		
 	inline function setConstraintInnerLimit(innerLimitVar:Variable) {
@@ -756,8 +756,7 @@ class LayoutContainer
 						
 			for (i in 0...childs.length)
 			{	
-				var child = childs[i];
-				
+				var child = childs[i];				
 				child.addTreeConstraints(solver, depth); // <- recursive childs
 				
 				// ----------------------------------------------------------------
@@ -799,8 +798,7 @@ class LayoutContainer
 					);
 				}
 						
-				// check out if it is faster to use lower strength here because of LIMITs-rounding error if multiple childs!
-				child.setConstraintWidth( (child._width == child.hSize.middle.size) | strengthWidthHeight );
+				child.setConstraintWidth();
 												
 				// ----------------------------------------------------------------
 				// ------------------------- vertical -----------------------------
@@ -841,8 +839,7 @@ class LayoutContainer
 					);
 				}
 				
-				// check out if it is faster to use lower strength here because of LIMITs-rounding error if multiple childs!
-				child.setConstraintHeight( (child._height == child.vSize.middle.size) | strengthWidthHeight );
+				child.setConstraintHeight();
 			}			
 			
 			// ----------------------------------------------------------------
