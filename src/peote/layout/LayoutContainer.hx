@@ -372,6 +372,9 @@ class LayoutContainer
 	
 	public function addChild(child:LayoutContainer) {
 		
+		
+		
+		
 	}
 	
 	public function removeChild(child:LayoutContainer) {
@@ -397,47 +400,39 @@ class LayoutContainer
 		solver.addEditVariable(root_height, strengthEditVar);
 		
 		solver.addConstraint( (root_width >= hSize.getLimitMin()) | strengthHigh );
-		//solver.addConstraint( (root_width >= hSize.middle._min) | strengthHigh );
-		solver.addConstraint( (root_height >= vSize.middle._min) | strengthHigh );
+		solver.addConstraint( (root_height >= vSize.getLimitMin()) | strengthHigh );
 		
 		addTreeConstraints(solver, 0); // <- recursive Container
 			
-		// --------------------------- root-container horizontal -----------------------------
-		
+		// --------------------------- root-container horizontal -----------------------------		
 		outerHLimitVar = hSize.setSizeLimit(null);
 		if (outerHLimitVar != null) {
-			setConstraintHLimit( (outerHLimitVar >= 0) | strengthHigh );
+			setConstraintOuterHLimit( (outerHLimitVar >= 0) | strengthHigh );
 			// next is need because of rounding error if multiple childs! (or see width-constraints below!)
-			setConstraintHLimit( (outerHLimitVar <= 1) | strengthHigh );
+			setConstraintOuterHLimit( (outerHLimitVar <= 1) | strengthHigh );
 		}
 		
-		var autospace = AUTOSPACE_BOTH;
-		if (hSize.hasSpan()) autospace = AUTOSPACE_NONE;
-		else if (hSize.first == null && hSize.last != null) autospace = AUTOSPACE_FIRST;
-		else if (hSize.last == null && hSize.first != null) autospace = AUTOSPACE_LAST;		
+		var autospace = (hSize.hasSpan()) ? AUTOSPACE_NONE : getAutospaceAlign(hSize, hSize);
 		
 		outerHSpanVar = (autospace == AUTOSPACE_NONE) ? hSize.setSizeSpan(null) : new Variable();
 		if (outerHSpanVar != null) {
 			var _sumWeight = (autospace == AUTOSPACE_NONE) ? hSize.getSpanSumWeight() : ((autospace == AUTOSPACE_BOTH) ? 2 : 1);
 			//trace(layout.name + ":span",hSize.middle._min / _sumWeight, hSize.getLimitMax() /  _sumWeight);
-			setConstraintHSpan(	(outerHSpanVar >= 0) | strengthHigh,
+			setConstraintOuterHSpan(	(outerHSpanVar >= 0) | strengthHigh,
 				(outerHSpanVar == (root_width - hSize.getLimitMax()) / _sumWeight) | strengthSpan
 			);			
 		}
 		// left
-		if (autospace & AUTOSPACE_FIRST == 0)
-			setConstraintLeft( (_left == 0) | strengthNeighbor );
+		if (autospace & AUTOSPACE_FIRST == 0) setConstraintLeft( (_left == 0) | strengthNeighbor );
 		else setConstraintLeft( (_left == outerHSpanVar) | strengthNeighbor );
 		// right
-		if (autospace & AUTOSPACE_LAST == 0)
-			setConstraintRight( (_right == root_width) | strengthNeighbor );
+		if (autospace & AUTOSPACE_LAST == 0) setConstraintRight( (_right == root_width) | strengthNeighbor );
 		else setConstraintRight( (_right == root_width - outerHSpanVar) | strengthNeighbor );
 
 		// check out if it is faster to use lower strength here because of LIMITs-rounding error if multiple childs!
 		setConstraintWidth( (_width == hSize.middle.size) | strengthWidthHeight );
 				
-		// ---------------------------- root-container vertical ------------------------------
-		
+		// ---------------------------- root-container vertical ------------------------------		
 		outerVLimitVar = vSize.setSizeLimit(null);
 		if (outerVLimitVar != null) {
 			solver.addConstraint( (outerVLimitVar >= 0) | strengthHigh );
@@ -445,25 +440,20 @@ class LayoutContainer
 			solver.addConstraint( (outerVLimitVar <= 1) | strengthHigh );
 		}
 		
-		autospace = AUTOSPACE_BOTH;
-		if (vSize.hasSpan()) autospace = AUTOSPACE_NONE;
-		else if (vSize.first == null && vSize.last != null) autospace = AUTOSPACE_FIRST;
-		else if (vSize.last == null && vSize.first != null) autospace = AUTOSPACE_LAST;		
+		autospace = (vSize.hasSpan()) ? AUTOSPACE_NONE : getAutospaceAlign(vSize, vSize);
 
 		outerVSpanVar = (autospace == AUTOSPACE_NONE) ? vSize.setSizeSpan(null) : new Variable();
 		if (outerVSpanVar != null) {
 			var _sumWeight = (autospace == AUTOSPACE_NONE) ? vSize.getSpanSumWeight() : ((autospace == AUTOSPACE_BOTH) ? 2 : 1);
-			setConstraintVSpan(	(outerVSpanVar >= 0) | strengthHigh,
+			setConstraintOuterVSpan(	(outerVSpanVar >= 0) | strengthHigh,
 				(outerVSpanVar == (root_height - vSize.getLimitMax()) / _sumWeight) | strengthSpan
 			);
 		}
 		// top
-		if (autospace & AUTOSPACE_FIRST == 0)
-			setConstraintTop( (_top == 0) | strengthNeighbor );
+		if (autospace & AUTOSPACE_FIRST == 0) setConstraintTop( (_top == 0) | strengthNeighbor );
 		else setConstraintTop( (_top == outerVSpanVar) | strengthNeighbor );
 		// bottom
-		if (autospace & AUTOSPACE_LAST == 0)
-			setConstraintBottom( (_bottom == root_height) | strengthNeighbor );
+		if (autospace & AUTOSPACE_LAST == 0) setConstraintBottom( (_bottom == root_height) | strengthNeighbor );
 		else setConstraintBottom( (_bottom == root_height - outerVSpanVar) | strengthNeighbor );
 		
 		// check out if it is faster to use lower strength here because of LIMITs-rounding error if multiple childs!
@@ -507,18 +497,11 @@ class LayoutContainer
 	// --------------------------------------------------------------------------
 	// --------------------- CONSTRAINTS ----------------------------------------
 	// --------------------------------------------------------------------------
-	static var strengthEditVar = Strength.STRONG; //Strength.create(900, 0, 0);
-	
-	static var strengthHigh = Strength.REQUIRED; // Strength.create(900, 0, 0);
-	static var strengthNeighbor = Strength.REQUIRED; //Strength.create(500, 0, 0);
-	
-	//static var strengthWidthHeight = Strength.create(2, 1, 0);
-	static var strengthWidthHeight = Strength.STRONG; //Strength.create(0, 500, 0);
-	
-	//static var strengthOversize = Strength.create(0, 100, 100);
-	//static var strengthOversize = Strength.MEDIUM; //Strength.create(0, 100, 0);
-	
-	static var strengthSpan = Strength.WEAK; //Strength.create(0, 0, 10);
+	static var strengthEditVar = Strength.STRONG;	
+	static var strengthHigh = Strength.REQUIRED;
+	static var strengthNeighbor = Strength.REQUIRED;
+	static var strengthWidthHeight = Strength.STRONG;	
+	static var strengthSpan = Strength.WEAK;
 	
 	static inline var AUTOSPACE_NONE:Int = 0;
 	static inline var AUTOSPACE_FIRST:Int= Align.LAST;
@@ -671,27 +654,27 @@ class LayoutContainer
 		solver.addConstraint(c);
 	}
 		
-	inline function setConstraintHLimit(c:Constraint) {
+	inline function setConstraintOuterHLimit(c:Constraint) {
 		solver.addConstraint(c);
 	}
-	inline function setConstraintVLimit(c:Constraint) {
+	inline function setConstraintOuterVLimit(c:Constraint) {
 		solver.addConstraint(c);
 	}
 	
-	inline function setConstraintHSpan(c1:Constraint, c2:Constraint) {
+	inline function setConstraintInnerLimit(c:Constraint) {
+		solver.addConstraint(c);
+	}
+	
+	inline function setConstraintOuterHSpan(c1:Constraint, c2:Constraint) {
 		solver.addConstraint(c1);
 		solver.addConstraint(c2);
 	}
-	inline function setConstraintVSpan(c1:Constraint, c2:Constraint) {
+	inline function setConstraintOuterVSpan(c1:Constraint, c2:Constraint) {
 		solver.addConstraint(c1);
 		solver.addConstraint(c2);
 	}
 		
-	inline function setConstraintRowColLimit(c:Constraint) {
-		solver.addConstraint(c);
-	}
-	
-	inline function setConstraintRowColSpan(c1:Constraint, c2:Constraint) {
+	inline function setConstraintInnerSpan(c1:Constraint, c2:Constraint) {
 		solver.addConstraint(c1);
 		solver.addConstraint(c2);
 	}
@@ -720,9 +703,6 @@ class LayoutContainer
 		{
 			var autospace:Int;
 			var alignOnOversize:Align;
-			
-			var hOversizeWeightSubtractor = 0;
-			var vOversizeWeightSubtractor = 0;
 			
 			// horizontal oversize-align for box (if not autoalign) or hbox
 			if (isInnerHOversize) {
@@ -765,7 +745,7 @@ class LayoutContainer
 				{
 					child.outerHLimitVar = child.hSize.setSizeLimit(null);
 					if (child.outerHLimitVar != null) {
-						child.setConstraintHLimit( (child.outerHLimitVar >= 0) | strengthHigh );
+						child.setConstraintOuterHLimit( (child.outerHLimitVar >= 0) | strengthHigh );
 						// next is need because of rounding error if multiple childs! (or see with-constraints below!)
 						solver.addConstraint((child.outerHLimitVar <= 1) | strengthHigh);
 					}
@@ -786,7 +766,7 @@ class LayoutContainer
 					if (child.outerHSpanVar != null) {
 						var _sumWeight = (autospace == AUTOSPACE_NONE) ? child.hSize.getSpanSumWeight() : ((autospace == AUTOSPACE_BOTH) ? 2 : 1);
 						//trace(child.layout.name + ":span",hSize.middle._min / _sumWeight, child.hSize.getLimitMax() /  _sumWeight);
-						child.setConstraintHSpan(
+						child.setConstraintOuterHSpan(
 							(child.outerHSpanVar >= 0) | strengthHigh,
 							(child.outerHSpanVar == (_width - child.hSize.getLimitMax()) / _sumWeight) | strengthSpan
 						);
@@ -819,7 +799,7 @@ class LayoutContainer
 				{
 					child.outerVLimitVar = child.vSize.setSizeLimit(null);
 					if (child.outerVLimitVar != null) {
-						child.setConstraintVLimit( (child.outerVLimitVar >= 0) | strengthHigh );
+						child.setConstraintOuterVLimit( (child.outerVLimitVar >= 0) | strengthHigh );
 						// next is need because of rounding error if multiple childs! (or see height-constraints below!)
 						solver.addConstraint((child.outerVLimitVar <= 1) | strengthHigh);
 					}
@@ -838,7 +818,7 @@ class LayoutContainer
 					child.outerVSpanVar = (autospace == AUTOSPACE_NONE) ? child.vSize.setSizeSpan(null) : new Variable();
 					if (child.outerVSpanVar != null) {
 						var _sumWeight = (autospace == AUTOSPACE_NONE) ? child.vSize.getSpanSumWeight() : ((autospace == AUTOSPACE_BOTH) ? 2 : 1);
-						child.setConstraintVSpan(
+						child.setConstraintOuterVSpan(
 							(child.outerVSpanVar >= 0) | strengthHigh,
 							(child.outerVSpanVar == (_height - child.vSize.getLimitMax()) / _sumWeight) | strengthSpan
 						);
@@ -868,8 +848,8 @@ class LayoutContainer
 				if (containerType == ContainerType.HBOX)
 				{
 					if (innerHLimitVar != null) {
-						setConstraintRowColLimit( (innerHLimitVar >= 0) | strengthHigh );
-						setConstraintRowColLimit( (innerHLimitVar <= 1) | strengthHigh ); // CHECK: here also <= 1 ?
+						setConstraintInnerLimit( (innerHLimitVar >= 0) | strengthHigh );
+						setConstraintInnerLimit( (innerHLimitVar <= 1) | strengthHigh ); // CHECK: here also <= 1 ?
 					}
 				
 					autospace = getAutospaceRowCol(childsNumHSpan, hSize, childsSumHMax, childs[0].hSize, childs[childs.length - 1].hSize);
@@ -885,7 +865,7 @@ class LayoutContainer
 					}
 					
 					if (innerHSpanVar != null) {
-						setConstraintRowColSpan(
+						setConstraintInnerSpan(
 							(innerHSpanVar >= 0) | strengthHigh,
 							(innerHSpanVar == (_width - childsSumHMax) / (childsSumHWeight + autospaceSumWeight) ) | strengthSpan
 						);
@@ -902,8 +882,8 @@ class LayoutContainer
 				else // --------- Container.VBOX --------
 				{					
 					if (innerVLimitVar != null) {
-						setConstraintRowColLimit( (innerVLimitVar >= 0) | strengthHigh );
-						setConstraintRowColLimit( (innerVLimitVar <= 1) | strengthHigh ); // CHECK: here also <= 1 ?
+						setConstraintInnerLimit( (innerVLimitVar >= 0) | strengthHigh );
+						setConstraintInnerLimit( (innerVLimitVar <= 1) | strengthHigh ); // CHECK: here also <= 1 ?
 					}
 				
 					autospace = getAutospaceRowCol(childsNumVSpan, vSize, childsSumVMax, childs[0].vSize, childs[childs.length - 1].vSize);
@@ -919,7 +899,7 @@ class LayoutContainer
 					}
 					
 					if (innerVSpanVar != null) {
-						setConstraintRowColSpan(
+						setConstraintInnerSpan(
 							(innerVSpanVar >= 0) | strengthHigh,
 							(innerVSpanVar == (_height - childsSumVMax) / (childsSumVWeight + autospaceSumWeight) ) | strengthSpan
 						);
