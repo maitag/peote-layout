@@ -102,6 +102,7 @@ class Test extends lime.app.Application
 				//left: 30,
 				//left: Size.limit(0, 30),
 				width:Size.limit(100, 700),
+				//width:10,
 				//width:Size.min(200),
 				//right:30,
 			},

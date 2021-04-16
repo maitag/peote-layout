@@ -45,20 +45,24 @@ class DeepNestingDemo extends lime.app.Application
 
 		// init layout
 		root = new Box(display,
-		[ 	// at greater DEPHT -> PROBLEM: cassowary-constraining needs exponential long TIME to INIT and goes crazy later into UPDATE also !
-			getRandomLayoutcontainer(5, peoteView.width, peoteView.height),
+		[ 	// at a depth greater 8 the cassowary-constraining can be need long to init!
+			getRandomLayoutcontainer(8, 1300, 768),
 		]);
 		
 		
-		trace("start INIT constraints");
+		trace('start INIT constraints of $numLayoutContainer LayoutContainer');
 		root.init();
 		trace("INIT ready");
 		
 		root.update(peoteView.width, peoteView.height);
 	}
 	
+	var numLayoutContainer:Int = 0;
+	
 	function getRandomLayoutcontainer(maxDepth:Int, width:Int, height:Int, type = ContainerType.HBOX, depth:Int = 0):LayoutContainer
 	{
+		numLayoutContainer++;
+		
 		var numChilds = 2;
 		var subType:ContainerType;
 		var subWidth = width;
@@ -66,22 +70,24 @@ class DeepNestingDemo extends lime.app.Application
 		
 		if (type == ContainerType.HBOX) {
 			subType = ContainerType.VBOX;
-			subWidth = Std.int(width/numChilds);
+			subWidth = Std.int(width / numChilds) - 15;
+			subHeight = height - 20;
 		}
 		else {
 			subType = ContainerType.HBOX;
-			subHeight = Std.int(height/numChilds);
+			subHeight = Std.int(height/numChilds) - 15;
+			subWidth = subWidth - 20;
 		}
 		return new LayoutContainer( type, new LayoutedSprite(display, Color.random() | 0x000000ff),
 		{	
-			left: 10,
-			right:10,
-			top:10,
-			bottom:10,
-			width:Size.limit(Std.int( width / 3), width),
-			height:Size.limit(Std.int( height / 3), height),
-			//width: Size.min(Std.int(width/5)),
-			//height:Size.min(Std.int(height/5)),
+			left: Size.max(5),
+			right:Size.max(5),
+			top:Size.max(5),
+			bottom:Size.max(5),
+			width:Size.limit(Std.int( width / 4), width),
+			height:Size.limit(Std.int( height / 4), height),
+			//width: Size.min(Std.int(width/4)),
+			//height:Size.min(Std.int(height/4)),
 			//width: Size.max(width),
 			//height:Size.max(height),
 		},

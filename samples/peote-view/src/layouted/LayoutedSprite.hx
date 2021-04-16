@@ -79,9 +79,11 @@ class LayoutedSprite implements LayoutElement implements Element
 	
 	var isVisible:Bool = false;
 		
-	public function new(display:LayoutedDisplay, color:Color) {
+	public function new(display:LayoutedDisplay, color:Color, borderSize:Float = 3, borderRadius:Float = 25) {
 		this.color = color;
 		this.display = display;
+		this.bSize = borderSize;
+		this.borderRadius = borderRadius;
 	}
 	
 	public inline function update(layoutContainer:LayoutContainer) {

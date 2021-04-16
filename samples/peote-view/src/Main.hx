@@ -57,7 +57,7 @@ class Main extends lime.app.Application
 			name:"root",
 			#end
 			// relativeChildPositions:true, // need sometimes for peoteView Display (because all sprites are into and relative to)
-			//width:Size.min(300),
+			//width:Size.limit(100,200),
 			//limitMinWidthToChilds: false, // allow oversizing of the inner containers
 			//alignChildsOnOversizeX:Align.LAST, // for all childs to align at right if the inner containers not fit into
 		},
@@ -68,7 +68,7 @@ class Main extends lime.app.Application
 				name:"green",
 				#end
 				left: Size.min(100), // can be scale high but not lower as min-value
-				width:Size.limit(300, 400), // can be scale from min to max-value
+				width:Size.limit(100, 400), // can be scale from min to max-value
 				right:Size.max(200), // can be scale from 0 to max-value
 				//right:10, // or can be a fixed value.. same as .limit(10,10)
 				
