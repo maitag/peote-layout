@@ -8,14 +8,9 @@ import peote.layout.LayoutContainer;
 
 class ConstraintSet 
 {
-	static inline var strengthHigh = Strength.STRONG;
-	//static inline var strengthHigh = Strength.STRONG;
-	
-	static inline var strengthNeighbor = Strength.STRONG;
-	//static inline var strengthNeighbor = Strength.STRONG;
-	
+	static inline var strengthHigh = Strength.REQUIRED;	// STRONG TODO: check speed on oversize .. see below
+	static inline var strengthNeighbor = Strength.REQUIRED;	// STRONG -> needs double time to init
 	static inline var strengthSpan = Strength.WEAK;
-	//static inline var strengthSpan = Strength.MEDIUM;
 
 
 	public static var solver:Solver; // TODO

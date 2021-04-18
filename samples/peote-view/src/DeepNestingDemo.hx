@@ -1,5 +1,6 @@
 package;
 
+import haxe.Timer;
 import lime.ui.MouseButton;
 import lime.app.Application;
 import peote.layout.Align;
@@ -51,8 +52,9 @@ class DeepNestingDemo extends lime.app.Application
 		
 		
 		trace('start INIT constraints of $numLayoutContainer LayoutContainer');
+		var time = Timer.stamp();
 		root.init();
-		trace("INIT ready");
+		trace("INIT ready after " + (Timer.stamp() - time)*1000 + "ms");
 		
 		root.update(peoteView.width, peoteView.height);
 	}
@@ -90,6 +92,8 @@ class DeepNestingDemo extends lime.app.Application
 			//height:Size.min(Std.int(height/4)),
 			//width: Size.max(width),
 			//height:Size.max(height),
+			//width: width,
+			//height:height,
 		},
 		// childs
 		(++depth >= maxDepth) ? null : [

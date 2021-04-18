@@ -446,8 +446,7 @@ class LayoutContainer
 	var root_width:Variable;
 	var root_height:Variable;
 	
-	static inline var strengthEditVar = Strength.STRONG;
-	//static var strengthEditVar = Strength.MEDIUM;
+	static var strengthEditVar = Strength.STRONG;
 		
 	// TODO: init automatically if not already
 	public function init()
