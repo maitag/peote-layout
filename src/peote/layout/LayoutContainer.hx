@@ -428,8 +428,83 @@ class LayoutContainer
 		return childs[childNumber];
 	}
 	
-	public function addChild(child:LayoutContainer) {
+	public function addChild(child:LayoutContainer, atIndex:Null<Int> = null) {
 		
+		if (childs == null) childs = new Array<LayoutContainer>();
+		
+		var isFirst = false;
+		var isLast = false;
+		
+		if (atIndex == null || atIndex >= childs.length) {
+			atIndex = childs.length;
+			isLast = true; // add to end
+		}
+		if (atIndex <= 0) {
+			atIndex = 0;
+			isFirst = true; // add to start
+		}
+		
+		childs.insert(atIndex, child);
+		
+		if (containerType == ContainerType.HBOX) {
+			
+			// TODO: update: childsNumHSpan, childsSumHMax
+			var autospace = getAutospaceRowCol(childsNumHSpan, hSize, childsSumHMax, childs[0].hSize, childs[childs.length - 1].hSize);
+			
+			if (autospace != AUTOSPACE_NONE) {
+				// TODO
+				//autospaceSumWeight = (autospace == AUTOSPACE_BOTH) ? 2 : 1;
+				//if (innerHSpanVar == null) innerHSpanVar = new Variable();
+			}
+			
+			// TODO
+			var alignOnOversize = layout.alignChildsOnOversizeX;
+			if (isInnerHOversize && alignOnOversize == Align.AUTO) {
+				alignOnOversize = (autospace != AUTOSPACE_NONE) ? autospace : getAutospaceAlign(childs[0].hSize, childs[childs.length - 1].hSize);
+			}
+				
+			if (isFirst) {
+				// todo: at first remove the old constraint from childs[atIndex+1] left side
+				
+				childs[atIndex+1].constraintSet.toLeft( childs[atIndex+1]._left, child._right  );
+				
+				ConstraintSet.toOuterLeft(
+					child, _x,
+					isInnerHOversize, layout.scrollX,
+					innerHSpanVar, innerHOversizeVar, _xScroll,
+					alignOnOversize, autospace
+				);
+				
+			} 
+			else if (isLast) {
+				// todo: at first remove the constraint from childs[atIndex-1] right side
+				
+				child.constraintSet.toLeft( child._left, childs[atIndex - 1]._right );
+				
+				ConstraintSet.toOuterRight(
+					child, _x, _width,
+					isInnerHOversize, layout.scrollX,
+					innerHSpanVar, innerHOversizeVar, _xScroll,
+					alignOnOversize, autospace
+				);
+			
+			} 
+			else {
+				// todo: at first remove the old constraint from childs[atIndex+1] left side
+				
+				childs[atIndex+1].constraintSet.toLeft( childs[atIndex+1]._left, child._right );
+
+				child.constraintSet.toLeft( child._left, childs[atIndex - 1]._right );
+			}
+			
+		}
+		else {
+		}
+		
+		if (containerType == ContainerType.VBOX) {
+		}
+		else {
+		}
 		
 		
 		
@@ -646,8 +721,8 @@ class LayoutContainer
 						child.constraintSet.outerHSpan(child.outerHSpanVar, _width, child.hSize.getLimitMax(), (autospace == AUTOSPACE_NONE) ? child.hSize.getSpanSumWeight() : ((autospace == AUTOSPACE_BOTH) ? 2 : 1));
 					}
 					
-					child.constraintSet.hNeighbors(
-						child._left, child._right, _x, _width,
+					ConstraintSet.toOuterLeftRight(
+						child, child, _x, _width,
 						(isInnerHOversize || child.isOuterHOversize), layout.scrollX,
 						child.outerHSpanVar, 
 						(isInnerHOversize) ? innerHOversizeVar : child.outerHOversizeVar,
@@ -680,8 +755,8 @@ class LayoutContainer
 						child.constraintSet.outerVSpan(child.outerVSpanVar, _height, child.vSize.getLimitMax(), (autospace == AUTOSPACE_NONE) ? child.vSize.getSpanSumWeight() : ((autospace == AUTOSPACE_BOTH) ? 2 : 1));
 					}
 					
-					child.constraintSet.vNeighbors(
-						child._top, child._bottom, _y, _height,
+					ConstraintSet.toOuterTopBottom(
+						child, child, _y, _height,
 						(isInnerVOversize || child.isOuterVOversize), layout.scrollY,
 						child.outerVSpanVar, 
 						(isInnerVOversize) ? innerVOversizeVar : child.outerVOversizeVar,
@@ -717,7 +792,7 @@ class LayoutContainer
 						constraintSet.innerSpan( innerHSpanVar, _width, childsSumHMax, childsSumHWeight + autospaceSumWeight);
 					}
 					
-					constraintSet.hNeighborsRow(
+					ConstraintSet.toOuterLeftRight(
 						childs[0], childs[childs.length-1], _x, _width,
 						isInnerHOversize, layout.scrollX,
 						innerHSpanVar, innerHOversizeVar, _xScroll,
@@ -743,7 +818,7 @@ class LayoutContainer
 						constraintSet.innerSpan( innerVSpanVar, _height, childsSumVMax, childsSumVWeight + autospaceSumWeight);
 					}
 			
-					constraintSet.vNeighborsCol(
+					ConstraintSet.toOuterTopBottom(
 						childs[0], childs[childs.length-1], _y, _height,
 						isInnerVOversize, layout.scrollY,
 						innerVSpanVar, innerVOversizeVar, _yScroll,
