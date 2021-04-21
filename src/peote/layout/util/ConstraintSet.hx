@@ -40,7 +40,7 @@ class ConstraintSet
 			spanVar:Variable, oversizeVar:Variable, scrollVar:Variable,
 			align:Int, autospace:Int
 			) {
-		toOuterFirst(
+		toOuterStart(
 			child.constraintSet.left,
 			child._left, parentPos,
 			isOversize, isScroll,
@@ -54,7 +54,7 @@ class ConstraintSet
 			spanVar:Variable, oversizeVar:Variable, scrollVar:Variable,
 			align:Int, autospace:Int
 			) {
-		toOuterLast(
+		toOuterEnd(
 			child.constraintSet.right, 
 			child._right, parentPos, parentSize,
 			isOversize, isScroll,
@@ -82,7 +82,7 @@ class ConstraintSet
 			spanVar:Variable, oversizeVar:Variable, scrollVar:Variable,
 			align:Int, autospace:Int
 			) {
-		toOuterFirst(
+		toOuterStart(
 			child.constraintSet.top,
 			child._top, parentPos,
 			isOversize, isScroll,
@@ -96,7 +96,7 @@ class ConstraintSet
 			spanVar:Variable, oversizeVar:Variable, scrollVar:Variable,
 			align:Int, autospace:Int
 			) {
-		toOuterLast(
+		toOuterEnd(
 			child.constraintSet.bottom, 
 			child._bottom, parentPos, parentSize,
 			isOversize, isScroll,
@@ -104,239 +104,188 @@ class ConstraintSet
 			align, autospace);		
 	}	
 	
-	// TODO: refactor -> separate out the inners into 8 inline functions!
-	static function toOuter(
-			setConstraintFirstFunction:Constraint->Void, setConstraintLastFunction:Constraint->Void, 
+	// ---------------------------------------------------------------------
+	
+	static inline function toOuter(
+			setConstraintFunctionStart:Constraint->Void, setConstraintFunctionEnd:Constraint->Void, 
 			firstExpr:Expression, lastExpr:Expression, parentPos:Variable, parentSize:Expression,
 			isOversize = true, isScroll = false,
 			spanVar:Variable, oversizeVar:Variable, scrollVar:Variable,
 			align:Int, autospace:Int
-			) {
-				
+			) 
+	{
 		if (!isOversize) {
-			// firstExpr
-			if (autospace & LayoutContainer.AUTOSPACE_FIRST == 0) {
-				if (isScroll) setConstraintFirstFunction( (firstExpr + scrollVar == parentPos) | strengthNeighbor );
-				else setConstraintFirstFunction( (firstExpr == parentPos) | strengthNeighbor );
-			}
-			else {
-				if (isScroll) setConstraintFirstFunction( (firstExpr + scrollVar == parentPos + spanVar) | strengthNeighbor );
-				else setConstraintFirstFunction( (firstExpr == parentPos + spanVar) | strengthNeighbor );
-			}
-			// lastExpr
-			if (autospace & LayoutContainer.AUTOSPACE_LAST == 0) {
-				if (isScroll) setConstraintLastFunction( (lastExpr + scrollVar == parentPos + parentSize) | strengthNeighbor );
-				else setConstraintLastFunction( (lastExpr == parentPos + parentSize) | strengthNeighbor );
-			}
-			else {
-				if (isScroll) setConstraintLastFunction( (lastExpr + scrollVar == parentPos + parentSize - spanVar) | strengthNeighbor );
-				else setConstraintLastFunction( (lastExpr == parentPos + parentSize - spanVar) | strengthNeighbor );
-			}
+			noOversizeStart(setConstraintFunctionStart, firstExpr, parentPos, isScroll, spanVar, scrollVar, autospace);
+			noOversizeEnd(setConstraintFunctionEnd, lastExpr, parentPos, parentSize, isScroll, spanVar, scrollVar, autospace);
 		}
 		else // ---------------- oversize ---------------------
 		{
-			if (align == Align.AUTO) {
-				// do same as for auto spacing
+			if (align == Align.AUTO) { // do same as for auto spacing
 				if (autospace == LayoutContainer.AUTOSPACE_FIRST) align = Align.LAST;
 				else if (autospace == LayoutContainer.AUTOSPACE_LAST) align = Align.FIRST;
 				else align = Align.CENTER;
 			}
-			
-			if (align == Align.FIRST)        //  ----- oversize align left ----
-			{	// firstExpr
-				if (autospace & LayoutContainer.AUTOSPACE_FIRST == 0) {
-					if (isScroll) setConstraintFirstFunction( (firstExpr + scrollVar == parentPos) | strengthNeighbor );
-					else setConstraintFirstFunction( (firstExpr == parentPos) | strengthNeighbor );
-				}
-				else {
-					if (isScroll) setConstraintFirstFunction( (firstExpr + scrollVar == parentPos + spanVar) | strengthNeighbor );
-					else setConstraintFirstFunction( (firstExpr == parentPos + spanVar) | strengthNeighbor );
-				}
-				// lastExpr
-				if (autospace & LayoutContainer.AUTOSPACE_LAST == 0) {
-					if (isScroll) setConstraintLastFunction( (lastExpr - oversizeVar + scrollVar == parentPos + parentSize) | strengthNeighbor );
-					else setConstraintLastFunction( (lastExpr - oversizeVar == parentPos + parentSize) | strengthNeighbor );
-				}
-				else {
-					if (isScroll) setConstraintLastFunction( (lastExpr - oversizeVar + scrollVar == parentPos + parentSize - spanVar) | strengthNeighbor );
-					else setConstraintLastFunction( (lastExpr - oversizeVar == parentPos + parentSize - spanVar) | strengthNeighbor );
-				}
+			if (align == Align.FIRST) {     // oversize align top or left
+				oversizeAlignFirstStart(setConstraintFunctionStart, firstExpr, parentPos, isScroll, spanVar, scrollVar, autospace);
+				oversizeAlignFirstEnd(setConstraintFunctionEnd, lastExpr, parentPos, parentSize, isScroll, spanVar, oversizeVar, scrollVar, autospace);
 			}
-			else if (align == Align.LAST)   //  ----- oversize align right ----
-			{	// firstExpr
-				if (autospace & LayoutContainer.AUTOSPACE_FIRST == 0) {
-					if (isScroll) setConstraintFirstFunction( (firstExpr + oversizeVar + scrollVar == parentPos) | strengthNeighbor );
-					else setConstraintFirstFunction( (firstExpr + oversizeVar == parentPos) | strengthNeighbor );
-				}
-				else {
-					if (isScroll) setConstraintFirstFunction( (firstExpr + oversizeVar + scrollVar == parentPos + spanVar) | strengthNeighbor );
-					else setConstraintFirstFunction( (firstExpr + oversizeVar == parentPos + spanVar) | strengthNeighbor );
-				}
-				// lastExpr
-				if (autospace & LayoutContainer.AUTOSPACE_LAST == 0) {
-					if (isScroll) setConstraintLastFunction( (lastExpr + scrollVar == parentPos + parentSize) | strengthNeighbor );
-					else setConstraintLastFunction( (lastExpr == parentPos + parentSize) | strengthNeighbor );
-				}
-				else {
-					if (isScroll) setConstraintLastFunction( (lastExpr + scrollVar == parentPos + parentSize - spanVar) | strengthNeighbor );
-					else setConstraintLastFunction( (lastExpr == parentPos + parentSize - spanVar) | strengthNeighbor );
-				}
+			else if (align == Align.LAST) { // oversize align bottom or right
+				oversizeAlignLastStart(setConstraintFunctionStart, firstExpr, parentPos, isScroll, spanVar, oversizeVar, scrollVar, autospace);
+				oversizeAlignLastEnd(setConstraintFunctionEnd, lastExpr, parentPos, parentSize, isScroll, spanVar, scrollVar, autospace);
 			}
-			else                             //  ---- oversize align centered ---
-			{	// firstExpr
-				if (autospace & LayoutContainer.AUTOSPACE_FIRST == 0) {
-					if (isScroll) setConstraintFirstFunction( (firstExpr + oversizeVar/2 + scrollVar == parentPos) | strengthNeighbor );
-					else setConstraintFirstFunction( (firstExpr + oversizeVar/2 == parentPos) | strengthNeighbor );
-				}
-				else {
-					if (isScroll) setConstraintFirstFunction( (firstExpr + oversizeVar/2 + scrollVar == parentPos + spanVar) | strengthNeighbor );
-					else setConstraintFirstFunction( (firstExpr + oversizeVar/2 == parentPos + spanVar) | strengthNeighbor );
-				}
-				// lastExpr
-				if (autospace & LayoutContainer.AUTOSPACE_LAST == 0) {
-					if (isScroll) setConstraintLastFunction( (lastExpr - oversizeVar/2 + scrollVar == parentPos + parentSize) | strengthNeighbor );
-					else setConstraintLastFunction( (lastExpr - oversizeVar/2 == parentPos + parentSize) | strengthNeighbor );
-				}
-				else {
-					if (isScroll) setConstraintLastFunction( (lastExpr - oversizeVar/2 + scrollVar == parentPos + parentSize - spanVar) | strengthNeighbor );
-					else setConstraintLastFunction( (lastExpr - oversizeVar/2 == parentPos + parentSize - spanVar) | strengthNeighbor );
-				}
+			else {                          // oversize align centered
+				oversizeAlignCenterStart(setConstraintFunctionStart, firstExpr, parentPos, isScroll, spanVar, oversizeVar, scrollVar, autospace);
+				oversizeAlignCenterEnd(setConstraintFunctionEnd, lastExpr, parentPos, parentSize, isScroll, spanVar, oversizeVar, scrollVar, autospace);
 			}
 		}
-		
 	}
 	
-	// TODO: refactor
-	static function toOuterFirst(
-			setConstraintFirstFunction:Constraint->Void, 
+	// ---------------------------------------------------------------------
+	
+	static inline function toOuterStart(
+			setConstraintFunctionStart:Constraint->Void, 
 			firstExpr:Expression, parentPos:Variable,
 			isOversize = true, isScroll = false,
 			spanVar:Variable, oversizeVar:Variable, scrollVar:Variable,
 			align:Int, autospace:Int
-			) {
-				
-		if (!isOversize) {
-			// firstExpr
-			if (autospace & LayoutContainer.AUTOSPACE_FIRST == 0) {
-				if (isScroll) setConstraintFirstFunction( (firstExpr + scrollVar == parentPos) | strengthNeighbor );
-				else setConstraintFirstFunction( (firstExpr == parentPos) | strengthNeighbor );
-			}
-			else {
-				if (isScroll) setConstraintFirstFunction( (firstExpr + scrollVar == parentPos + spanVar) | strengthNeighbor );
-				else setConstraintFirstFunction( (firstExpr == parentPos + spanVar) | strengthNeighbor );
-			}
-		}
-		else // ---------------- oversize ---------------------
-		{
-			if (align == Align.AUTO) {
-				// do same as for auto spacing
+			) 
+	{
+		if (!isOversize) noOversizeStart(setConstraintFunctionStart, firstExpr, parentPos, isScroll, spanVar, scrollVar, autospace);
+		else
+		{	// ---------------- oversize ---------------------
+			if (align == Align.AUTO) { // do same as for auto spacing
 				if (autospace == LayoutContainer.AUTOSPACE_FIRST) align = Align.LAST;
 				else if (autospace == LayoutContainer.AUTOSPACE_LAST) align = Align.FIRST;
 				else align = Align.CENTER;
-			}
-			
-			if (align == Align.FIRST)        //  ----- oversize align left ----
-			{	// firstExpr
-				if (autospace & LayoutContainer.AUTOSPACE_FIRST == 0) {
-					if (isScroll) setConstraintFirstFunction( (firstExpr + scrollVar == parentPos) | strengthNeighbor );
-					else setConstraintFirstFunction( (firstExpr == parentPos) | strengthNeighbor );
-				}
-				else {
-					if (isScroll) setConstraintFirstFunction( (firstExpr + scrollVar == parentPos + spanVar) | strengthNeighbor );
-					else setConstraintFirstFunction( (firstExpr == parentPos + spanVar) | strengthNeighbor );
-				}
-			}
-			else if (align == Align.LAST)   //  ----- oversize align right ----
-			{	// firstExpr
-				if (autospace & LayoutContainer.AUTOSPACE_FIRST == 0) {
-					if (isScroll) setConstraintFirstFunction( (firstExpr + oversizeVar + scrollVar == parentPos) | strengthNeighbor );
-					else setConstraintFirstFunction( (firstExpr + oversizeVar == parentPos) | strengthNeighbor );
-				}
-				else {
-					if (isScroll) setConstraintFirstFunction( (firstExpr + oversizeVar + scrollVar == parentPos + spanVar) | strengthNeighbor );
-					else setConstraintFirstFunction( (firstExpr + oversizeVar == parentPos + spanVar) | strengthNeighbor );
-				}
-			}
-			else                             //  ---- oversize align centered ---
-			{	// firstExpr
-				if (autospace & LayoutContainer.AUTOSPACE_FIRST == 0) {
-					if (isScroll) setConstraintFirstFunction( (firstExpr + oversizeVar/2 + scrollVar == parentPos) | strengthNeighbor );
-					else setConstraintFirstFunction( (firstExpr + oversizeVar/2 == parentPos) | strengthNeighbor );
-				}
-				else {
-					if (isScroll) setConstraintFirstFunction( (firstExpr + oversizeVar/2 + scrollVar == parentPos + spanVar) | strengthNeighbor );
-					else setConstraintFirstFunction( (firstExpr + oversizeVar/2 == parentPos + spanVar) | strengthNeighbor );
-				}
-			}
-		}
-		
+			}			
+			if (align == Align.FIRST)     // oversize align top or left
+				oversizeAlignFirstStart(setConstraintFunctionStart, firstExpr, parentPos, isScroll, spanVar, scrollVar, autospace);
+			else if (align == Align.LAST) // oversize align bottom or right
+				oversizeAlignLastStart(setConstraintFunctionStart, firstExpr, parentPos, isScroll, spanVar, oversizeVar, scrollVar, autospace);
+			else                          // oversize align centered
+				oversizeAlignCenterStart(setConstraintFunctionStart, firstExpr, parentPos, isScroll, spanVar, oversizeVar, scrollVar, autospace);
+		}		
 	}
 	
-	// TODO: refactor
-	static function toOuterLast(
-			setConstraintLastFunction:Constraint->Void, 
+	static inline function noOversizeStart(setConstraintFunctionStart:Constraint->Void, firstExpr:Expression, parentPos:Variable, isScroll:Bool, spanVar:Variable, scrollVar:Variable, autospace:Int) {
+		if (autospace & LayoutContainer.AUTOSPACE_FIRST == 0) {
+			if (isScroll) setConstraintFunctionStart( (firstExpr + scrollVar == parentPos) | strengthNeighbor );
+			else setConstraintFunctionStart( (firstExpr == parentPos) | strengthNeighbor );
+		}
+		else {
+			if (isScroll) setConstraintFunctionStart( (firstExpr + scrollVar == parentPos + spanVar) | strengthNeighbor );
+			else setConstraintFunctionStart( (firstExpr == parentPos + spanVar) | strengthNeighbor );
+		}
+	}
+	
+	static inline function oversizeAlignFirstStart(setConstraintFunctionStart:Constraint->Void, firstExpr:Expression, parentPos:Variable, isScroll:Bool, spanVar:Variable, scrollVar:Variable, autospace:Int) {
+		if (autospace & LayoutContainer.AUTOSPACE_FIRST == 0) {
+			if (isScroll) setConstraintFunctionStart( (firstExpr + scrollVar == parentPos) | strengthNeighbor );
+			else setConstraintFunctionStart( (firstExpr == parentPos) | strengthNeighbor );
+		}
+		else {
+			if (isScroll) setConstraintFunctionStart( (firstExpr + scrollVar == parentPos + spanVar) | strengthNeighbor );
+			else setConstraintFunctionStart( (firstExpr == parentPos + spanVar) | strengthNeighbor );
+		}
+	}
+	
+	static inline function oversizeAlignLastStart(setConstraintFunctionStart:Constraint->Void, firstExpr:Expression, parentPos:Variable, isScroll:Bool, spanVar:Variable, oversizeVar:Variable, scrollVar:Variable, autospace:Int) {
+		if (autospace & LayoutContainer.AUTOSPACE_FIRST == 0) {
+			if (isScroll) setConstraintFunctionStart( (firstExpr + oversizeVar + scrollVar == parentPos) | strengthNeighbor );
+			else setConstraintFunctionStart( (firstExpr + oversizeVar == parentPos) | strengthNeighbor );
+		}
+		else {
+			if (isScroll) setConstraintFunctionStart( (firstExpr + oversizeVar + scrollVar == parentPos + spanVar) | strengthNeighbor );
+			else setConstraintFunctionStart( (firstExpr + oversizeVar == parentPos + spanVar) | strengthNeighbor );
+		}
+	}
+	
+	static inline function oversizeAlignCenterStart(setConstraintFunctionStart:Constraint->Void, firstExpr:Expression, parentPos:Variable, isScroll:Bool, spanVar:Variable, oversizeVar:Variable, scrollVar:Variable, autospace:Int) {
+		if (autospace & LayoutContainer.AUTOSPACE_FIRST == 0) {
+			if (isScroll) setConstraintFunctionStart( (firstExpr + oversizeVar/2 + scrollVar == parentPos) | strengthNeighbor );
+			else setConstraintFunctionStart( (firstExpr + oversizeVar/2 == parentPos) | strengthNeighbor );
+		}
+		else {
+			if (isScroll) setConstraintFunctionStart( (firstExpr + oversizeVar/2 + scrollVar == parentPos + spanVar) | strengthNeighbor );
+			else setConstraintFunctionStart( (firstExpr + oversizeVar/2 == parentPos + spanVar) | strengthNeighbor );
+		}
+	}
+
+	// ---------------------------------------------------------------------
+	
+	static inline function toOuterEnd(
+			setConstraintFunctionEnd:Constraint->Void, 
 			lastExpr:Expression, parentPos:Variable, parentSize:Expression,
 			isOversize = true, isScroll = false,
 			spanVar:Variable, oversizeVar:Variable, scrollVar:Variable,
 			align:Int, autospace:Int
-			) {
-				
-		if (!isOversize) {
-			// lastExpr
-			if (autospace & LayoutContainer.AUTOSPACE_LAST == 0) {
-				if (isScroll) setConstraintLastFunction( (lastExpr + scrollVar == parentPos + parentSize) | strengthNeighbor );
-				else setConstraintLastFunction( (lastExpr == parentPos + parentSize) | strengthNeighbor );
-			}
-			else {
-				if (isScroll) setConstraintLastFunction( (lastExpr + scrollVar == parentPos + parentSize - spanVar) | strengthNeighbor );
-				else setConstraintLastFunction( (lastExpr == parentPos + parentSize - spanVar) | strengthNeighbor );
-			}
-		}
-		else // ---------------- oversize ---------------------
-		{
-			if (align == Align.AUTO) {
-				// do same as for auto spacing
+			)
+	{				
+		if (!isOversize) noOversizeEnd(setConstraintFunctionEnd, lastExpr, parentPos, parentSize, isScroll, spanVar, scrollVar, autospace);
+		else 
+		{	// ---------------- oversize ---------------------
+			if (align == Align.AUTO) { // do same as for auto spacing
 				if (autospace == LayoutContainer.AUTOSPACE_FIRST) align = Align.LAST;
 				else if (autospace == LayoutContainer.AUTOSPACE_LAST) align = Align.FIRST;
 				else align = Align.CENTER;
-			}
-			
-			if (align == Align.FIRST)        //  ----- oversize align left ----
-			{	// lastExpr
-				if (autospace & LayoutContainer.AUTOSPACE_LAST == 0) {
-					if (isScroll) setConstraintLastFunction( (lastExpr - oversizeVar + scrollVar == parentPos + parentSize) | strengthNeighbor );
-					else setConstraintLastFunction( (lastExpr - oversizeVar == parentPos + parentSize) | strengthNeighbor );
-				}
-				else {
-					if (isScroll) setConstraintLastFunction( (lastExpr - oversizeVar + scrollVar == parentPos + parentSize - spanVar) | strengthNeighbor );
-					else setConstraintLastFunction( (lastExpr - oversizeVar == parentPos + parentSize - spanVar) | strengthNeighbor );
-				}
-			}
-			else if (align == Align.LAST)   //  ----- oversize align right ----
-			{	// lastExpr
-				if (autospace & LayoutContainer.AUTOSPACE_LAST == 0) {
-					if (isScroll) setConstraintLastFunction( (lastExpr + scrollVar == parentPos + parentSize) | strengthNeighbor );
-					else setConstraintLastFunction( (lastExpr == parentPos + parentSize) | strengthNeighbor );
-				}
-				else {
-					if (isScroll) setConstraintLastFunction( (lastExpr + scrollVar == parentPos + parentSize - spanVar) | strengthNeighbor );
-					else setConstraintLastFunction( (lastExpr == parentPos + parentSize - spanVar) | strengthNeighbor );
-				}
-			}
-			else                             //  ---- oversize align centered ---
-			{	// lastExpr
-				if (autospace & LayoutContainer.AUTOSPACE_LAST == 0) {
-					if (isScroll) setConstraintLastFunction( (lastExpr - oversizeVar/2 + scrollVar == parentPos + parentSize) | strengthNeighbor );
-					else setConstraintLastFunction( (lastExpr - oversizeVar/2 == parentPos + parentSize) | strengthNeighbor );
-				}
-				else {
-					if (isScroll) setConstraintLastFunction( (lastExpr - oversizeVar/2 + scrollVar == parentPos + parentSize - spanVar) | strengthNeighbor );
-					else setConstraintLastFunction( (lastExpr - oversizeVar/2 == parentPos + parentSize - spanVar) | strengthNeighbor );
-				}
-			}
-		}
-		
+			}			
+			if (align == Align.FIRST)     // oversize align top or left
+				oversizeAlignFirstEnd(setConstraintFunctionEnd, lastExpr, parentPos, parentSize, isScroll, spanVar, oversizeVar, scrollVar, autospace);
+			else if (align == Align.LAST) // oversize align bottom or right
+				oversizeAlignLastEnd(setConstraintFunctionEnd, lastExpr, parentPos, parentSize, isScroll, spanVar, scrollVar, autospace);
+			else                          // oversize align centered
+				oversizeAlignCenterEnd(setConstraintFunctionEnd, lastExpr, parentPos, parentSize, isScroll, spanVar, oversizeVar, scrollVar, autospace);
+		}		
 	}
+	
+	static inline function noOversizeEnd(setConstraintFunctionEnd:Constraint->Void, lastExpr:Expression, parentPos:Variable, parentSize:Expression, isScroll:Bool, spanVar:Variable, scrollVar:Variable, autospace:Int) {
+		if (autospace & LayoutContainer.AUTOSPACE_LAST == 0) {
+			if (isScroll) setConstraintFunctionEnd( (lastExpr + scrollVar == parentPos + parentSize) | strengthNeighbor );
+			else setConstraintFunctionEnd( (lastExpr == parentPos + parentSize) | strengthNeighbor );
+		}
+		else {
+			if (isScroll) setConstraintFunctionEnd( (lastExpr + scrollVar == parentPos + parentSize - spanVar) | strengthNeighbor );
+			else setConstraintFunctionEnd( (lastExpr == parentPos + parentSize - spanVar) | strengthNeighbor );
+		}
+	}
+	
+	static inline function oversizeAlignFirstEnd(setConstraintFunctionEnd:Constraint->Void, lastExpr:Expression, parentPos:Variable, parentSize:Expression, isScroll:Bool, spanVar:Variable, oversizeVar:Variable, scrollVar:Variable, autospace:Int) {
+		if (autospace & LayoutContainer.AUTOSPACE_LAST == 0) {
+			if (isScroll) setConstraintFunctionEnd( (lastExpr - oversizeVar + scrollVar == parentPos + parentSize) | strengthNeighbor );
+			else setConstraintFunctionEnd( (lastExpr - oversizeVar == parentPos + parentSize) | strengthNeighbor );
+		}
+		else {
+			if (isScroll) setConstraintFunctionEnd( (lastExpr - oversizeVar + scrollVar == parentPos + parentSize - spanVar) | strengthNeighbor );
+			else setConstraintFunctionEnd( (lastExpr - oversizeVar == parentPos + parentSize - spanVar) | strengthNeighbor );
+		}
+	}
+	
+	static inline function oversizeAlignLastEnd(setConstraintFunctionEnd:Constraint->Void, lastExpr:Expression, parentPos:Variable, parentSize:Expression, isScroll:Bool, spanVar:Variable, scrollVar:Variable, autospace:Int) {
+		if (autospace & LayoutContainer.AUTOSPACE_LAST == 0) {
+			if (isScroll) setConstraintFunctionEnd( (lastExpr + scrollVar == parentPos + parentSize) | strengthNeighbor );
+			else setConstraintFunctionEnd( (lastExpr == parentPos + parentSize) | strengthNeighbor );
+		}
+		else {
+			if (isScroll) setConstraintFunctionEnd( (lastExpr + scrollVar == parentPos + parentSize - spanVar) | strengthNeighbor );
+			else setConstraintFunctionEnd( (lastExpr == parentPos + parentSize - spanVar) | strengthNeighbor );
+		}
+	}
+	
+	static inline function oversizeAlignCenterEnd(setConstraintFunctionEnd:Constraint->Void, lastExpr:Expression, parentPos:Variable, parentSize:Expression, isScroll:Bool, spanVar:Variable, oversizeVar:Variable, scrollVar:Variable, autospace:Int) {
+		if (autospace & LayoutContainer.AUTOSPACE_LAST == 0) {
+			if (isScroll) setConstraintFunctionEnd( (lastExpr - oversizeVar/2 + scrollVar == parentPos + parentSize) | strengthNeighbor );
+			else setConstraintFunctionEnd( (lastExpr - oversizeVar/2 == parentPos + parentSize) | strengthNeighbor );
+		}
+		else {
+			if (isScroll) setConstraintFunctionEnd( (lastExpr - oversizeVar/2 + scrollVar == parentPos + parentSize - spanVar) | strengthNeighbor );
+			else setConstraintFunctionEnd( (lastExpr - oversizeVar/2 == parentPos + parentSize - spanVar) | strengthNeighbor );
+		}
+	}
+	
+	
+	// ----------------------------------------------------------------------------------------------------
+	// ----------------------------------------------------------------------------------------------------
+	// ----------------------------------------------------------------------------------------------------
 	
 	// TODO: optimization with static ?
 	public inline function toLeft(a:Expression, b:Expression) {
