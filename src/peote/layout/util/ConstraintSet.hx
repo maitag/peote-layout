@@ -292,10 +292,18 @@ class ConstraintSet
 		left( (a == b) | strengthNeighbor );
 	}
 
+	public inline function removeToLeft() {
+		solver.removeConstraint(cLeft);
+	}
+	
 	public inline function toRight(a:Expression, b:Expression) {
 		right( (a == b) | strengthNeighbor );
 	}
 
+	public inline function removeToRight() {
+		solver.removeConstraint(cRight);
+	}
+	
 	public inline function toTop(a:Expression, b:Expression) {
 		top( (a == b) | strengthNeighbor );
 	}
@@ -304,14 +312,19 @@ class ConstraintSet
 		bottom( (a == b) | strengthNeighbor );
 	}
 
+
+	//TODO:  hasConstraintVar.left
 	
-	//var cLeft:Null<Constraint> = null;
+	public var cLeft:Constraint;
+	public var cRight:Constraint;
+	
 	inline function left(c:Constraint) {
-		//cLeft = c;
-		solver.addConstraint(c);
+		cLeft = c;
+		solver.addConstraint(cLeft);
 	}
 	inline function right(c:Constraint) {
-		solver.addConstraint(c);
+		cRight = c;
+		solver.addConstraint(cRight);
 	}
 	inline function top(c:Constraint) {
 		solver.addConstraint(c);

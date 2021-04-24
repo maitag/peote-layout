@@ -251,6 +251,7 @@ class LayoutContainer
 				#end
 				child.parent = this;
 				calculateChildLimits(child);
+				calculateChildOversize(child);
 			}
 			
 			// Fixing limits  ------ horizontal -----------
@@ -381,9 +382,12 @@ class LayoutContainer
 		if (child.vSize.getLimitMin() > childsHighestVMin) childsHighestVMin = child.vSize.getLimitMin();
 		if (child.vSize.getLimitMax() > childsHighestVMax) childsHighestVMax = child.vSize.getLimitMax();		
 		childsSumHWeight += child.hSize.getSpanSumWeight();
-		childsSumVWeight += child.vSize.getSpanSumWeight();
-		
-		if (!layout.limitMinWidthToChilds && containerType == ContainerType.BOX 
+		childsSumVWeight += child.vSize.getSpanSumWeight();		
+	}
+			
+	inline function calculateChildOversize(child:LayoutContainer)
+	{
+		if (containerType != ContainerType.HBOX && !layout.limitMinWidthToChilds 
 			&& layout.alignChildsOnOversizeX == Align.AUTO && child.hSize.getLimitMin() > hSize.middle._min) {
 			child.isOuterHOversize = true;
 			child.outerHOversizeWeight = child.innerHOversizeWeight + 1;
@@ -391,15 +395,15 @@ class LayoutContainer
 		}
 		else innerHOversizeWeight += child.innerHOversizeWeight;
 		
-		if (!layout.limitMinHeightToChilds && containerType == ContainerType.BOX 
+		if (containerType != ContainerType.VBOX && !layout.limitMinHeightToChilds
 			&& layout.alignChildsOnOversizeY == Align.AUTO && child.vSize.getLimitMin() > vSize.middle._min) {
 			child.isOuterVOversize = true;
 			child.outerVOversizeWeight = child.innerVOversizeWeight + 1;
 			innerVOversizeWeight += child.outerVOversizeWeight;
 		}
-		else innerVOversizeWeight += child.innerVOversizeWeight;
+		else innerVOversizeWeight += child.innerVOversizeWeight;	
 	}
-			
+	
 	inline function calculateChildVars(child:LayoutContainer)
 	{		
 		if (containerType == ContainerType.HBOX) {
@@ -446,11 +450,16 @@ class LayoutContainer
 		
 		childs.insert(atIndex, child);
 		
+		// TODO
+		calculateChildLimits(child);
+		calculateChildVars(child);
+		
 		if (containerType == ContainerType.HBOX) {
 			
 			// TODO: update: childsNumHSpan, childsSumHMax
 			var autospace = getAutospaceRowCol(childsNumHSpan, hSize, childsSumHMax, childs[0].hSize, childs[childs.length - 1].hSize);
 			
+			// TODO: check if autospace was changing to enable or changing side
 			if (autospace != AUTOSPACE_NONE) {
 				// TODO
 				//autospaceSumWeight = (autospace == AUTOSPACE_BOTH) ? 2 : 1;
@@ -463,10 +472,18 @@ class LayoutContainer
 				alignOnOversize = (autospace != AUTOSPACE_NONE) ? autospace : getAutospaceAlign(childs[0].hSize, childs[childs.length - 1].hSize);
 			}
 				
-			if (isFirst) {
-				// todo: at first remove the old constraint from childs[atIndex+1] left side
+			if (isFirst && isLast) {
+				ConstraintSet.toOuterLeftRight(
+					child, child, _x, _width,
+					isInnerHOversize, layout.scrollX,
+					innerHSpanVar, innerHOversizeVar, _xScroll,
+					alignOnOversize, autospace
+				);
 				
-				childs[atIndex+1].constraintSet.toLeft( childs[atIndex+1]._left, child._right  );
+			}
+			else if (isFirst) {
+				childs[atIndex + 1].constraintSet.removeToLeft();
+				childs[atIndex + 1].constraintSet.toLeft( childs[atIndex + 1]._left, child._right );
 				
 				ConstraintSet.toOuterLeft(
 					child, _x,
@@ -477,8 +494,7 @@ class LayoutContainer
 				
 			} 
 			else if (isLast) {
-				// todo: at first remove the constraint from childs[atIndex-1] right side
-				
+				childs[atIndex - 1].constraintSet.removeToRight();
 				child.constraintSet.toLeft( child._left, childs[atIndex - 1]._right );
 				
 				ConstraintSet.toOuterRight(
@@ -490,15 +506,13 @@ class LayoutContainer
 			
 			} 
 			else {
-				// todo: at first remove the old constraint from childs[atIndex+1] left side
-				
-				childs[atIndex+1].constraintSet.toLeft( childs[atIndex+1]._left, child._right );
-
+				childs[atIndex + 1].constraintSet.removeToLeft();
+				childs[atIndex + 1].constraintSet.toLeft( childs[atIndex + 1]._left, child._right );
 				child.constraintSet.toLeft( child._left, childs[atIndex - 1]._right );
 			}
 			
 		}
-		else {
+		else { // BOX
 		}
 		
 		if (containerType == ContainerType.VBOX) {
