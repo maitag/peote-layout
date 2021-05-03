@@ -448,13 +448,23 @@ class LayoutContainer
 		
 		childs.insert(atIndex, child);
 		
-		// TODO
+		// ------------
 		calculateChildLimits(child);
+		calculateChildOversize(child);
+		
+		// TODO: update min/max from this container
+		
 		calculateChildVars(child);
+		
+		// TODO: recursive upwards if min/max was changed
+		
+		// -------------------------------------------------
+		
+		// Only if there is a Solver !
 		
 		if (containerType == ContainerType.HBOX) {
 			
-			if (innerHLimitVar != null) constraintSet.innerLimit(innerHLimitVar);
+			if (innerHLimitVar != null) constraintSet.innerLimit(solver, innerHLimitVar);
 			
 			// TODO: update: childsNumHSpan, childsSumHMax
 			var autospace = getAutospaceRowCol(childsNumHSpan, hSize, childsSumHMax, childs[0].hSize, childs[childs.length - 1].hSize);
@@ -465,9 +475,9 @@ class LayoutContainer
 				autospaceSumWeight = (autospace == AUTOSPACE_BOTH) ? 2 : 1;
 				if (innerHSpanVar == null) innerHSpanVar = new Variable();
 			}
-			// TODO
+			// TODO: remove before!
 			if (innerHSpanVar != null) {
-				constraintSet.innerSpan( innerHSpanVar, _width, childsSumHMax, childsSumHWeight + autospaceSumWeight);
+				constraintSet.innerSpan(solver, innerHSpanVar, _width, childsSumHMax, childsSumHWeight + autospaceSumWeight);
 			}
 			
 			// TODO
@@ -477,7 +487,7 @@ class LayoutContainer
 			}
 				
 			if (isFirst && isLast) {
-				ConstraintSet.toOuterLeftRight(
+				ConstraintSet.toOuterLeftRight( solver,
 					child, child, _x, _width,
 					innerHSpanVar, innerHOversizeVar, _xScroll,
 					alignOnOversize, autospace
@@ -485,10 +495,10 @@ class LayoutContainer
 				
 			}
 			else if (isFirst) {
-				childs[atIndex + 1].constraintSet.removeToLeft();
-				childs[atIndex + 1].constraintSet.toLeft( childs[atIndex + 1]._left, child._right );
+				childs[atIndex + 1].constraintSet.removeToLeft(solver);
+				childs[atIndex + 1].constraintSet.toLeft(solver, childs[atIndex + 1]._left, child._right );
 				
-				ConstraintSet.toOuterLeft(
+				ConstraintSet.toOuterLeft( solver,
 					child, _x,
 					innerHSpanVar, innerHOversizeVar, _xScroll,
 					alignOnOversize, autospace
@@ -496,10 +506,10 @@ class LayoutContainer
 				
 			} 
 			else if (isLast) {
-				childs[atIndex - 1].constraintSet.removeToRight();
-				child.constraintSet.toLeft( child._left, childs[atIndex - 1]._right );
+				childs[atIndex - 1].constraintSet.removeToRight(solver);
+				child.constraintSet.toLeft(solver, child._left, childs[atIndex - 1]._right );
 				
-				ConstraintSet.toOuterRight(
+				ConstraintSet.toOuterRight( solver,
 					child, _x, _width,
 					innerHSpanVar, innerHOversizeVar, _xScroll,
 					alignOnOversize, autospace
@@ -507,9 +517,9 @@ class LayoutContainer
 			
 			} 
 			else {
-				childs[atIndex + 1].constraintSet.removeToLeft();
-				childs[atIndex + 1].constraintSet.toLeft( childs[atIndex + 1]._left, child._right );
-				child.constraintSet.toLeft( child._left, childs[atIndex - 1]._right );
+				childs[atIndex + 1].constraintSet.removeToLeft(solver);
+				childs[atIndex + 1].constraintSet.toLeft(solver, childs[atIndex + 1]._left, child._right );
+				child.constraintSet.toLeft(solver, child._left, childs[atIndex - 1]._right );
 			}
 			
 		}
@@ -545,8 +555,6 @@ class LayoutContainer
 	public function init()
 	{
 		solver = new Solver();
-		// TODO:
-		ConstraintSet.solver = solver;
 		
 		root_width = new Variable();
 		root_height = new Variable();
@@ -565,38 +573,38 @@ class LayoutContainer
 		var zeroExpr = new Expression([], 0);
 		
 		outerHLimitVar = hSize.setSizeLimit(null);
-		if (outerHLimitVar != null) constraintSet.outerHLimit(outerHLimitVar);
+		if (outerHLimitVar != null) constraintSet.outerHLimit(solver, outerHLimitVar);
 		
 		var autospace = (hSize.hasSpan()) ? AUTOSPACE_NONE : getAutospaceAlign(hSize, hSize);
 		
 		outerHSpanVar = (autospace == AUTOSPACE_NONE) ? hSize.setSizeSpan(null) : new Variable();
 		if (outerHSpanVar != null) {
-			constraintSet.outerHSpan(outerHSpanVar, rootWidthExpr, hSize.getLimitMax(), (autospace == AUTOSPACE_NONE) ? hSize.getSpanSumWeight() : ((autospace == AUTOSPACE_BOTH) ? 2 : 1) );			
+			constraintSet.outerHSpan(solver, outerHSpanVar, rootWidthExpr, hSize.getLimitMax(), (autospace == AUTOSPACE_NONE) ? hSize.getSpanSumWeight() : ((autospace == AUTOSPACE_BOTH) ? 2 : 1) );			
 		}
 		// left
-		if (autospace & AUTOSPACE_FIRST == 0) constraintSet.toLeft( _left, zeroExpr);
-		else constraintSet.toLeft( _left, new Expression([new Term(outerHSpanVar)]) );
+		if (autospace & AUTOSPACE_FIRST == 0) constraintSet.toLeft(solver, _left, zeroExpr);
+		else constraintSet.toLeft(solver, _left, new Expression([new Term(outerHSpanVar)]) );
 		// right
-		if (autospace & AUTOSPACE_LAST == 0) constraintSet.toRight( _right, rootWidthExpr);
-		else constraintSet.toRight( _right, rootWidthExpr - outerHSpanVar );
+		if (autospace & AUTOSPACE_LAST == 0) constraintSet.toRight(solver, _right, rootWidthExpr);
+		else constraintSet.toRight(solver, _right, rootWidthExpr - outerHSpanVar );
 
 		// ---------------------------- root-container vertical ------------------------------
 		
 		outerVLimitVar = vSize.setSizeLimit(null);
-		if (outerVLimitVar != null) constraintSet.outerVLimit(outerVLimitVar);
+		if (outerVLimitVar != null) constraintSet.outerVLimit(solver, outerVLimitVar);
 		
 		autospace = (vSize.hasSpan()) ? AUTOSPACE_NONE : getAutospaceAlign(vSize, vSize);
 
 		outerVSpanVar = (autospace == AUTOSPACE_NONE) ? vSize.setSizeSpan(null) : new Variable();
 		if (outerVSpanVar != null) {
-			constraintSet.outerVSpan(outerVSpanVar, rootHeightExpr, vSize.getLimitMax(), (autospace == AUTOSPACE_NONE) ? vSize.getSpanSumWeight() : ((autospace == AUTOSPACE_BOTH) ? 2 : 1));
+			constraintSet.outerVSpan(solver, outerVSpanVar, rootHeightExpr, vSize.getLimitMax(), (autospace == AUTOSPACE_NONE) ? vSize.getSpanSumWeight() : ((autospace == AUTOSPACE_BOTH) ? 2 : 1));
 		}
 		// top
-		if (autospace & AUTOSPACE_FIRST == 0) constraintSet.toTop(_top, zeroExpr);
-		else constraintSet.toTop( _top, new Expression([new Term(outerHSpanVar)]) );
+		if (autospace & AUTOSPACE_FIRST == 0) constraintSet.toTop(solver, _top, zeroExpr);
+		else constraintSet.toTop(solver, _top, new Expression([new Term(outerHSpanVar)]) );
 		// bottom
-		if (autospace & AUTOSPACE_LAST == 0) constraintSet.toBottom( _bottom, rootHeightExpr );
-		else constraintSet.toBottom( _bottom, rootHeightExpr - outerVSpanVar );
+		if (autospace & AUTOSPACE_LAST == 0) constraintSet.toBottom(solver, _bottom, rootHeightExpr );
+		else constraintSet.toBottom(solver, _bottom, rootHeightExpr - outerVSpanVar );
 		
 		addTreeConstraints(solver, 0); // <- recursive Container
 		
@@ -695,16 +703,12 @@ class LayoutContainer
 			
 			// horizontal oversize-align for BOX (if not autoalign) or HBOX
 			if (innerHOversizeVar != null) {
-				//if (containerType == ContainerType.BOX) constraintSet.innerHOversize(innerHOversizeVar, innerHOversizeWeight); //childsHighestHMin);
-				//else constraintSet.innerHOversize(innerHOversizeVar, innerHOversizeWeight);// childsSumHMin);
-				constraintSet.innerHOversize(innerHOversizeVar, innerHOversizeWeight);
+				constraintSet.innerHOversize(solver, innerHOversizeVar, innerHOversizeWeight);
 			}			
 			
 			// vertical oversize-align for BOX (if not autoalign) or VBOX
 			if (innerVOversizeVar != null) {
-				//if (containerType == ContainerType.BOX) constraintSet.innerVOversize(innerVOversizeVar, innerVOversizeWeight);// childsHighestVMin);
-				//else constraintSet.innerVOversize(innerVOversizeVar, innerVOversizeWeight);//childsSumVMin);
-				constraintSet.innerVOversize(innerVOversizeVar, innerVOversizeWeight);
+				constraintSet.innerVOversize(solver, innerVOversizeVar, innerVOversizeWeight);
 			}
 						
 			for (i in 0...childs.length)
@@ -718,28 +722,27 @@ class LayoutContainer
 				
 				if (containerType == ContainerType.HBOX) // -------- HBOX --------
 				{
-					if (i>0) child.constraintSet.toLeft( child._left, childs[i-1]._right );
+					if (i>0) child.constraintSet.toLeft(solver, child._left, childs[i-1]._right );
 				}
 				else                                     // -------- BOX ---------
 				{
-					if (child.outerHLimitVar != null) child.constraintSet.outerHLimit(child.outerHLimitVar);
+					if (child.outerHLimitVar != null) child.constraintSet.outerHLimit(solver, child.outerHLimitVar);
 					
 					autospace = getAutospaceBox(hSize, child.hSize);					
 					alignOnOversize = layout.alignChildsOnOversizeX;
 					
 					if (child.outerHOversizeVar != null) {
-						child.constraintSet.outerHOversize(child.outerHOversizeVar, child.outerHOversizeWeight);
+						child.constraintSet.outerHOversize(solver, child.outerHOversizeVar, child.outerHOversizeWeight);
 						alignOnOversize = (autospace != AUTOSPACE_NONE) ? autospace : getAutospaceAlign(child.hSize, child.hSize);
 					}
 					
 					if (child.outerHSpanVar != null) {
-						child.constraintSet.outerHSpan(child.outerHSpanVar, _width, child.hSize.getLimitMax(), (autospace == AUTOSPACE_NONE) ? child.hSize.getSpanSumWeight() : ((autospace == AUTOSPACE_BOTH) ? 2 : 1));
+						child.constraintSet.outerHSpan(solver, child.outerHSpanVar, _width, child.hSize.getLimitMax(), (autospace == AUTOSPACE_NONE) ? child.hSize.getSpanSumWeight() : ((autospace == AUTOSPACE_BOTH) ? 2 : 1));
 					}
 					
-					ConstraintSet.toOuterLeftRight(
+					ConstraintSet.toOuterLeftRight( solver,
 						child, child, _x, _width,
-						child.outerHSpanVar, 
-						(innerHOversizeVar != null) ? innerHOversizeVar : child.outerHOversizeVar, _xScroll,
+						child.outerHSpanVar, (innerHOversizeVar != null) ? innerHOversizeVar : child.outerHOversizeVar, _xScroll,
 						alignOnOversize, autospace
 					);
 				}
@@ -750,28 +753,27 @@ class LayoutContainer
 				
 				if (containerType == ContainerType.VBOX) // -------- VBOX --------
 				{
-					if (i > 0) child.constraintSet.toTop( child._top, childs[i-1]._bottom );
+					if (i > 0) child.constraintSet.toTop(solver, child._top, childs[i-1]._bottom );
 				}
 				else                                     // -------- BOX ---------
 				{
-					if (child.outerVLimitVar != null) child.constraintSet.outerVLimit(child.outerVLimitVar);
+					if (child.outerVLimitVar != null) child.constraintSet.outerVLimit(solver, child.outerVLimitVar);
 					
 					autospace = getAutospaceBox(vSize, child.vSize);
 					alignOnOversize = layout.alignChildsOnOversizeY;
 					
 					if (child.outerVOversizeVar != null) {
-						child.constraintSet.outerVOversize(child.outerVOversizeVar, child.outerVOversizeWeight);
+						child.constraintSet.outerVOversize(solver, child.outerVOversizeVar, child.outerVOversizeWeight);
 						alignOnOversize = (autospace != AUTOSPACE_NONE) ? autospace : getAutospaceAlign(child.vSize, child.vSize);
 					}
 					
 					if (child.outerVSpanVar != null) {
-						child.constraintSet.outerVSpan(child.outerVSpanVar, _height, child.vSize.getLimitMax(), (autospace == AUTOSPACE_NONE) ? child.vSize.getSpanSumWeight() : ((autospace == AUTOSPACE_BOTH) ? 2 : 1));
+						child.constraintSet.outerVSpan(solver, child.outerVSpanVar, _height, child.vSize.getLimitMax(), (autospace == AUTOSPACE_NONE) ? child.vSize.getSpanSumWeight() : ((autospace == AUTOSPACE_BOTH) ? 2 : 1));
 					}
 					
-					ConstraintSet.toOuterTopBottom(
+					ConstraintSet.toOuterTopBottom( solver,
 						child, child, _y, _height,
-						child.outerVSpanVar, 
-						(innerVOversizeVar != null) ? innerVOversizeVar : child.outerVOversizeVar, _yScroll,
+						child.outerVSpanVar, (innerVOversizeVar != null) ? innerVOversizeVar : child.outerVOversizeVar, _yScroll,
 						alignOnOversize, autospace
 					);
 				}
@@ -787,7 +789,7 @@ class LayoutContainer
 				
 				if (containerType == ContainerType.HBOX)
 				{
-					if (innerHLimitVar != null) constraintSet.innerLimit(innerHLimitVar);
+					if (innerHLimitVar != null) constraintSet.innerLimit(solver, innerHLimitVar);
 				
 					autospace = getAutospaceRowCol(childsNumHSpan, hSize, childsSumHMax, childs[0].hSize, childs[childs.length - 1].hSize);
 					if (autospace != AUTOSPACE_NONE) {
@@ -801,10 +803,10 @@ class LayoutContainer
 					}
 					
 					if (innerHSpanVar != null) {
-						constraintSet.innerSpan( innerHSpanVar, _width, childsSumHMax, childsSumHWeight + autospaceSumWeight);
+						constraintSet.innerSpan(solver, innerHSpanVar, _width, childsSumHMax, childsSumHWeight + autospaceSumWeight);
 					}
 					
-					ConstraintSet.toOuterLeftRight(
+					ConstraintSet.toOuterLeftRight( solver,
 						childs[0], childs[childs.length-1], _x, _width,
 						innerHSpanVar, innerHOversizeVar, _xScroll,
 						alignOnOversize, autospace
@@ -812,7 +814,7 @@ class LayoutContainer
 				}
 				else // --------- Container.VBOX --------
 				{					
-					if (innerVLimitVar != null)	constraintSet.innerLimit( innerVLimitVar );
+					if (innerVLimitVar != null)	constraintSet.innerLimit(solver, innerVLimitVar );
 				
 					autospace = getAutospaceRowCol(childsNumVSpan, vSize, childsSumVMax, childs[0].vSize, childs[childs.length - 1].vSize);
 					if (autospace != AUTOSPACE_NONE) {
@@ -826,10 +828,10 @@ class LayoutContainer
 					}
 					
 					if (innerVSpanVar != null) {
-						constraintSet.innerSpan( innerVSpanVar, _height, childsSumVMax, childsSumVWeight + autospaceSumWeight);
+						constraintSet.innerSpan(solver, innerVSpanVar, _height, childsSumVMax, childsSumVWeight + autospaceSumWeight);
 					}
 			
-					ConstraintSet.toOuterTopBottom(
+					ConstraintSet.toOuterTopBottom( solver,
 						childs[0], childs[childs.length-1], _y, _height,
 						innerVSpanVar, innerVOversizeVar, _yScroll,
 						alignOnOversize, autospace
