@@ -251,86 +251,39 @@ class LayoutContainer
 				calculateChildOversize(child);
 			}
 			
-			// Fixing limits  ------ horizontal -----------
+			// oversizing or fixing limits  ------ horizontal -----------
 			if (containerType == ContainerType.HBOX) {
-				//TODO: fixLimitHBox()
-				// FIX MIN
-				if (hSize.middle._min < childsSumHMin) {
-					if (layout.limitMinWidthToChilds) {
-						hSize.middle._min = childsSumHMin;
-						if (hSize.middle._max != null && hSize.middle._max < childsSumHMin)
-							hSize.middle._max = childsSumHMin;
-					}
-					else {
-						innerHOversizeVar = new Variable();
-						innerHOversizeWeight++; 
-					}
+				fixLimitMin(hSize, childsSumHMin, layout.limitMinWidthToChilds);
+				if ( isInnerOversize(hSize, childsSumHMin, layout.limitMinWidthToChilds) ) {
+					innerHOversizeVar = new Variable();
+					innerHOversizeWeight++; 
 				}
-				// FIX MAX
-				if (layout.limitMaxWidthToChilds && childsSumHMax != 0) {
-					if (hSize.middle._max == null || hSize.middle._max > childsSumHMax)
-						hSize.middle._max = childsSumHMax;
+				fixLimitMax(hSize, childsSumHMax, layout.limitMaxWidthToChilds);
+			} else {                     // BOX
+				fixLimitMin(hSize, childsHighestHMin, layout.limitMinWidthToChilds);
+				if ( isInnerOversize(hSize, childsHighestHMin, layout.limitMinWidthToChilds && layout.alignChildsOnOversizeX != Align.AUTO) ) {
+					innerHOversizeVar = new Variable();
+					innerHOversizeWeight++; 
 				}
-			}
-			else {                     // BOX
-				// FIX MIN
-				if (hSize.middle._min < childsHighestHMin) {
-					if (layout.limitMinWidthToChilds) {
-						hSize.middle._min = childsHighestHMin;
-						if (hSize.middle._max != null && hSize.middle._max < childsHighestHMin)
-							hSize.middle._max = childsHighestHMin;
-					}
-					else if (layout.alignChildsOnOversizeX != Align.AUTO) {
-						innerHOversizeVar = new Variable();
-						innerHOversizeWeight++;
-					}						
-				}
-				// FIX MAX
-				if (layout.limitMaxWidthToChilds && childsHighestHMax != 0) {
-					if (hSize.middle._max == null || hSize.middle._max > childsHighestHMax)
-						hSize.middle._max = childsHighestHMax;
-				}				
+				fixLimitMax(hSize, childsHighestHMax, layout.limitMaxWidthToChilds);
 			}
 			
-			// Fixing limits  ------ vertical -----------
+			// oversizing or fixing limits  ------ vertical -----------
 			if (containerType == ContainerType.VBOX) {
-				// FIX MIN
-				if (vSize.middle._min < childsSumVMin) {
-					if (layout.limitMinHeightToChilds) {
-						vSize.middle._min = childsSumVMin;
-						if (vSize.middle._max != null && vSize.middle._max < childsSumVMin)
-							vSize.middle._max = childsSumVMin;
-					}
-					else {
-						innerVOversizeVar = new Variable();
-						innerVOversizeWeight++; 
-					}
+				fixLimitMin(vSize, childsSumVMin, layout.limitMinHeightToChilds);
+				if ( isInnerOversize(vSize, childsSumVMin, layout.limitMinHeightToChilds) ) {
+					innerVOversizeVar = new Variable();
+					innerVOversizeWeight++; 
 				}
-				// FIX MAX
-				if (layout.limitMaxHeightToChilds && childsSumVMax != 0) {
-					if (vSize.middle._max == null || vSize.middle._max > childsSumVMax)
-						vSize.middle._max = childsSumVMax;
-				}
+				fixLimitMax(vSize, childsSumVMax, layout.limitMaxHeightToChilds);
 			}
 			else {                     // BOX
-				// FIX MIN
-				if (vSize.middle._min < childsHighestVMin) {
-					if (layout.limitMinHeightToChilds) {
-						vSize.middle._min = childsHighestVMin;
-						if (vSize.middle._max != null && vSize.middle._max < childsHighestVMin)
-							vSize.middle._max = childsHighestVMin;
-					}
-					else if (layout.alignChildsOnOversizeY != Align.AUTO) {
-						innerVOversizeVar = new Variable();
-						innerVOversizeWeight++;
-					}
+				fixLimitMin(vSize, childsHighestVMin, layout.limitMinHeightToChilds);
+				if ( isInnerOversize(vSize, childsHighestVMin, layout.limitMinHeightToChilds && layout.alignChildsOnOversizeY != Align.AUTO) ) {
+					innerVOversizeVar = new Variable();
+					innerVOversizeWeight++; 
 				}
-				// FIX MAX
-				if (layout.limitMaxHeightToChilds && childsHighestVMax != 0) {
-					if (vSize.middle._max == null || vSize.middle._max > childsHighestVMax)
-						vSize.middle._max = childsHighestVMax;
-				}
-				
+				fixLimitMax(vSize, childsHighestHMax, layout.limitMaxHeightToChilds);
 			}
 			
 			for (child in childs) {
@@ -400,6 +353,24 @@ class LayoutContainer
 			innerVOversizeWeight += child.outerVOversizeWeight;
 		}
 		else innerVOversizeWeight += child.innerVOversizeWeight;	
+	}
+	
+	inline function fixLimitMin(size:SizeSpaced, childsMin:Int, limitMinToChilds:Bool):Bool {
+		if (limitMinToChilds && size.middle._min < childsMin) {
+			size.middle._min = childsMin;
+			if (size.middle._max != null && size.middle._max < childsMin) size.middle._max = childsMin;
+			return true;
+		} else return false;
+	}
+	
+	inline function isInnerOversize(size:SizeSpaced, childsMin:Int, limitMinToChilds:Bool):Bool
+		return (!limitMinToChilds && size.middle._min < childsMin);
+	
+	inline function fixLimitMax(size:SizeSpaced, childsMax:Int, limitMaxToChilds):Bool {
+		if ( limitMaxToChilds && childsMax != 0 && (size.middle._max == null || size.middle._max > childsMax) ) {
+			size.middle._max = childsMax;
+			return true;
+		} else return false;
 	}
 	
 	inline function calculateChildVars(child:LayoutContainer)
