@@ -297,9 +297,17 @@ class LayoutContainer
 		}		
 		
 		#if peotelayout_debug
+		debug();
+		#end
+		
+		this.childs = childs;
+		// TODO: update
+	}
+	
+	public function debug() {
 		if (layout.name != "") 
 		trace(""
-			+"\nisInnerHOversize:"+isInnerHOversize
+			+"\nisInnerHOversize:"+(innerHOversizeVar!=null)
 			+"\ninnerHOversizeWeight:"+innerHOversizeWeight
 			+"\nhSize.middle._min:"+hSize.middle._min
 			//+"\nchildsNumHSpan:"+childsNumHSpan
@@ -314,10 +322,6 @@ class LayoutContainer
 			//+"\nchildsSumVWeight:"+childsSumVWeight
 			+"\nchildsHighestVMax:"+childsHighestVMax
 		);
-		#end
-		
-		this.childs = childs;
-		// TODO: update
 	}
 	
 	inline function calculateChildLimits(child:LayoutContainer)
@@ -403,6 +407,8 @@ class LayoutContainer
 	
 	public function addChild(child:LayoutContainer, atIndex:Null<Int> = null) {
 		
+		trace("-------- ADD CHILD --------");
+		
 		if (childs == null) childs = new Array<LayoutContainer>();
 		
 		var isFirst = false;
@@ -420,18 +426,53 @@ class LayoutContainer
 		childs.insert(atIndex, child);
 		
 		// ------------
+		child.parent = this;
 		calculateChildLimits(child);
 		calculateChildOversize(child);
 		
 		// TODO: update min/max from this container
+			// oversizing or fixing limits  ------ horizontal -----------
+			if (containerType == ContainerType.HBOX) {
+				fixLimitMin(hSize, childsSumHMin, layout.limitMinWidthToChilds);
+				if ( isInnerOversize(hSize, childsSumHMin, layout.limitMinWidthToChilds) ) {
+					innerHOversizeVar = new Variable();
+					innerHOversizeWeight++; 
+				}
+				fixLimitMax(hSize, childsSumHMax, layout.limitMaxWidthToChilds);
+			} else {                     // BOX
+				fixLimitMin(hSize, childsHighestHMin, layout.limitMinWidthToChilds);
+				if ( isInnerOversize(hSize, childsHighestHMin, layout.limitMinWidthToChilds && layout.alignChildsOnOversizeX != Align.AUTO) ) {
+					innerHOversizeVar = new Variable();
+					innerHOversizeWeight++; 
+				}
+				fixLimitMax(hSize, childsHighestHMax, layout.limitMaxWidthToChilds);
+			}
+		#if peotelayout_debug
+		debug();
+		#end
 		
+		trace("innerHLimitVar before:",(innerHLimitVar != null));
+		trace("innerHSpanVar before:",(innerHSpanVar != null));
+		trace("innerHOversizeVar before:",(innerHOversizeVar != null));
+
 		calculateChildVars(child);
 		
+		trace("innerHLimitVar after:",(innerHLimitVar != null));
+		trace("innerHSpanVar after:",(innerHSpanVar != null));
+		trace("innerHOversizeVar after:",(innerHOversizeVar != null));
+
 		// TODO: recursive upwards if min/max was changed
 		
 		// -------------------------------------------------
 		
 		// Only if there is a Solver !
+		if (solver == null) return;
+		
+		// recursive childs
+		// TODO: use already initialized constraints
+		child.addTreeConstraints(solver, depth);
+
+		// ------------------------- addChild horizontal ---------------------------
 		
 		if (containerType == ContainerType.HBOX) {
 			
@@ -446,8 +487,10 @@ class LayoutContainer
 				autospaceSumWeight = (autospace == AUTOSPACE_BOTH) ? 2 : 1;
 				if (innerHSpanVar == null) innerHSpanVar = new Variable();
 			}
+			
 			// TODO: remove before!
-			if (innerHSpanVar != null) {
+			
+			if (innerHSpanVar != null) { trace("KK", childsSumHMax, childsSumHWeight + autospaceSumWeight);
 				constraintSet.innerSpan(solver, innerHSpanVar, _width, childsSumHMax, childsSumHWeight + autospaceSumWeight);
 			}
 			
@@ -495,17 +538,46 @@ class LayoutContainer
 			
 		}
 		else { // BOX
+			
+			// LATER
+			
 		}
+		
+		// ------------------------- addChild vertical -----------------------------
 		
 		if (containerType == ContainerType.VBOX) {
+			
+			// LATER
+
 		}
 		else {
+			
+			// TODO
+			
+			if (child.outerVLimitVar != null) child.constraintSet.outerVLimit(solver, child.outerVLimitVar);
+			
+			var autospace = getAutospaceBox(vSize, child.vSize);
+			var alignOnOversize = layout.alignChildsOnOversizeY;
+			
+			if (child.outerVOversizeVar != null) {
+				child.constraintSet.outerVOversize(solver, child.outerVOversizeVar, child.outerVOversizeWeight);
+				alignOnOversize = (autospace != AUTOSPACE_NONE) ? autospace : getAutospaceAlign(child.vSize, child.vSize);
+			}
+			
+			if (child.outerVSpanVar != null) {
+				child.constraintSet.outerVSpan(solver, child.outerVSpanVar, _height, child.vSize.getLimitMax(), (autospace == AUTOSPACE_NONE) ? child.vSize.getSpanSumWeight() : ((autospace == AUTOSPACE_BOTH) ? 2 : 1));
+			}
+			
+			ConstraintSet.toOuterTopBottom( solver,
+				child, child, _y, _height,
+				child.outerVSpanVar, (innerVOversizeVar != null) ? innerVOversizeVar : child.outerVOversizeVar, _yScroll,
+				alignOnOversize, autospace
+			);
+			
+			
 		}
 		
 		
-		// recursive childs
-		// TODO: use already initialized constraints
-		//child.addTreeConstraints(solver, depth);
 		
 	}
 	
