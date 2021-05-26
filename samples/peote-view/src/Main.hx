@@ -40,8 +40,7 @@ class Main extends lime.app.Application
 	{
 		peoteView = new PeoteView(window.context, window.width, window.height);
 
-		display = new LayoutedDisplay(Color.GREY1);	
-		peoteView.addDisplay(display);
+		display = new LayoutedDisplay(peoteView, Color.GREY1);	
 
 		// add some graphic elements
 		var green = new LayoutedSprite(display, Color.GREEN);

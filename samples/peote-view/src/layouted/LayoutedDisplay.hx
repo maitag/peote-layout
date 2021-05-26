@@ -5,74 +5,91 @@ import peote.view.Display;
 import peote.view.Program;
 import peote.view.Buffer;
 import peote.view.Color;
+import peote.layout.LayoutContainer;
 
 import peote.layout.LayoutElement;
 
 class LayoutedDisplay extends Display implements LayoutElement
 {
-
 	public var buffer:Buffer<LayoutedSprite>;
-	public var program:Program;
+	public var program:Program;	
+	var _peoteView:PeoteView;
+	var isVisible:Bool = false;
 
-	public function new(color:Color=0x00000000) 
+	public function new(peoteView:PeoteView, color:Color=0x00000000) 
 	{
-		super(0, 0, 0, 0, color);		
+		_peoteView = peoteView;
+		super(0, 0, 0, 0, color);
 		buffer = new Buffer<LayoutedSprite>(16,8);
 		program = new Program(buffer);
 		LayoutedSprite.initProgram(program);
 		addProgram(program);
 	}
 	
-	// ---------------------------------------- show, hide and interface to peote-layout
-	var lastPeoteView:PeoteView = null;
 	
-	public function show():Void {
-		if (peoteView == null && lastPeoteView != null) {
-			lastPeoteView.addDisplay(this);
-		} 
-	}
+	// ------------------ update, show and hide ----------------------
 	
-	public function hide():Void{
-		if (peoteView != null) {
-			lastPeoteView = peoteView;
-			peoteView.removeDisplay(this);
-		}		
-	}
-	
-	// ------------------------------------------------------------------------------------
-	
-	// bindings to peote-layout
-	
-	public function showByLayout():Void show();
-	public function hideByLayout():Void hide();
-	
-	var layoutWasHidden = false;
-	public function updateByLayout(layoutContainer:peote.layout.LayoutContainer) 
-	{
+	public inline function update(layoutContainer:LayoutContainer) {
+		x = Math.round(layoutContainer.x);
+		y = Math.round(layoutContainer.y);
 		
-		if (!layoutWasHidden && layoutContainer.isHidden) { // if it is full outside of the Mask (so invisible)
-			hideByLayout();
-			layoutWasHidden = true;
+		if (layoutContainer.isMasked) { // if some of the edges is cut by mask for scroll-area
+			x += Math.round(layoutContainer.maskX);
+			y += Math.round(layoutContainer.maskY);
+			width = Math.round(layoutContainer.maskWidth);
+			height = Math.round(layoutContainer.maskHeight);
 		}
 		else {
-			x = Math.round(layoutContainer.x);
-			y = Math.round(layoutContainer.y);
 			width = Math.round(layoutContainer.width);
-			height = Math.round(layoutContainer.height);
-			
-			if (layoutContainer.isMasked) { // if some of the edges is cut by mask for scroll-area
-				x += Math.round(layoutContainer.maskX);
-				y += Math.round(layoutContainer.maskY);
-				width = Math.round(layoutContainer.maskWidth);
-				height = Math.round(layoutContainer.maskHeight);
-			}
-			
-			if (layoutWasHidden) {
-				showByLayout();
-				layoutWasHidden = false;
-			}
-
+			height = Math.round(layoutContainer.height);				
 		}
+	}
+	
+	public inline function show() {
+		isVisible = true;
+		_peoteView.addDisplay(this);
+	}
+	
+	public inline function hide() {
+		isVisible = false;
+		_peoteView.removeDisplay(this);
+	}
+	
+	
+	// ---------------- interface to peote-layout ---------------------
+	
+	public inline function showByLayout() {
+		if (!isVisible) show();
+	}
+	
+	public inline function hideByLayout() {
+		if (isVisible) hide();
+	}
+	
+	public function updateByLayout(layoutContainer:peote.layout.LayoutContainer) {
+		// TODO: layoutContainer.updateMask() from here to make it only on-need
+		
+		if (isVisible)
+		{ 
+			if (layoutContainer.isHidden) // if it is full outside of the Mask (so invisible)
+			{
+				#if peotelayout_debug
+				//trace("removed", layoutContainer.layout.name);
+				#end
+				hide();
+			}
+			else update(layoutContainer);
+			
+		}
+		else if (!layoutContainer.isHidden) // not full outside of the Mask anymore
+		{
+			#if peotelayout_debug
+			//trace("showed", layoutContainer.layout.name);
+			#end
+			update(layoutContainer);
+			show();
+		}
+		
 	}	
 	
 }

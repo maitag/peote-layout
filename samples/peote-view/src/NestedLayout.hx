@@ -37,10 +37,8 @@ class NestedLayout extends lime.app.Application
 	{
 		peoteView = new PeoteView(window.context, window.width, window.height);
 
-		var display:LayoutedDisplay = new LayoutedDisplay(Color.GREY4);	
-		var yellowDisplay:LayoutedDisplay = new LayoutedDisplay(Color.YELLOW);	
-		peoteView.addDisplay(display);
-		peoteView.addDisplay(yellowDisplay);
+		var display:LayoutedDisplay = new LayoutedDisplay(peoteView, Color.GREY4);
+		var yellowDisplay:LayoutedDisplay = new LayoutedDisplay(peoteView, Color.YELLOW);	
 
 		var sameLimit = Size.limit(80, 150);
 		

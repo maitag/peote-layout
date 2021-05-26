@@ -41,8 +41,7 @@ class DeepNestingDemo extends lime.app.Application
 	{
 		peoteView = new PeoteView(window.context, window.width, window.height);
 
-		display = new LayoutedDisplay(Color.BLACK);	
-		peoteView.addDisplay(display);
+		display = new LayoutedDisplay(peoteView, Color.BLACK);	
 
 		// init layout
 		root = new Box(display,

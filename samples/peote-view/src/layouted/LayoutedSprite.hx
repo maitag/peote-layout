@@ -1,13 +1,12 @@
 package layouted;
 
-import peote.layout.LayoutContainer;
 import peote.view.Buffer;
 import peote.view.Element;
 import peote.view.Program;
 import peote.view.Color;
+import peote.layout.LayoutContainer;
 
 import peote.layout.LayoutElement;
-
 
 class LayoutedSprite implements LayoutElement implements Element
 {
@@ -75,36 +74,38 @@ class LayoutedSprite implements LayoutElement implements Element
 	}
 	
 	
-	var display:LayoutedDisplay;
-	
+	var display:LayoutedDisplay;	
 	var isVisible:Bool = false;
 		
-	public function new(display:LayoutedDisplay, color:Color, borderSize:Float = 3, borderRadius:Float = 25) {
+	public function new(display:LayoutedDisplay, color:Color, borderSize:Float = 5, borderRadius:Float = 25) {
 		this.color = color;
 		this.display = display;
 		this.bSize = borderSize;
 		this.borderRadius = borderRadius;
 	}
 	
+	
+	// ------------------ update, show and hide ----------------------
+
 	public inline function update(layoutContainer:LayoutContainer) {
-			x = Math.round(layoutContainer.x);
-			y = Math.round(layoutContainer.y);
-			z = Math.round(layoutContainer.depth);
-			w = Math.round(layoutContainer.width);
-			h = Math.round(layoutContainer.height);
-			
-			if (layoutContainer.isMasked) { // if some of the edges is cut by mask for scroll-area
-				maskX = Math.round(layoutContainer.maskX);
-				maskY = Math.round(layoutContainer.maskY);
-				maskWidth = maskX + Math.round(layoutContainer.maskWidth);
-				maskHeight = maskY + Math.round(layoutContainer.maskHeight);
-			}
-			else { // if its fully displayed
-				maskX = 0;
-				maskY = 0;
-				maskWidth = w;
-				maskHeight = h;
-			}
+		x = Math.round(layoutContainer.x);
+		y = Math.round(layoutContainer.y);
+		z = Math.round(layoutContainer.depth);
+		w = Math.round(layoutContainer.width);
+		h = Math.round(layoutContainer.height);
+		
+		if (layoutContainer.isMasked) { // if some of the edges is cut by mask for scroll-area
+			maskX = Math.round(layoutContainer.maskX);
+			maskY = Math.round(layoutContainer.maskY);
+			maskWidth = maskX + Math.round(layoutContainer.maskWidth);
+			maskHeight = maskY + Math.round(layoutContainer.maskHeight);
+		}
+		else { // if its fully displayed
+			maskX = 0;
+			maskY = 0;
+			maskWidth = w;
+			maskHeight = h;
+		}
 	}
 	
 	public inline function show() {
@@ -118,7 +119,7 @@ class LayoutedSprite implements LayoutElement implements Element
 	}
 
 	
-	/* INTERFACE peote.layout.LayoutElement */	
+	// ---------------- interface to peote-layout ---------------------
 
 	public inline function showByLayout() {
 		if (!isVisible) show();
@@ -128,8 +129,7 @@ class LayoutedSprite implements LayoutElement implements Element
 		if (isVisible) hide();
 	}
 	
-	public inline function updateByLayout(layoutContainer:LayoutContainer) {
-		
+	public inline function updateByLayout(layoutContainer:LayoutContainer) {		
 		// TODO: layoutContainer.updateMask() from here to make it only on-need
 		
 		if (isVisible)
