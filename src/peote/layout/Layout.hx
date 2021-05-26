@@ -31,6 +31,7 @@ private class LayoutImpl
 	var limitMaxHeightToChilds(default, null):Bool = false;
 	
 	var relativeChildPositions(default, null):Bool = false;
+	var absolutePosition(default, null):Bool = false;
 	
 	public inline function new() {}
 }
@@ -50,7 +51,8 @@ abstract Layout(LayoutImpl) from LayoutImpl
 		limitMaxWidthToChilds:Bool = false,
 		limitMinHeightToChilds:Bool = true,
 		limitMaxHeightToChilds:Bool = false,
-		relativeChildPositions:Bool = false)
+		relativeChildPositions:Bool = false,
+		absolutePosition:Bool = false)
 	{
 		this = new LayoutImpl();
 		#if peotelayout_debug
@@ -71,6 +73,7 @@ abstract Layout(LayoutImpl) from LayoutImpl
 		this.limitMinHeightToChilds = limitMinHeightToChilds;
 		this.limitMaxHeightToChilds = limitMaxHeightToChilds;
 		this.relativeChildPositions = relativeChildPositions;
+		this.absolutePosition = absolutePosition;
 	}
 	
 	@:from static #if !neko inline #end function fromLayoutOptions(p:LayoutOptions):Layout
@@ -101,5 +104,6 @@ abstract Layout(LayoutImpl) from LayoutImpl
 		if (p.limitMinHeightToChilds != null) this.limitMinHeightToChilds = p.limitMinHeightToChilds;
 		if (p.limitMaxHeightToChilds != null) this.limitMaxHeightToChilds = p.limitMaxHeightToChilds;
 		if (p.relativeChildPositions != null) this.relativeChildPositions = p.relativeChildPositions;
+		if (p.absolutePosition       != null) this.absolutePosition       = p.absolutePosition;
 	}
 }

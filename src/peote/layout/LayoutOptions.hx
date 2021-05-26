@@ -28,5 +28,6 @@ typedef LayoutOptions =
 	?limitMinHeightToChilds:Bool, // true by default
 	?limitMaxHeightToChilds:Bool, // false by default
 	
-	?relativeChildPositions:Bool // false by default
+	?relativeChildPositions:Bool, // , false by default
+	?absolutePosition:Bool // , false by default
 }

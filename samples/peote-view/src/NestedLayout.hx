@@ -16,7 +16,6 @@ import layouted.LayoutedDisplay;
 class NestedLayout extends lime.app.Application
 {
 	var peoteView:PeoteView;
-	var display:LayoutedDisplay;
 	
 	public function new() super();
 	
@@ -38,14 +37,23 @@ class NestedLayout extends lime.app.Application
 	{
 		peoteView = new PeoteView(window.context, window.width, window.height);
 
-		display = new LayoutedDisplay(Color.GREY1);	
+		var display:LayoutedDisplay = new LayoutedDisplay(Color.GREY4);	
+		var yellowDisplay:LayoutedDisplay = new LayoutedDisplay(Color.YELLOW);	
 		peoteView.addDisplay(display);
+		peoteView.addDisplay(yellowDisplay);
 
 		var sameLimit = Size.limit(80, 150);
 		
 		// init a complex layout
 		
 		layoutContainer = new Box( display,
+		{
+			left:  Size.span(0.05),
+			right: Size.span(0.05),
+			top:  	20,
+			bottom:	20,
+			relativeChildPositions:true // the childs (LayoutedSprite) need to positionize relative to the display
+		},
 		[	// childs -----------------------------------------
 			new HBox( new LayoutedSprite(display, Color.GREEN),
 			{
@@ -92,25 +100,29 @@ class NestedLayout extends lime.app.Application
 					right: Size.span(10, 0.3),
 				},
 				[	// childs -----------------------------------------
-					new Box( new LayoutedSprite(display, Color.YELLOW), 
+				
+					// another display inside
+					new Box( yellowDisplay, 
 					{	left:   Size.span(10, 0.5 ),
 						width:  Size.span(180),
 						height: Size.span(200,  1.9),
 						top:    Size.span(10,  0.1),
+						absolutePosition:true, // displays allways using absolute positioning
+						relativeChildPositions:true // ... but not its child-elements
 					}
 					,
 					[	// childs -----------------------------------------
-						new VBox( new LayoutedSprite(display, Color.MAGENTA),
+						new VBox( new LayoutedSprite(yellowDisplay, Color.MAGENTA),
 						{	width:  Size.limit(100, 250),
 							height: Size.max(400),
 						},
 						[	// childs -----------------------------------------
-							new Box( new LayoutedSprite(display, Color.GREY6),
+							new Box( new LayoutedSprite(yellowDisplay, Color.GREY6),
 							{	width:sameLimit,
 								height:sameLimit,
 								top:20,
 							}),
-							new Box( new LayoutedSprite(display, Color.GREY4),
+							new Box( new LayoutedSprite(yellowDisplay, Color.GREY4),
 							{	width:  sameLimit,
 								height: Size.span(80, 100),
 								top:    10,
@@ -118,6 +130,8 @@ class NestedLayout extends lime.app.Application
 							}),
 						]),
 					]),
+					// ---------------
+					
 					new Box( new LayoutedSprite(display, Color.CYAN),
 					{
 						left:   Size.span(10, 1.5 ),

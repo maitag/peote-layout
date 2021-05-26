@@ -176,11 +176,11 @@ class LayoutContainer
 	public var parent:LayoutContainer = null;
 	var childs:Array<LayoutContainer> = null;
 	
-	public var depth(default, null):Int = 0;
-		
 	public var isRoot(get, never):Bool;
 	inline function get_isRoot():Bool return (parent == null);	
 	
+	public var depth(default, null):Int = 0;
+		
 	// ----------------------------------------------------------------------------------------
 	// --------------------------------- NEW --------------------------------------------------
 	// ----------------------------------------------------------------------------------------
@@ -296,15 +296,14 @@ class LayoutContainer
 			
 		}		
 		
-		#if peotelayout_debug
 		debug();
-		#end
 		
 		this.childs = childs;
 		// TODO: update
 	}
 	
 	public function debug() {
+		#if peotelayout_debug
 		if (layout.name != "") 
 		trace(""
 			+"\nisInnerHOversize:"+(innerHOversizeVar!=null)
@@ -322,6 +321,7 @@ class LayoutContainer
 			//+"\nchildsSumVWeight:"+childsSumVWeight
 			+"\nchildsHighestVMax:"+childsHighestVMax
 		);
+		#end
 	}
 	
 	inline function calculateChildLimits(child:LayoutContainer)
@@ -465,8 +465,8 @@ class LayoutContainer
 		
 		// -------------------------------------------------
 		
-		// Only if there is a Solver !
-		if (solver == null) return;
+		
+		if (solver == null) return; // continue only if there is a Solver !
 		
 		// recursive childs
 		// TODO: use already initialized constraints
@@ -917,8 +917,13 @@ class LayoutContainer
 	
 	function updateLayoutElement(xOffset:Float, yOffset:Float)
 	{
+		if (layout.absolutePosition) {
+			xOffset = yOffset = 0;
+		}
+		
 		xParentOffset = xOffset;
 		yParentOffset = yOffset;
+		
 		if (layout.relativeChildPositions) {
 			xOffset += x;
 			yOffset += y;
@@ -929,7 +934,9 @@ class LayoutContainer
 		if (layoutElement != null) layoutElement.updateByLayout(this);
 		
 		if (childs != null) 
-			for (child in childs) child.updateLayoutElement(xOffset, yOffset); // recursive
+			for (child in childs) {
+				child.updateLayoutElement(xOffset, yOffset); // recursive
+			}
 	}
 	
 	function updateMask()
