@@ -9,13 +9,13 @@ import peote.view.Color;
 import peote.layout.LayoutContainer;
 import peote.layout.Size;
 
-import layouted.LayoutedSprite;
-import layouted.LayoutedDisplay;
+import layoutable.LayoutableSprite;
+import layoutable.LayoutableDisplay;
 
 class SizingAligning extends lime.app.Application
 {
 	var peoteView:PeoteView;
-	var display:LayoutedDisplay;
+	var display:LayoutableDisplay;
 	
 	public function new() super();
 	
@@ -37,7 +37,7 @@ class SizingAligning extends lime.app.Application
 	{
 		peoteView = new PeoteView(window.context, window.width, window.height);
 
-		display = new LayoutedDisplay(peoteView, Color.GREY1);	
+		display = new LayoutableDisplay(peoteView, Color.GREY1);	
 		
 		// Sizing and Aligning in row-containers
 		
@@ -45,85 +45,85 @@ class SizingAligning extends lime.app.Application
 		[	
 			// ----------- aligning ------------------------------
 			
-			new HBox( new LayoutedSprite(display, Color.RED), // auto spacing because all Sizes are constant
+			new HBox( new LayoutableSprite(display, Color.RED), // auto spacing because all Sizes are constant
 			[	
-				new Box( new LayoutedSprite(display, Color.GREY3), {         width:100} ),					
-				new Box( new LayoutedSprite(display, Color.GREY4), {left:10, width:100} ),					
-				new Box( new LayoutedSprite(display, Color.GREY5), {left:10, width:100} ),					
+				new Box( new LayoutableSprite(display, Color.GREY3), {         width:100} ),					
+				new Box( new LayoutableSprite(display, Color.GREY4), {left:10, width:100} ),					
+				new Box( new LayoutableSprite(display, Color.GREY5), {left:10, width:100} ),					
 			]),
-			new HBox( new LayoutedSprite(display, Color.GREEN), // left aligned because there is no last right-spacer
+			new HBox( new LayoutableSprite(display, Color.GREEN), // left aligned because there is no last right-spacer
 			[	
-				new Box( new LayoutedSprite(display, Color.GREY3), {left:0,  width:100} ),					
-				new Box( new LayoutedSprite(display, Color.GREY4), {left:10, width:100} ),					
-				new Box( new LayoutedSprite(display, Color.GREY5), {left:10, width:100} ),					
+				new Box( new LayoutableSprite(display, Color.GREY3), {left:0,  width:100} ),					
+				new Box( new LayoutableSprite(display, Color.GREY4), {left:10, width:100} ),					
+				new Box( new LayoutableSprite(display, Color.GREY5), {left:10, width:100} ),					
 			]),
-			new HBox( new LayoutedSprite(display, Color.BLUE), // right aligned because the first left spacer have no max size
+			new HBox( new LayoutableSprite(display, Color.BLUE), // right aligned because the first left spacer have no max size
 			[	
-				new Box( new LayoutedSprite(display, Color.GREY3), {left:Size.min(), width:100} ),
-				new Box( new LayoutedSprite(display, Color.GREY4), {left:10, width:100} ),		
-				new Box( new LayoutedSprite(display, Color.GREY5), {left:10, width:100} ),
+				new Box( new LayoutableSprite(display, Color.GREY3), {left:Size.min(), width:100} ),
+				new Box( new LayoutableSprite(display, Color.GREY4), {left:10, width:100} ),		
+				new Box( new LayoutableSprite(display, Color.GREY5), {left:10, width:100} ),
 			]),
-			new HBox( new LayoutedSprite(display, Color.YELLOW), // left aligned until the last reaching max value
+			new HBox( new LayoutableSprite(display, Color.YELLOW), // left aligned until the last reaching max value
 			[	
-				new Box( new LayoutedSprite(display, Color.GREY3), {         width:100} ),
-				new Box( new LayoutedSprite(display, Color.GREY4), {left:10, width:100} ),
-				new Box( new LayoutedSprite(display, Color.GREY5), {left:10, width:100, right:Size.max(400)} ),
+				new Box( new LayoutableSprite(display, Color.GREY3), {         width:100} ),
+				new Box( new LayoutableSprite(display, Color.GREY4), {left:10, width:100} ),
+				new Box( new LayoutableSprite(display, Color.GREY5), {left:10, width:100, right:Size.max(400)} ),
 			]),
 			
 			
 			// -------------- limits, min and max Sizes --------------
 			
-			new HBox( new LayoutedSprite(display, Color.RED), {top:14}, // the first and the last spans because no width-definitions
+			new HBox( new LayoutableSprite(display, Color.RED), {top:14}, // the first and the last spans because no width-definitions
 			[	
-				new Box( new LayoutedSprite(display, Color.GREY3) ),
-				new Box( new LayoutedSprite(display, Color.GREY4), {left:10, width:200} ),
-				new Box( new LayoutedSprite(display, Color.GREY5), {left:10} ),
+				new Box( new LayoutableSprite(display, Color.GREY3) ),
+				new Box( new LayoutableSprite(display, Color.GREY4), {left:10, width:200} ),
+				new Box( new LayoutableSprite(display, Color.GREY5), {left:10} ),
 			]),
-			new HBox( new LayoutedSprite(display, Color.GREEN), // auto spacing if reaching max-values
+			new HBox( new LayoutableSprite(display, Color.GREEN), // auto spacing if reaching max-values
 			[	
-				new Box( new LayoutedSprite(display, Color.GREY3), {         width:Size.max(200)} ),
-				new Box( new LayoutedSprite(display, Color.GREY4), {left:10, width:Size.max(200)} ),
-				new Box( new LayoutedSprite(display, Color.GREY5), {left:10, width:Size.max(200)} ),
+				new Box( new LayoutableSprite(display, Color.GREY3), {         width:Size.max(200)} ),
+				new Box( new LayoutableSprite(display, Color.GREY4), {left:10, width:Size.max(200)} ),
+				new Box( new LayoutableSprite(display, Color.GREY5), {left:10, width:Size.max(200)} ),
 			]),
-			new HBox( new LayoutedSprite(display, Color.BLUE), // the inner spacing is span because the "left" only have a min-size
+			new HBox( new LayoutableSprite(display, Color.BLUE), // the inner spacing is span because the "left" only have a min-size
 			[	
-				new Box( new LayoutedSprite(display, Color.GREY3), {                   width:Size.max(200)} ),
-				new Box( new LayoutedSprite(display, Color.GREY4), {left:Size.min(10), width:Size.limit(100,200)} ),
-				new Box( new LayoutedSprite(display, Color.GREY5), {left:Size.min(10), width:Size.max(200)} ),
+				new Box( new LayoutableSprite(display, Color.GREY3), {                   width:Size.max(200)} ),
+				new Box( new LayoutableSprite(display, Color.GREY4), {left:Size.min(10), width:Size.limit(100,200)} ),
+				new Box( new LayoutableSprite(display, Color.GREY5), {left:Size.min(10), width:Size.max(200)} ),
 			]),
-			new HBox( new LayoutedSprite(display, Color.YELLOW), // only limited sizes
+			new HBox( new LayoutableSprite(display, Color.YELLOW), // only limited sizes
 			[	
-				new Box( new LayoutedSprite(display, Color.GREY3), {width:Size.limit(50,  250)} ),
-				new Box( new LayoutedSprite(display, Color.GREY4), {width:Size.limit(100, 250)} ),
-				new Box( new LayoutedSprite(display, Color.GREY5), {width:Size.limit(150, 250)} ),
+				new Box( new LayoutableSprite(display, Color.GREY3), {width:Size.limit(50,  250)} ),
+				new Box( new LayoutableSprite(display, Color.GREY4), {width:Size.limit(100, 250)} ),
+				new Box( new LayoutableSprite(display, Color.GREY5), {width:Size.limit(150, 250)} ),
 			]),
-			new HBox( new LayoutedSprite(display, Color.MAGENTA), // mixing min, max and limit
+			new HBox( new LayoutableSprite(display, Color.MAGENTA), // mixing min, max and limit
 			[	
-				new Box( new LayoutedSprite(display, Color.GREY3), {left:Size.max(10),      width:Size.min(100)} ),
-				new Box( new LayoutedSprite(display, Color.GREY4), {left:Size.limit(10,40), width:Size.min(100)} ),
-				new Box( new LayoutedSprite(display, Color.GREY5), {left:Size.limit(10,40), width:Size.limit(100,200), right:Size.max(10)} ),
+				new Box( new LayoutableSprite(display, Color.GREY3), {left:Size.max(10),      width:Size.min(100)} ),
+				new Box( new LayoutableSprite(display, Color.GREY4), {left:Size.limit(10,40), width:Size.min(100)} ),
+				new Box( new LayoutableSprite(display, Color.GREY5), {left:Size.limit(10,40), width:Size.limit(100,200), right:Size.max(10)} ),
 			]),
 			
 			
 			// -------------------- span with relative values --------------------
 			
-			new HBox( new LayoutedSprite(display, Color.RED), {top:14},
+			new HBox( new LayoutableSprite(display, Color.RED), {top:14},
 			[	
-				new Box( new LayoutedSprite(display, Color.GREY3), {width:Size.span(50,  250)} ),
-				new Box( new LayoutedSprite(display, Color.GREY4), {width:Size.span(100, 250)} ),
-				new Box( new LayoutedSprite(display, Color.GREY5), {width:Size.span(150, 250)} ),
+				new Box( new LayoutableSprite(display, Color.GREY3), {width:Size.span(50,  250)} ),
+				new Box( new LayoutableSprite(display, Color.GREY4), {width:Size.span(100, 250)} ),
+				new Box( new LayoutableSprite(display, Color.GREY5), {width:Size.span(150, 250)} ),
 			]),
-			new HBox( new LayoutedSprite(display, Color.GREEN),
+			new HBox( new LayoutableSprite(display, Color.GREEN),
 			[	
-				new Box( new LayoutedSprite(display, Color.GREY3), {width:Size.span(50,  100)} ),
-				new Box( new LayoutedSprite(display, Color.GREY4), {width:Size.span(100, 200)} ),
-				new Box( new LayoutedSprite(display, Color.GREY5), {width:Size.span(150, 400)} ),
+				new Box( new LayoutableSprite(display, Color.GREY3), {width:Size.span(50,  100)} ),
+				new Box( new LayoutableSprite(display, Color.GREY4), {width:Size.span(100, 200)} ),
+				new Box( new LayoutableSprite(display, Color.GREY5), {width:Size.span(150, 400)} ),
 			]),
-			new HBox( new LayoutedSprite(display, Color.BLUE), // span with weightning
+			new HBox( new LayoutableSprite(display, Color.BLUE), // span with weightning
 			[	
-				new Box( new LayoutedSprite(display, Color.GREY3), {width:Size.span(0.5)} ),
-				new Box( new LayoutedSprite(display, Color.GREY4), {width:Size.span(1.0)} ),
-				new Box( new LayoutedSprite(display, Color.GREY5), {width:Size.span(2.0)} ),
+				new Box( new LayoutableSprite(display, Color.GREY3), {width:Size.span(0.5)} ),
+				new Box( new LayoutableSprite(display, Color.GREY4), {width:Size.span(1.0)} ),
+				new Box( new LayoutableSprite(display, Color.GREY5), {width:Size.span(2.0)} ),
 			]),
 			
 			

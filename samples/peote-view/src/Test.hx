@@ -12,13 +12,13 @@ import peote.layout.LayoutContainer;
 import peote.layout.ContainerType;
 import peote.layout.Size;
 
-import layouted.LayoutedSprite;
-import layouted.LayoutedDisplay;
+import layoutable.LayoutableSprite;
+import layoutable.LayoutableDisplay;
 
 class Test extends lime.app.Application
 {
 	var peoteView:PeoteView;
-	var display:LayoutedDisplay;
+	var display:LayoutableDisplay;
 	
 	public function new() super();
 	
@@ -40,22 +40,22 @@ class Test extends lime.app.Application
 	{
 		peoteView = new PeoteView(window.context, window.width, window.height);
 
-		display = new LayoutedDisplay(peoteView, Color.GREY1);
+		display = new LayoutableDisplay(peoteView, Color.GREY1);
 
 		// add some graphic elements
-		var green = new LayoutedSprite(display, Color.GREEN);
-		var red = new LayoutedSprite(display, Color.RED);
-		var blue = new LayoutedSprite(display, Color.BLUE);
-		var yellow = new LayoutedSprite(display, Color.YELLOW);
-		var cyan = new LayoutedSprite(display, Color.CYAN);
+		var green = new LayoutableSprite(display, Color.GREEN);
+		var red = new LayoutableSprite(display, Color.RED);
+		var blue = new LayoutableSprite(display, Color.BLUE);
+		var yellow = new LayoutableSprite(display, Color.YELLOW);
+		var cyan = new LayoutableSprite(display, Color.CYAN);
 				
-		var green1 = new LayoutedSprite(display, Color.GREEN);
-		var red1 = new LayoutedSprite(display, Color.RED);
-		var blue1 = new LayoutedSprite(display, Color.BLUE);
+		var green1 = new LayoutableSprite(display, Color.GREEN);
+		var red1 = new LayoutableSprite(display, Color.RED);
+		var blue1 = new LayoutableSprite(display, Color.BLUE);
 				
-		var green2 = new LayoutedSprite(display, Color.GREEN);
-		var red2 = new LayoutedSprite(display, Color.RED);
-		var blue2 = new LayoutedSprite(display, Color.BLUE);
+		var green2 = new LayoutableSprite(display, Color.GREEN);
+		var red2 = new LayoutableSprite(display, Color.RED);
+		var blue2 = new LayoutableSprite(display, Color.BLUE);
 				
 		// init a layout
 		layoutContainer = new LayoutContainer(ContainerType.BOX, display,

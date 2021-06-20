@@ -10,8 +10,8 @@ import peote.view.Color;
 import peote.layout.LayoutContainer;
 import peote.layout.Size;
 
-import layouted.LayoutedSprite;
-import layouted.LayoutedDisplay;
+import layoutable.LayoutableSprite;
+import layoutable.LayoutableDisplay;
 
 class NestedLayout extends lime.app.Application
 {
@@ -37,8 +37,8 @@ class NestedLayout extends lime.app.Application
 	{
 		peoteView = new PeoteView(window.context, window.width, window.height);
 
-		var display:LayoutedDisplay = new LayoutedDisplay(peoteView, Color.GREY4);
-		var yellowDisplay:LayoutedDisplay = new LayoutedDisplay(peoteView, Color.YELLOW);	
+		var display:LayoutableDisplay = new LayoutableDisplay(peoteView, Color.GREY4);
+		var yellowDisplay:LayoutableDisplay = new LayoutableDisplay(peoteView, Color.YELLOW);	
 
 		var sameLimit = Size.limit(80, 150);
 		
@@ -53,7 +53,7 @@ class NestedLayout extends lime.app.Application
 			relativeChildPositions:true // the childs (LayoutedSprite) need to positionize relative to the display
 		},
 		[	// childs -----------------------------------------
-			new HBox( new LayoutedSprite(display, Color.GREEN),
+			new HBox( new LayoutableSprite(display, Color.GREEN),
 			{
 				left:  	Size.min(10),
 				width: 	Size.limit(100, 1900),
@@ -64,7 +64,7 @@ class NestedLayout extends lime.app.Application
 				alignChildsOnOversizeX:Align.FIRST,
 			},
 			[	// childs -----------------------------------------
-				new VBox( new LayoutedSprite(display, Color.BLUE),
+				new VBox( new LayoutableSprite(display, Color.BLUE),
 				{					
 					left:  Size.span(0, 0.1),
 					width: Size.span(10),
@@ -72,26 +72,26 @@ class NestedLayout extends lime.app.Application
 					limitMinHeightToChilds: false, // let is oversize vertically
 				},
 				[	// childs -----------------------------------------
-					new Box( new LayoutedSprite(display, Color.RED), 
+					new Box( new LayoutableSprite(display, Color.RED), 
 					{	left:   Size.span(10),
 						width:  Size.limit(100, 200),
 						height: Size.limit(120, 200),
 						bottom: 10,
 					}),
-					new Box( new LayoutedSprite(display, Color.RED), 
+					new Box( new LayoutableSprite(display, Color.RED), 
 					{	left:   Size.span(10),
 						width:  Size.span(100, 200),
 						height: Size.limit(150, 200),
 						bottom: 10,
 					}),
-					new Box( new LayoutedSprite(display, Color.RED), 
+					new Box( new LayoutableSprite(display, Color.RED), 
 					{	left:   Size.span(10),
 						width:  Size.span(100, 200),
 						height: Size.limit(180, 200),
 					}),
 				]),
 				
-				new VBox( new LayoutedSprite(display, Color.BLUE),
+				new VBox( new LayoutableSprite(display, Color.BLUE),
 				{
 					left:  Size.span(0, 0.2),
 					width: Size.span(100),
@@ -110,17 +110,17 @@ class NestedLayout extends lime.app.Application
 					}
 					,
 					[	// childs -----------------------------------------
-						new VBox( new LayoutedSprite(yellowDisplay, Color.MAGENTA),
+						new VBox( new LayoutableSprite(yellowDisplay, Color.MAGENTA),
 						{	width:  Size.limit(100, 250),
 							height: Size.max(400),
 						},
 						[	// childs -----------------------------------------
-							new Box( new LayoutedSprite(yellowDisplay, Color.GREY6),
+							new Box( new LayoutableSprite(yellowDisplay, Color.GREY6),
 							{	width:sameLimit,
 								height:sameLimit,
 								top:20,
 							}),
-							new Box( new LayoutedSprite(yellowDisplay, Color.GREY4),
+							new Box( new LayoutableSprite(yellowDisplay, Color.GREY4),
 							{	width:  sameLimit,
 								height: Size.span(80, 100),
 								top:    10,
@@ -130,7 +130,7 @@ class NestedLayout extends lime.app.Application
 					]),
 					// ---------------
 					
-					new Box( new LayoutedSprite(display, Color.CYAN),
+					new Box( new LayoutableSprite(display, Color.CYAN),
 					{
 						left:   Size.span(10, 1.5 ),
 						width:  Size.span(100),

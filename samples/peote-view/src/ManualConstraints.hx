@@ -11,13 +11,13 @@ import peote.layout.LayoutContainer;
 import peote.layout.ContainerType;
 import peote.layout.Size;
 
-import layouted.LayoutedSprite;
-import layouted.LayoutedDisplay;
+import layoutable.LayoutableSprite;
+import layoutable.LayoutableDisplay;
 
 class ManualConstraints extends lime.app.Application
 {
 	var peoteView:PeoteView;
-	var display:LayoutedDisplay;
+	var display:LayoutableDisplay;
 	
 	public function new() super();
 	
@@ -39,13 +39,13 @@ class ManualConstraints extends lime.app.Application
 	{
 		peoteView = new PeoteView(window.context, window.width, window.height);
 
-		display = new LayoutedDisplay(peoteView, Color.GREY1);	
+		display = new LayoutableDisplay(peoteView, Color.GREY1);	
 
 		// add some graphic elements
-		var green = new LayoutedSprite(display, Color.GREEN);
-		var red = new LayoutedSprite(display, Color.RED);
-		var blue = new LayoutedSprite(display, Color.BLUE);
-		var yellow = new LayoutedSprite(display, Color.YELLOW);
+		var green = new LayoutableSprite(display, Color.GREEN);
+		var red = new LayoutableSprite(display, Color.RED);
+		var blue = new LayoutableSprite(display, Color.BLUE);
+		var yellow = new LayoutableSprite(display, Color.YELLOW);
 				
 		
 		// init a layout
@@ -88,6 +88,124 @@ class ManualConstraints extends lime.app.Application
 
 	}
 	
+/*	public function testConstraints()
+	{
+		ui.layout.reset();
+		grey.layout.reset();
+
+		layout = new Layout ([
+			// constraints
+			(peoteView.layout.x == 0) | Strength.REQUIRED,
+			(peoteView.layout.y == 0) | Strength.REQUIRED,
+
+			ui.layout.centerX == peoteView.layout.centerX,
+			ui.layout.top == 10,
+			(ui.layout.width == peoteView.layout.width - 20) | Strength.WEAK,
+			(ui.layout.bottom == peoteView.layout.bottom - 10) | Strength.WEAK,
+			(ui.layout.width <= 1000) | Strength.WEAK,
+
+			(grey.layout.centerX == ui.layout.centerX) | Strength.WEAK,
+			(grey.layout.y == ui.layout.y + 0.1*ui.layout.height) | Strength.WEAK,
+			//(grey.layout.centerY == ui.layout.centerY) | Strength.MEDIUM,
+			
+			(grey.layout.width  == ui.layout.width  / 1.1) | Strength.WEAK,
+			(grey.layout.height == ui.layout.height / 2.0  - 20) | Strength.WEAK,
+			
+			(grey.layout.width <= 600) | Strength.MEDIUM,
+			(grey.layout.width >= 200) | Strength.MEDIUM,
+			(grey.layout.height <= 400) | Strength.MEDIUM,
+			(grey.layout.height >= 200) | Strength.MEDIUM
+		]);
+		
+		// adding constraints afterwards:
+		var limitHeight:Constraint = (ui.layout.height <= 800) | Strength.WEAK;
+		layout.addConstraint(limitHeight);
+		
+		// that constraints can also be removed again:
+		// layout.removeConstraint(limitHeight);
+		
+		// UI-Displays and UI-Elements to update
+		layout.toUpdate([ui, grey]);
+		
+		// editable Vars
+		layout.addVariable(peoteView.layout.width);
+		layout.addVariable(peoteView.layout.height);
+		
+		resizeLayout(peoteView.width, peoteView.height);
+	}
+
+	// ----------------------------------------------------------------
+		
+	public function testRowConstraints()
+	{
+		ui.layout.reset();
+		red.layout.reset();
+		green.layout.reset();
+		blue.layout.reset();
+		
+		layout = new Layout ([
+			// constraints for the Displays
+			(peoteView.layout.x == 0) | Strength.REQUIRED,
+			(peoteView.layout.y == 0) | Strength.REQUIRED,
+
+			(ui.layout.centerX == peoteView.layout.centerX) | new Strength(200),
+			//(ui.layout.left == peoteView.layout.left) | new Strength(300),
+			//(ui.layout.right == peoteView.layout.right) | new Strength(200),
+			(ui.layout.width == peoteView.layout.width) | new Strength(100),
+			
+			(ui.layout.top == 0) | Strength.MEDIUM,
+			(ui.layout.bottom == peoteView.layout.bottom) | Strength.MEDIUM,
+			(ui.layout.width <= 1000) | Strength.MEDIUM,
+		
+			// constraints for ui-elements
+			
+			// size restriction
+			(red.layout.width <= 100) | new Strength(500),
+			(red.layout.width >= 50) | new Strength(500),
+			//(red.layout.width == 100) | new Strength(500),
+			
+			(green.layout.width <= 200) | new Strength(500),
+			(green.layout.width >= 100) | new Strength(500),
+			//(green.layout.width == 200) | new Strength(500),
+			
+			(blue.layout.width <= 300) | new Strength(500),
+			(blue.layout.width >= 150) | new Strength(500),
+			//(blue.layout.width == 300) | new Strength(500),
+			
+			// manual hbox constraints
+			
+			//(red.layout.width   == (ui.layout.width) * ((100+ 50)/2) / ((100+50)/2 + (200+100)/2 + (300+150)/2)) | Strength.WEAK,
+			//(green.layout.width == (ui.layout.width) * ((200+100)/2) / ((100+50)/2 + (200+100)/2 + (300+150)/2)) | Strength.WEAK,
+			//(blue.layout.width  == (ui.layout.width) * ((300+150)/2) / ((100+50)/2 + (200+100)/2 + (300+150)/2)) | Strength.WEAK,
+			
+			(red.layout.width == green.layout.width) | Strength.WEAK,
+			//(red.layout.width == blue.layout.width) | Strength.WEAK,
+			(green.layout.width == blue.layout.width) | Strength.WEAK,
+			
+			(red.layout.left == ui.layout.left) | new Strength(400),
+			(green.layout.left == red.layout.right ) | new Strength(400),
+			(blue.layout.left == green.layout.right ) | new Strength(400),
+			(blue.layout.right == ui.layout.right) | new Strength(300),
+			//(blue.layout.right == ui.layout.right) | Strength.WEAK,
+			
+			(red.layout.top == ui.layout.top) | Strength.MEDIUM,
+			(red.layout.bottom == ui.layout.bottom) | Strength.MEDIUM,
+			(green.layout.top == ui.layout.top) | Strength.MEDIUM,
+			(green.layout.bottom == ui.layout.bottom) | Strength.MEDIUM,
+			(blue.layout.top == ui.layout.top) | Strength.MEDIUM,
+			(blue.layout.bottom == ui.layout.bottom) | Strength.MEDIUM,			
+		]);
+			
+		// UI-Displays and UI-Elements to update
+		layout.toUpdate([ui, red, green, blue]);
+		
+		// editable Vars (used in suggest() and suggestValues())
+		layout.addVariable(peoteView.layout.width);
+		layout.addVariable(peoteView.layout.height);
+
+		resizeLayout(peoteView.width, peoteView.height);
+	}
+*/
 	// ------------------------------------------------------------
 	// ----------------- LIME EVENTS ------------------------------
 	// ------------------------------------------------------------	

@@ -167,7 +167,7 @@ class LayoutContainer
 	// ----------------------------------------------------------------------------------------
 	
 	public var containerType:ContainerType;
-	public var layoutElement:LayoutElement;	
+	public var layoutElement:ILayoutElement;	
 	public var layout:Layout;
 	
 	public var solver:Null<Solver>;
@@ -186,7 +186,7 @@ class LayoutContainer
 	// ----------------------------------------------------------------------------------------
 	public function new(
 		containerType:ContainerType = ContainerType.BOX,
-		layoutElement:LayoutElement = null,
+		layoutElement:ILayoutElement = null,
 		layout:Layout = null,
 		childs:Array<LayoutContainer> = null) 
 	{
@@ -1004,7 +1004,7 @@ class LayoutContainer
 // ------------------------------------------------------------------------------------------
 @:forward
 abstract Box(LayoutContainer) from LayoutContainer to LayoutContainer {
-	public inline function new(layoutElement:LayoutElement = null, layout:#if (haxe_ver < 3.470) LayoutOptions #else Layout #end = null, innerLayoutContainer:Array<LayoutContainer> = null) 
+	public inline function new(layoutElement:ILayoutElement = null, layout:#if (haxe_ver < 3.470) LayoutOptions #else Layout #end = null, innerLayoutContainer:Array<LayoutContainer> = null) 
 	{
 		this = new LayoutContainer(ContainerType.BOX, layoutElement, layout, innerLayoutContainer);
 	}
@@ -1012,7 +1012,7 @@ abstract Box(LayoutContainer) from LayoutContainer to LayoutContainer {
 
 @:forward
 abstract HBox(LayoutContainer) from LayoutContainer to LayoutContainer {
-	public inline function new(layoutElement:LayoutElement = null, layout:#if (haxe_ver < 3.470) LayoutOptions #else Layout #end = null, innerLayoutContainer:Array<LayoutContainer> = null) 
+	public inline function new(layoutElement:ILayoutElement = null, layout:#if (haxe_ver < 3.470) LayoutOptions #else Layout #end = null, innerLayoutContainer:Array<LayoutContainer> = null) 
 	{
 		this = new LayoutContainer(ContainerType.HBOX, layoutElement, layout, innerLayoutContainer);
 	}
@@ -1020,7 +1020,7 @@ abstract HBox(LayoutContainer) from LayoutContainer to LayoutContainer {
 
 @:forward
 abstract VBox(LayoutContainer) from LayoutContainer to LayoutContainer {
-	public inline function new(layoutElement:LayoutElement = null, layout:#if (haxe_ver < 3.470) LayoutOptions #else Layout #end = null, innerLayoutContainer:Array<LayoutContainer> = null) 
+	public inline function new(layoutElement:ILayoutElement = null, layout:#if (haxe_ver < 3.470) LayoutOptions #else Layout #end = null, innerLayoutContainer:Array<LayoutContainer> = null) 
 	{
 		this = new LayoutContainer(ContainerType.VBOX, layoutElement, layout, innerLayoutContainer);
 	}

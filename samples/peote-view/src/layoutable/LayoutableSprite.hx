@@ -1,4 +1,4 @@
-package layouted;
+package layoutable;
 
 import peote.view.Buffer;
 import peote.view.Element;
@@ -6,9 +6,9 @@ import peote.view.Program;
 import peote.view.Color;
 import peote.layout.LayoutContainer;
 
-import peote.layout.LayoutElement;
+import peote.layout.ILayoutElement;
 
-class LayoutedSprite implements LayoutElement implements Element
+class LayoutableSprite implements ILayoutElement implements Element
 {
 	@color public var borderColor:Color = 0x550000ff; // using propertyname "borderColor" as identifier for setColorFormula()
 	@color("bgcolor") public var color:Color = 0xffff00ff; // using different identifier "bgcolor" for setColorFormula()
@@ -74,10 +74,10 @@ class LayoutedSprite implements LayoutElement implements Element
 	}
 	
 	
-	var display:LayoutedDisplay;	
+	var display:LayoutableDisplay;	
 	var isVisible:Bool = false;
 		
-	public function new(display:LayoutedDisplay, color:Color, borderSize:Float = 5, borderRadius:Float = 25) {
+	public function new(display:LayoutableDisplay, color:Color, borderSize:Float = 5, borderRadius:Float = 25) {
 		this.color = color;
 		this.display = display;
 		this.bSize = borderSize;
@@ -110,12 +110,12 @@ class LayoutedSprite implements LayoutElement implements Element
 	
 	public inline function show() {
 		isVisible = true;
-		(display.buffer:Buffer<LayoutedSprite>).addElement(this);
+		(display.buffer:Buffer<LayoutableSprite>).addElement(this);
 	}
 	
 	public inline function hide() {
 		isVisible = false;
-		(display.buffer:Buffer<LayoutedSprite>).removeElement(this);
+		(display.buffer:Buffer<LayoutableSprite>).removeElement(this);
 	}
 
 	
@@ -143,7 +143,7 @@ class LayoutedSprite implements LayoutElement implements Element
 			}
 			else {
 				update(layoutContainer);
-				(display.buffer:Buffer<LayoutedSprite>).updateElement(this);
+				(display.buffer:Buffer<LayoutableSprite>).updateElement(this);
 			}
 		}
 		else if (!layoutContainer.isHidden) // not full outside of the Mask anymore

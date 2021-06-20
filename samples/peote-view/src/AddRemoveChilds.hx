@@ -2,6 +2,8 @@ package;
 
 import lime.ui.MouseButton;
 import lime.app.Application;
+import peote.layout.Align;
+import peote.layout.Layout;
 
 import peote.view.PeoteView;
 import peote.view.Color;
@@ -13,9 +15,7 @@ import peote.layout.Size;
 import layoutable.LayoutableSprite;
 import layoutable.LayoutableDisplay;
 
-import peote.layout.Align;
-
-class Main extends lime.app.Application
+class AddRemoveChilds extends lime.app.Application
 {
 	var peoteView:PeoteView;
 	var display:LayoutableDisplay;
@@ -34,82 +34,72 @@ class Main extends lime.app.Application
 	// ------------------------------------------------------------
 	// --------------- SAMPLE STARTS HERE -------------------------
 	// ------------------------------------------------------------	
-	var layoutContainer:LayoutContainer;
+	var root:LayoutContainer;
+	var green:LayoutContainer;
 	
 	public function initPeoteView(window:lime.ui.Window)
 	{
 		peoteView = new PeoteView(window.context, window.width, window.height);
 
-		display = new LayoutableDisplay(peoteView, Color.GREY1);
+		display = new LayoutableDisplay(peoteView, Color.GREY1);	
 
 		// add some graphic elements
-		var green = new LayoutableSprite(display, Color.GREEN);
-		var red = new LayoutableSprite(display, Color.RED);
-		var blue = new LayoutableSprite(display, Color.BLUE);
-		var yellow = new LayoutableSprite(display, Color.YELLOW);
+		green = new Box( new LayoutableSprite(display, Color.GREEN),
+		{	
+			#if peotelayout_debug
+			name:"green",
+			#end
+			// ----- container options:
+			//scrollX:true, // allow horizontal scrolling of the inner childs
+			//scrollY:true, // allow vertical scrolling of the inner childs
+
+			// limit minimum/maximum to be not smaller than min/max childs size (false per default)
+			limitMinWidthToChilds: false, // minimum width >= childs minimum
+			//limitMaxWidthToChilds: false, // maximum width >= childs maximum
+			//limitMinHeightToChilds: false, // minimum height >= childs minimum
+			//limitMaxHeightToChilds: true, // maximum height >= childs maximum
+			
+			//alignChildsOnOversizeY:Align.LAST, // force the aligning for all childs on oversizing
+			
+			// ----- inner size (width, height) and outer spacer (left, right, top, bottom):
+			width:Size.limit(100, 200),
+		},
+		// childs
+		[	
+/*			new Box( new LayoutedSprite(display, Color.RED), {
+				#if peotelayout_debug
+				name:"red",
+				#end
+				width:Size.limit(50, 100),
+			}),
+			new Box( new LayoutedSprite(display, Color.BLUE), {
+				#if peotelayout_debug
+				name:"blue",
+				#end
+				width:Size.limit(100, 200),
+			}),
+*/		]);
 				
-		
+				
 		// init a layout
-		layoutContainer = new LayoutContainer(ContainerType.BOX, display,
+		root = new HBox(display,
 		{
 			#if peotelayout_debug
 			name:"root",
 			#end
-			// relativeChildPositions:true, // need sometimes for peoteView Display (because all sprites are into and relative to)
-			//width:Size.limit(100,200),
-			//limitMinWidthToChilds: false, // allow oversizing of the inner containers
-			//alignChildsOnOversizeX:Align.LAST, // for all childs to align at right if the inner containers not fit into
+			relativeChildPositions:true,
+			width:Size.limit(300,500),
+			//alignChildsOnOversizeX:Align.CENTER,
+			//limitMinWidthToChilds: false,
 		},
-		[	// green child
-			new Box( green, // same as new LayoutContainer(ContainerType.BOX, green, ...)
-			{
-				#if peotelayout_debug
-				name:"green",
-				#end
-				left: Size.min(100), // can be scale high but not lower as min-value
-				width:Size.limit(100, 400), // can be scale from min to max-value
-				right:Size.max(200), // can be scale from 0 to max-value
-				//right:10, // or can be a fixed value.. same as .limit(10,10)
-				
-				// for "span" they are reaching its min and max at the same time while scaling
-				// in a row, but can be scaled higher as max
-				top:   Size.span(50, 100),
-				height:Size.span(200, 400),
-				bottom:Size.span(50, 100),
-			},
-			[	// red, blue and yellow childs
-				new Box( red, {
-					#if peotelayout_debug
-					name:"red",
-					#end
-					left:0,
-					width:300,
-					height:100,
-					bottom:Size.min(100),
-				}),
-				new Box( blue, {
-					#if peotelayout_debug
-					name:"blue",
-					#end
-					right:0,
-					width:300,
-					height:100,
-					bottom:0,
-				}),
-				new Box( yellow, {
-					#if peotelayout_debug
-					name:"yellow",
-					#end
-					width:100,
-					height:Size.limit(100, 300),
-				}),
-			]),
+		[ 						
+			//green,
 		]);
 		
-		layoutContainer.init();
+		root.init();
+		root.addChild(green);
 		
-		layoutContainer.update(peoteView.width, peoteView.height);
-		
+		root.update(peoteView.width, peoteView.height);
 	}
 	
 	// ------------------------------------------------------------
@@ -132,26 +122,54 @@ class Main extends lime.app.Application
 	public override function onWindowResize (width:Int, height:Int):Void
 	{
 		peoteView.resize(width, height);
-		if (layoutContainer != null) layoutContainer.update(width, height);
+		if (root != null) root.update(width, height);
 	}
 
 	// ----------------- MOUSE EVENTS ------------------------------
 	var sizeEmulation = false;
 	
+	var lastScrollValue:Float = 0;
 	public override function onMouseMove (x:Float, y:Float) {
-		if (sizeEmulation && layoutContainer != null) {
-			layoutContainer.update(x, y);
-		}
+		if (sizeEmulation && root != null) {
+			root.update(x, y);
+/*			var scrollValue = root.getChild(0).xScroll;
+			if (lastScrollValue != scrollValue) {
+				trace(scrollValue);
+				lastScrollValue = scrollValue;
+			}
+*/		}
 	}
 	//public override function onMouseDown (x:Float, y:Float, button:MouseButton) {};
 	public override function onMouseUp (x:Float, y:Float, button:MouseButton) {
 		sizeEmulation = !sizeEmulation; 
 		if (sizeEmulation) onMouseMove(x, y);
 		else {
-			layoutContainer.update(peoteView.width, peoteView.height);
+			root.update(peoteView.width, peoteView.height);
 		}
 	}
-	// public override function onMouseWheel (deltaX:Float, deltaY:Float, deltaMode:lime.ui.MouseWheelMode):Void {}
+	public override function onMouseWheel (deltaX:Float, deltaY:Float, deltaMode:lime.ui.MouseWheelMode):Void {
+		if (deltaY != 0) {
+			//var xScroll = root.getChild(0).xScroll + deltaY*5;
+			//if (xScroll >= 0 && xScroll <= root.getChild(0).xScrollMax) {
+				//root.getChild(0).xScroll = xScroll;
+				//root.update();
+			//}
+			
+			//trace(root.getChild(0).xScroll, root.getChild(0).xScrollMax);
+			
+/*			xScroll = root.getChild(1).xScroll + deltaY*5;
+			//if (xScroll >= 0 && xScroll <= root.getChild(0).xScrollMax) {
+				root.getChild(1).xScroll = xScroll;
+				root.update();
+			//}
+			
+			xScroll = root.getChild(2).xScroll + deltaY*5;
+			//if (xScroll >= 0 && xScroll <= root.getChild(0).xScrollMax) {
+				root.getChild(2).xScroll = xScroll;
+				root.update();
+			//}
+*/		}
+	}
 	// public override function onMouseMoveRelative (x:Float, y:Float):Void {}
 
 	// ----------------- TOUCH EVENTS ------------------------------

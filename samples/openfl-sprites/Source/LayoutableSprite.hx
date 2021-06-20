@@ -1,15 +1,15 @@
-package layouted;
+package;
 
 import openfl.Lib;
 import openfl.display.DisplayObjectContainer;
 import openfl.display.Sprite;
 import openfl.geom.Rectangle;
 
-import peote.layout.LayoutElement;
+import peote.layout.ILayoutElement;
 import peote.layout.LayoutContainer;
 
 
-class LayoutedSprite extends Sprite implements LayoutElement 
+class LayoutableSprite extends Sprite implements ILayoutElement 
 {
 	var color:Int;
 	

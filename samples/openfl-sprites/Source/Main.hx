@@ -7,7 +7,7 @@ import openfl.events.MouseEvent;
 import peote.layout.LayoutContainer;
 import peote.layout.Size;
 
-import layouted.LayoutedSprite;
+import LayoutableSprite;
 
 class Main extends Sprite {
 	
@@ -18,11 +18,11 @@ class Main extends Sprite {
 		super();
 		
 		// add some graphic elements
-		var gray   = new LayoutedSprite(0x555555);
-		var green  = new LayoutedSprite(0x00ff00);
-		var yellow = new LayoutedSprite(0xffff00);
-		var red    = new LayoutedSprite(0xff0000); red.alpha  = 0.7;
-		var blue   = new LayoutedSprite(0x0000ff); blue.alpha = 0.7;
+		var gray   = new LayoutableSprite(0x555555);
+		var green  = new LayoutableSprite(0x00ff00);
+		var yellow = new LayoutableSprite(0xffff00);
+		var red    = new LayoutableSprite(0xff0000); red.alpha  = 0.7;
+		var blue   = new LayoutableSprite(0x0000ff); blue.alpha = 0.7;
 		
 		
 		// init layout and bind to graphic elements

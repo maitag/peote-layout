@@ -13,13 +13,13 @@ import peote.layout.LayoutContainer;
 import peote.layout.ContainerType;
 import peote.layout.Size;
 
-import layouted.LayoutedSprite;
-import layouted.LayoutedDisplay;
+import layoutable.LayoutableSprite;
+import layoutable.LayoutableDisplay;
 
 class DeepNestingDemo extends lime.app.Application
 {
 	var peoteView:PeoteView;
-	var display:LayoutedDisplay;
+	var display:LayoutableDisplay;
 	
 	public function new() super();
 	
@@ -41,7 +41,7 @@ class DeepNestingDemo extends lime.app.Application
 	{
 		peoteView = new PeoteView(window.context, window.width, window.height);
 
-		display = new LayoutedDisplay(peoteView, Color.BLACK);	
+		display = new LayoutableDisplay(peoteView, Color.BLACK);	
 
 		// init layout
 		root = new Box(display,
@@ -79,7 +79,7 @@ class DeepNestingDemo extends lime.app.Application
 			subHeight = Std.int(height/numChilds) - 15;
 			subWidth = subWidth - 20;
 		}
-		return new LayoutContainer( type, new LayoutedSprite(display, Color.random() | 0x000000ff),
+		return new LayoutContainer( type, new LayoutableSprite(display, Color.random() | 0x000000ff),
 		{	
 			left: Size.max(5),
 			right:Size.max(5),

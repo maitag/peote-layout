@@ -1,7 +1,7 @@
 package peote.layout;
 import peote.layout.LayoutContainer;
 
-interface LayoutElement 
+interface ILayoutElement 
 {
 	public function updateByLayout(layoutContainer:LayoutContainer):Void;
 	public function showByLayout():Void;

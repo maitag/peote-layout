@@ -1,4 +1,4 @@
-package layouted;
+package layoutable;
 
 import peote.view.PeoteView;
 import peote.view.Display;
@@ -7,11 +7,11 @@ import peote.view.Buffer;
 import peote.view.Color;
 import peote.layout.LayoutContainer;
 
-import peote.layout.LayoutElement;
+import peote.layout.ILayoutElement;
 
-class LayoutedDisplay extends Display implements LayoutElement
+class LayoutableDisplay extends Display implements ILayoutElement
 {
-	public var buffer:Buffer<LayoutedSprite>;
+	public var buffer:Buffer<LayoutableSprite>;
 	public var program:Program;	
 	var _peoteView:PeoteView;
 	var isVisible:Bool = false;
@@ -20,9 +20,9 @@ class LayoutedDisplay extends Display implements LayoutElement
 	{
 		_peoteView = peoteView;
 		super(0, 0, 0, 0, color);
-		buffer = new Buffer<LayoutedSprite>(16,8);
+		buffer = new Buffer<LayoutableSprite>(16,8);
 		program = new Program(buffer);
-		LayoutedSprite.initProgram(program);
+		LayoutableSprite.initProgram(program);
 		addProgram(program);
 	}
 	

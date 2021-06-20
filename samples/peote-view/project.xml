@@ -7,11 +7,10 @@
 	<!-- <meta build-number="714" /> --> <!-- let set the buildnumber manual (android) -->
 	<!-- check this for GG-Playstore: <setenv name="ANDROID_GRADLE_TASK" value=":app:bundleRelease" /> -->
 	
-	<app main="DeepNestingDemo" path="bin" file="DeepNestingDemo" />
+	<app main="Main" path="bin" file="Main" />
 	<!--
 	<app main="Main" path="bin" file="Main" />
 	<app main="Test" path="bin" file="Test" />
-	<app main="AddRemoveChilds" path="bin" file="AddRemoveChilds" />
 	<app main="ManualConstraints" path="bin" file="ManualConstraints" />
 	<app main="NestedLayout" path="bin" file="NestedLayout" />
 	<app main="AddRemoveChilds" path="bin" file="AddRemoveChilds" />
@@ -33,7 +32,7 @@
 	<!-- <haxelib name="jasper" /> -->
 	
 	
-	<!-- <haxedef name="peotelayout_debug" /> -->
+	<haxedef name="peotelayout_debug" />
 	
 	<!-- force compiling for a special opengl-es version (only set one of them) -->
 	<!-- this optimizes the build and forces no-runtimecheck for the gl-features -->

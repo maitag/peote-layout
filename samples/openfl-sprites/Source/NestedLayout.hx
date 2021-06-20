@@ -7,7 +7,7 @@ import openfl.events.MouseEvent;
 import peote.layout.LayoutContainer;
 import peote.layout.Size;
 
-import layouted.LayoutedSprite;
+import LayoutableSprite;
 
 class NestedLayout extends Sprite {
 	
@@ -23,7 +23,7 @@ class NestedLayout extends Sprite {
 		// init a complex layout
 		layoutContainer = new Box( // no binding here !
 		[	// childs -----------------------------------------
-			new HBox( new LayoutedSprite(0x00ff00), // green
+			new HBox( new LayoutableSprite(0x00ff00), // green
 			{	left:  	Size.min(10),
 				width: 	Size.limit(100, 1900),
 				right: 	Size.max(50),
@@ -37,42 +37,42 @@ class NestedLayout extends Sprite {
 					right: Size.span(10, 0.1),
 				},
 				[	// childs -----------------------------------------
-					new Box( new LayoutedSprite(0xff0000), // red
+					new Box( new LayoutableSprite(0xff0000), // red
 					{	left:   Size.span(10),
 						width:  Size.limit(100, 200),
 						height: sameLimit,
 						bottom: 10,
 					}),
-					new Box( new LayoutedSprite(0xff0000), // red
+					new Box( new LayoutableSprite(0xff0000), // red
 					{	left:   Size.span(10),
 						width:  Size.span(100, 200),
 						height: Size.limit(160, 300),
 					}),
 				]),
-				new VBox( new LayoutedSprite(0x0000ff), // blue
+				new VBox( new LayoutableSprite(0x0000ff), // blue
 				{	left:  Size.span(0, 0.2),
 					width: Size.span(100),
 					right: Size.span(10, 0.3),
 				},
 				[	// childs -----------------------------------------
-					new Box( new LayoutedSprite(0xffff00), // yellow
+					new Box( new LayoutableSprite(0xffff00), // yellow
 					{	left:   Size.span(10, 0.5 ),
 						width:  Size.span(180),
 						height: Size.span(200,  1.9),
 						top:    Size.span(10,  0.1),
 					},
 					[	// childs -----------------------------------------
-						new VBox( new LayoutedSprite(0xff00ff), // magenta
+						new VBox( new LayoutableSprite(0xff00ff), // magenta
 						{	width:  Size.limit(100, 250),
 							height: Size.max(400),
 						},
 						[	// childs -----------------------------------------
-							new Box( new LayoutedSprite(0x777777), // grey light
+							new Box( new LayoutableSprite(0x777777), // grey light
 							{	width:sameLimit,
 								height:sameLimit,
 								top:20,
 							}),
-							new Box( new LayoutedSprite(0x444444), // grey dark
+							new Box( new LayoutableSprite(0x444444), // grey dark
 							{	width:  sameLimit,
 								height: Size.span(80, 100),
 								top:    10,
@@ -80,7 +80,7 @@ class NestedLayout extends Sprite {
 							}),
 						]),
 					]),
-					new Box( new LayoutedSprite(0x00ffff), // cyan
+					new Box( new LayoutableSprite(0x00ffff), // cyan
 					{	left:   Size.span(10, 1.5 ),
 						width:  Size.span(100),
 						height: Size.span(50,  0.5),
