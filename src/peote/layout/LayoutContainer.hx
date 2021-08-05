@@ -956,9 +956,9 @@ class LayoutContainer
 				isHidden = true;
 			}
 			else
-			{				
+			{	// CHECK: 0.000000001 for cassowary rounding-errors			
 				maskX = parent._x.m_value + parent.maskX - _x.m_value;
-				if (maskX > 0) {
+				if (maskX > 0.000000001) {
 					isMasked = true;
 					maskWidth = width - maskX;
 					if (maskWidth < 0) isHidden = true;
@@ -966,7 +966,7 @@ class LayoutContainer
 				}
 				else {
 					maskWidth = parent.maskWidth + maskX;
-					if (maskWidth >= width) maskWidth = width;
+					if (maskWidth >= width-0.000000001) maskWidth = width;
 					else {
 						isMasked = true;
 						if (maskWidth < 0) isHidden = true;
@@ -976,7 +976,7 @@ class LayoutContainer
 				
 				if (!isHidden) {
 					maskY = parent._y.m_value + parent.maskY - _y.m_value;
-					if (maskY > 0) {
+					if (maskY > 0.000000001) {
 						isMasked = true;
 						maskHeight = height - maskY;
 						if (maskHeight < 0) isHidden = true;
@@ -984,7 +984,7 @@ class LayoutContainer
 					}
 					else {
 						maskHeight = parent.maskHeight + maskY;
-						if (maskHeight >= height) maskHeight = height;
+						if (maskHeight >= height-0.000000001) maskHeight = height;
 						else {
 							isMasked = true;
 							if (maskHeight < 0) isHidden = true;
