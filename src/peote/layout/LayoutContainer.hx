@@ -113,6 +113,28 @@ class LayoutContainer
 		return value;
 	}
 	
+	// TODO
+	public var yScroll(get,set):Null<Float>;
+	inline function get_yScroll() {
+			return _yScroll.m_value;
+	}
+	inline function set_yScroll(value:Null<Float>):Null<Float> {
+		if (solver == null) throw('Error: can\'t set ${_yScroll.m_name} value of LayoutContainer if its not initialized.');
+		
+		if (value == null && solver.hasEditVariable(_yScroll)) {
+			solver.removeEditVariable(_yScroll);
+			return null;
+		}
+		
+		if (!solver.hasEditVariable(_yScroll)) {
+			solver.addEditVariable(_yScroll, strengthEditVar);
+		}
+		
+		solver.suggestValue(_yScroll, value);
+			
+		return value;
+	}
+	
 	public var xScrollMax(get,never):Float;
 	inline function get_xScrollMax():Float {
 		// TODO: precalculate greatest child
@@ -120,6 +142,15 @@ class LayoutContainer
 		for (child in childs) if (child.hSize.getLimitMin() > greatestChildMinSize) greatestChildMinSize = child.hSize.getLimitMin(); 
 		if (width >= greatestChildMinSize) return 0;
 		return greatestChildMinSize - width;
+	}
+	
+	public var yScrollMax(get,never):Float;
+	inline function get_yScrollMax():Float {
+		// TODO: precalculate greatest child
+		var greatestChildMinSize = 0;
+		for (child in childs) if (child.vSize.getLimitMin() > greatestChildMinSize) greatestChildMinSize = child.vSize.getLimitMin(); 
+		if (height >= greatestChildMinSize) return 0;
+		return greatestChildMinSize - height;
 	}
 	
 	// ---------- Variables for Jasper Constraints ------
