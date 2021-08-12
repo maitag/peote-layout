@@ -2,6 +2,7 @@ package;
 
 import lime.ui.MouseButton;
 import lime.app.Application;
+import lime.ui.Window;
 
 import peote.view.PeoteView;
 import peote.view.Display;
@@ -14,7 +15,7 @@ import peote.layout.Size;
 import layoutable.LayoutableSprite;
 import layoutable.LayoutableDisplay;
 
-class ManualConstraints extends lime.app.Application
+class ManualConstraints extends Application
 {
 	var peoteView:PeoteView;
 	var display:LayoutableDisplay;
@@ -35,9 +36,9 @@ class ManualConstraints extends lime.app.Application
 	// ------------------------------------------------------------	
 	var rootLayoutContainer:LayoutContainer;
 	
-	public function initPeoteView(window:lime.ui.Window)
+	public function initPeoteView(window:Window)
 	{
-		peoteView = new PeoteView(window.context, window.width, window.height);
+		peoteView = new PeoteView(window);
 
 		display = new LayoutableDisplay(peoteView, Color.GREY1);	
 
@@ -210,24 +211,13 @@ class ManualConstraints extends lime.app.Application
 	// ----------------- LIME EVENTS ------------------------------
 	// ------------------------------------------------------------	
 
-	public override function onPreloadComplete():Void {
-		// access embeded assets here
-	}
-
-	public override function update(deltaTime:Int):Void {
-		// for game-logic update
-	}
-
-	public override function render(context:lime.graphics.RenderContext):Void
-	{
-		peoteView.render(); // rendering all Displays -> Programs - Buffer
-	}
-	
 	public override function onWindowResize (width:Int, height:Int):Void
 	{
-		peoteView.resize(width, height);
 		if (rootLayoutContainer != null) rootLayoutContainer.update(width, height);
 	}
+
+	// public override function onPreloadComplete():Void {}
+	// public override function update(deltaTime:Int):Void {}
 
 	// ----------------- MOUSE EVENTS ------------------------------
 	var sizeEmulation = false;

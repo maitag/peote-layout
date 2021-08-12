@@ -2,18 +2,19 @@ package;
 
 import lime.ui.MouseButton;
 import lime.app.Application;
-import peote.layout.Align;
+import lime.ui.Window;
 
 import peote.view.PeoteView;
 import peote.view.Color;
 
 import peote.layout.LayoutContainer;
 import peote.layout.Size;
+import peote.layout.Align;
 
 import layoutable.LayoutableSprite;
 import layoutable.LayoutableDisplay;
 
-class NestedLayout extends lime.app.Application
+class NestedLayout extends Application
 {
 	var peoteView:PeoteView;
 	
@@ -33,9 +34,9 @@ class NestedLayout extends lime.app.Application
 	// ------------------------------------------------------------	
 	var layoutContainer:LayoutContainer;
 	
-	public function initPeoteView(window:lime.ui.Window)
+	public function initPeoteView(window:Window)
 	{
-		peoteView = new PeoteView(window.context, window.width, window.height);
+		peoteView = new PeoteView(window);
 
 		var display:LayoutableDisplay = new LayoutableDisplay(peoteView, Color.GREY4);
 		var yellowDisplay:LayoutableDisplay = new LayoutableDisplay(peoteView, Color.YELLOW);	
@@ -151,24 +152,13 @@ class NestedLayout extends lime.app.Application
 	// ----------------- LIME EVENTS ------------------------------
 	// ------------------------------------------------------------	
 
-	public override function onPreloadComplete():Void {
-		// access embeded assets here
-	}
-
-	public override function update(deltaTime:Int):Void {
-		// for game-logic update
-	}
-
-	public override function render(context:lime.graphics.RenderContext):Void
-	{
-		peoteView.render(); // rendering all Displays -> Programs - Buffer
-	}
-	
 	public override function onWindowResize (width:Int, height:Int):Void
 	{
-		peoteView.resize(width, height);
 		if (layoutContainer != null) layoutContainer.update(width, height);
 	}
+
+	// public override function onPreloadComplete():Void {}
+	// public override function update(deltaTime:Int):Void {}
 
 	// ----------------- MOUSE EVENTS ------------------------------
 	var sizeEmulation = false;

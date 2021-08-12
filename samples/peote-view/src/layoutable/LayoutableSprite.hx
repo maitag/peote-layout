@@ -129,7 +129,7 @@ class LayoutableSprite implements ILayoutElement implements Element
 		if (isVisible) hide();
 	}
 	
-	public inline function updateByLayout(layoutContainer:LayoutContainer) {		
+	public inline function updateByLayout(layoutContainer:LayoutContainer) {
 		// TODO: layoutContainer.updateMask() from here to make it only on-need
 		
 		if (isVisible)

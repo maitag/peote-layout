@@ -1,7 +1,8 @@
 package;
 
-import lime.ui.MouseButton;
 import lime.app.Application;
+import lime.ui.Window;
+import lime.ui.MouseButton;
 
 import peote.view.PeoteView;
 import peote.view.Color;
@@ -15,10 +16,8 @@ import layoutable.LayoutableDisplay;
 
 import peote.layout.Align;
 
-class Main extends lime.app.Application
+class Main extends Application
 {
-	var peoteView:PeoteView;
-	var display:LayoutableDisplay;
 	
 	public function new() super();
 	
@@ -38,9 +37,9 @@ class Main extends lime.app.Application
 	
 	public function initPeoteView(window:lime.ui.Window)
 	{
-		peoteView = new PeoteView(window.context, window.width, window.height);
+		var peoteView = new PeoteView(window);
 
-		display = new LayoutableDisplay(peoteView, Color.GREY1);
+		var display = new LayoutableDisplay(peoteView, Color.GREY1);
 
 		// add some graphic elements
 		var green = new LayoutableSprite(display, Color.GREEN);
@@ -116,24 +115,13 @@ class Main extends lime.app.Application
 	// ----------------- LIME EVENTS ------------------------------
 	// ------------------------------------------------------------	
 
-	public override function onPreloadComplete():Void {
-		// access embeded assets here
-	}
-
-	public override function update(deltaTime:Int):Void {
-		// for game-logic update
-	}
-
-	public override function render(context:lime.graphics.RenderContext):Void
-	{
-		peoteView.render(); // rendering all Displays -> Programs - Buffer
-	}
-	
 	public override function onWindowResize (width:Int, height:Int):Void
 	{
-		peoteView.resize(width, height);
 		if (layoutContainer != null) layoutContainer.update(width, height);
 	}
+
+	// public override function onPreloadComplete():Void {}
+	// public override function update(deltaTime:Int):Void {}
 
 	// ----------------- MOUSE EVENTS ------------------------------
 	var sizeEmulation = false;
@@ -148,7 +136,7 @@ class Main extends lime.app.Application
 		sizeEmulation = !sizeEmulation; 
 		if (sizeEmulation) onMouseMove(x, y);
 		else {
-			layoutContainer.update(peoteView.width, peoteView.height);
+			layoutContainer.update(window.width, window.height);
 		}
 	}
 	// public override function onMouseWheel (deltaX:Float, deltaY:Float, deltaMode:lime.ui.MouseWheelMode):Void {}
