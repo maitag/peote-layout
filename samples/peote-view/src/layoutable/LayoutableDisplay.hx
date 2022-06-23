@@ -14,12 +14,15 @@ class LayoutableDisplay extends Display implements ILayoutElement
 	public var buffer:Buffer<LayoutableSprite>;
 	public var program:Program;	
 	var _peoteView:PeoteView;
-	var isVisible:Bool = false;
+	//var isVisible:Bool = false;
 
 	public function new(peoteView:PeoteView, color:Color=0x00000000) 
 	{
 		_peoteView = peoteView;
 		super(0, 0, 0, 0, color);
+		
+		isVisible = false;_peoteView.addDisplay(this);
+		
 		buffer = new Buffer<LayoutableSprite>(16,8);
 		program = new Program(buffer);
 		LayoutableSprite.initProgram(program);
@@ -44,7 +47,7 @@ class LayoutableDisplay extends Display implements ILayoutElement
 			height = Math.round(layoutContainer.height);				
 		}
 	}
-	
+/*	
 	public inline function show() {
 		isVisible = true;
 		_peoteView.addDisplay(this);
@@ -54,16 +57,18 @@ class LayoutableDisplay extends Display implements ILayoutElement
 		isVisible = false;
 		_peoteView.removeDisplay(this);
 	}
-	
+*/	
 	
 	// ---------------- interface to peote-layout ---------------------
 	
 	public inline function showByLayout() {
-		if (!isVisible) show();
+		//if (!isVisible) 
+			show();
 	}
 	
 	public inline function hideByLayout() {
-		if (isVisible) hide();
+		//if (isVisible)
+			hide();
 	}
 	
 	public function updateByLayout(layoutContainer:peote.layout.LayoutContainer) {
@@ -74,7 +79,7 @@ class LayoutableDisplay extends Display implements ILayoutElement
 			if (layoutContainer.isHidden) // if it is full outside of the Mask (so invisible)
 			{
 				#if peotelayout_debug
-				//trace("removed", layoutContainer.layout.name);
+				trace("removed", layoutContainer.layout.name);
 				#end
 				hide();
 			}
@@ -84,7 +89,7 @@ class LayoutableDisplay extends Display implements ILayoutElement
 		else if (!layoutContainer.isHidden) // not full outside of the Mask anymore
 		{
 			#if peotelayout_debug
-			//trace("showed", layoutContainer.layout.name);
+			trace("showed", layoutContainer.layout.name);
 			#end
 			update(layoutContainer);
 			show();
