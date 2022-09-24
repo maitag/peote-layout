@@ -4,9 +4,9 @@
 	"license": "MIT",
 	"tags": ["peote", "layout", "jasper", "cassowary"],
 	"description": "nested layoutcontainers with cassowary constraints from jasper lib",
-	"version": "0.2.1",
+	"version": "0.2.2",
 	"classPath": "src/",
-	"releasenote": "all basic constraints are ready and optimized",
+	"releasenote": "adding sample for using peote-ui elements",
 	"contributors": ["Sylvio Sell - maitag"],
 	"dependencies": {
 		"jasper": ""
