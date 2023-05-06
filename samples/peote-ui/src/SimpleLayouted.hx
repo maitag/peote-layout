@@ -5,7 +5,6 @@ import haxe.CallStack;
 import lime.app.Application;
 import lime.ui.Window;
 import lime.ui.MouseButton;
-import lime.graphics.RenderContext;
 
 import peote.view.PeoteView;
 import peote.view.Color;
@@ -17,12 +16,11 @@ import peote.text.Font;
 
 import peote.ui.event.PointerEvent;
 import peote.ui.style.FontStyleTiled;
-import peote.ui.interactive.InteractiveTextLine;
-import peote.ui.interactive.InteractiveElement;
-import peote.ui.UIDisplay;
+import peote.ui.interactive.UITextLine;
+import peote.ui.interactive.UIElement;
+import peote.ui.PeoteUIDisplay;
 
-import peote.ui.style.SimpleStyle;
-import peote.ui.style.RoundBorderStyle;
+import peote.ui.style.BoxStyle;
 
 
 class SimpleLayouted extends Application
@@ -51,22 +49,22 @@ class SimpleLayouted extends Application
 		var peoteView = new PeoteView(window);
 
 		// create layoutable UIDisplay 
-		var uiDisplay = new UIDisplay(0, 0, window.width, window.height, Color.GREY3);
+		var uiDisplay = new PeoteUIDisplay(0, 0, window.width, window.height, Color.GREY3);
 		peoteView.addDisplay(uiDisplay);
 		
 		
 		// create layoutable ui-elements
-		//var red   = new LayoutedElement(new SimpleStyle(Color.RED));
-		var red   = new InteractiveElement(new SimpleStyle(Color.RED));
-		var green = new InteractiveElement(new SimpleStyle(Color.GREEN));
-		var blue  = new InteractiveElement(new SimpleStyle(Color.BLUE));
-		var yellow = new InteractiveElement(new SimpleStyle(Color.YELLOW));
+		//var red   = new LayoutedElement(new BoxStyle(Color.RED));
+		var red   = new UIElement(0,0,0,0, new BoxStyle(Color.RED));
+		var green = new UIElement(0,0,0,0, new BoxStyle(Color.GREEN));
+		var blue  = new UIElement(0,0,0,0, new BoxStyle(Color.BLUE));
+		var yellow = new UIElement(0,0,0,0, new BoxStyle(Color.YELLOW));
 		
-		var textLine1 = font.createInteractiveTextLine( 0, 0, 0, "hello world" );			
-		var textLine2 = font.createInteractiveTextLine( 0, 0, {width:300, height:25}, 0, "hello", new FontStyleTiled(Color.BLUE) );
+		var textLine1 = font.createUITextLine( 0, 0, 0, 0, 0, "hello world" );			
+		var textLine2 = font.createUITextLine( 0, 0, 300, 25, 0, "hello", new FontStyleTiled(Color.BLUE) );
 		// alternatively
-		//var textLine1 = new InteractiveTextLine<FontStyleTiled>( 0, 0, 0, "hello world", font );
-		//var textLine2 = new InteractiveTextLine<FontStyleTiled>( 0, 0, {width:300, height:25}, 0, "hello", font, new FontStyleTiled(Color.BLUE) );
+		//var textLine1 = new UITextLine<FontStyleTiled>( 0, 0, 0, "hello world", font );
+		//var textLine2 = new UITextLine<FontStyleTiled>( 0, 0, {width:300, height:25}, 0, "hello", font, new FontStyleTiled(Color.BLUE) );
 		
 		
 		// add the elements to LayoutedUIDisplay		
@@ -104,21 +102,21 @@ class SimpleLayouted extends Application
 		
 		
 		// add over/out events to the yellow element		
-		yellow.onPointerOver = function(elem:InteractiveElement, e:PointerEvent) {
+		yellow.onPointerOver = function(elem:UIElement, e:PointerEvent) {
 			elem.style.color = Color.YELLOW - 0x00550000;
 			elem.updateStyle();
 		}
-		yellow.onPointerOut = function(elem:InteractiveElement, e:PointerEvent) {
+		yellow.onPointerOut = function(elem:UIElement, e:PointerEvent) {
 			elem.style.color = Color.YELLOW;
 			elem.updateStyle();
 		}
 		
 		// add over/out events to the first textline
-		textLine1.onPointerOver = function(t:InteractiveTextLine<FontStyleTiled>, e:PointerEvent) {
+		textLine1.onPointerOver = function(t:UITextLine<FontStyleTiled>, e:PointerEvent) {
 			t.fontStyle.color = Color.RED;
 			t.updateStyle();
 		}
-		textLine1.onPointerOut = function(t:InteractiveTextLine<FontStyleTiled>, e:PointerEvent) {
+		textLine1.onPointerOut = function(t:UITextLine<FontStyleTiled>, e:PointerEvent) {
 			t.fontStyle.color = Color.BLACK;
 			t.updateStyle();
 		}
@@ -127,7 +125,7 @@ class SimpleLayouted extends Application
 			
 		
 		// delegating lime events to all added UIDisplays and LayoutedUIDisplay
-		UIDisplay.registerEvents(window);
+		PeoteUIDisplay.registerEvents(window);
 	}
 
 	

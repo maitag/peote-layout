@@ -22,22 +22,19 @@ import peote.ui.event.WheelEvent;
 import peote.ui.style.FontStyleTiled;
 import peote.ui.style.FontStylePacked;
 
-import peote.ui.UIDisplay;
-import peote.ui.interactive.InteractiveElement;
-import peote.ui.interactive.InteractiveTextLine;
-import peote.ui.interactive.interfaces.TextLine;
-import peote.ui.style.TextLineStyle;
-import peote.ui.util.HAlign;
-import peote.ui.util.VAlign;
+import peote.ui.PeoteUIDisplay;
+import peote.ui.interactive.UIElement;
+import peote.ui.interactive.UITextLine;
+import peote.ui.config.*;
 
-import peote.ui.style.SimpleStyle;
+import peote.ui.style.BoxStyle;
 import peote.ui.style.RoundBorderStyle;
 
 
 class SimpleMasked extends Application
 {
 	var peoteView:PeoteView;
-	var uiDisplay:UIDisplay;
+	var uiDisplay:PeoteUIDisplay;
 	
 	var tiledFont:Font<FontStyleTiled>;
 	var packedFont:Font<FontStylePacked>;
@@ -45,7 +42,7 @@ class SimpleMasked extends Application
 	var fontStyleTiled:FontStyleTiled;
 	var fontStylePacked:FontStylePacked;
 	
-	var textStyle:TextLineStyle;
+	var textConfig:TextConfig;
 		
 	var uiLayoutContainer:LayoutContainer;
 	
@@ -72,16 +69,18 @@ class SimpleMasked extends Application
 		fontStylePacked.width = 30.0;
 		fontStylePacked.color = Color.BLACK;
 		
-		var backgroundStyle = new SimpleStyle(Color.GREEN);
-		textStyle = {
+		var backgroundStyle = new BoxStyle(Color.GREEN);
+		textConfig = {
 			backgroundStyle:backgroundStyle
-			,selectionStyle:RoundBorderStyle.createById(0, Color.GREY5)
-			//,selectionStyle:SimpleStyle.createById(1, Color.GREY5)
+			,selectionStyle:RoundBorderStyle.createById(0, Color.GREY5),
+			//selectionStyle:BoxStyle.createById(1, Color.GREY5)
+			hAlign:HAlign.CENTER,
+			vAlign:VAlign.CENTER,
 		}
 		
 		peoteView = new PeoteView(window);
-		//uiDisplay = new UIDisplay(0, 0, window.width, window.height, Color.GREY3);
-		uiDisplay = new UIDisplay(0, 0, window.width, window.height, Color.GREY3, [backgroundStyle], true);
+		//uiDisplay = new PeoteUIDisplay(0, 0, window.width, window.height, Color.GREY3);
+		uiDisplay = new PeoteUIDisplay(0, 0, window.width, window.height, Color.GREY3, [backgroundStyle], true);
 		peoteView.addDisplay(uiDisplay);
 				
 		// load the FONTs:
@@ -96,18 +95,18 @@ class SimpleMasked extends Application
 	
 	public function onAllFontLoaded() 
 	{		
-		var red   = new InteractiveElement(new RoundBorderStyle(Color.RED, Color.BLACK, 0, 10));
+		var red   = new UIElement(0, 0, 0, 0, new RoundBorderStyle(Color.RED, Color.BLACK, 0, 10));
 		uiDisplay.add(red);
 
 				
 		var redBoxes = new Array<Box>();
 		for (i in 0...10) {
-			var button = new InteractiveElement(new RoundBorderStyle(Color.YELLOW));
-			button.onPointerOver = function(elem:InteractiveElement, e:PointerEvent) {
+			var button = new UIElement(0, 0, 0, 0, new RoundBorderStyle(Color.YELLOW));
+			button.onPointerOver = function(elem:UIElement, e:PointerEvent) {
 				elem.style.color = Color.YELLOW - 0x00550000;
 				elem.updateStyle();
 			}
-			button.onPointerOut = function(elem:InteractiveElement, e:PointerEvent) {
+			button.onPointerOut = function(elem:UIElement, e:PointerEvent) {
 				elem.style.color = Color.YELLOW;
 				elem.updateStyle();
 			}
@@ -115,7 +114,7 @@ class SimpleMasked extends Application
 			
 			button.wheelEventsBubbleTo = red;
 			
-			var textLineTiled = new InteractiveTextLine<FontStyleTiled>(0, 0, {hAlign:HAlign.CENTER, vAlign:VAlign.CENTER}, 'button${i+1}', tiledFont, fontStyleTiled, textStyle);
+			var textLineTiled = new UITextLine<FontStyleTiled>(0, 0, 0, 0, 'button${i+1}', tiledFont, fontStyleTiled, textConfig);
 			textLineTiled.autoWidth = false;
 			textLineTiled.autoHeight = false;
 			//var textLinePacked = new LayoutedTextLine<FontStylePacked>(0, 0, 130, 25, 0, true, "packed font", packedFont, fontStylePacked);	// masked -> true		
@@ -136,23 +135,23 @@ class SimpleMasked extends Application
 
 		
 		
-		var green = new InteractiveElement(new SimpleStyle(Color.GREEN));
-		var blue  = new InteractiveElement(new RoundBorderStyle(Color.BLUE, Color.BLACK, 0, 10));
+		var green = new UIElement(0, 0, 0, 0, new BoxStyle(Color.GREEN));
+		var blue  = new UIElement(0, 0, 0, 0, new RoundBorderStyle(Color.BLUE, Color.BLACK, 0, 10));
 		
 		uiDisplay.add(green);
 		uiDisplay.add(blue);
 		
-		var inputLine = packedFont.createInteractiveTextLine(0, 0, {hAlign:HAlign.CENTER, vAlign:VAlign.CENTER}, 'input line', fontStylePacked);
-		inputLine.onPointerOver = function(t:TextLine, e:PointerEvent) {
+		var inputLine = packedFont.createUITextLine(0, 0, 0, 0, 'input line', fontStylePacked, {hAlign:HAlign.CENTER, vAlign:VAlign.CENTER});
+		inputLine.onPointerOver = function(t, e:PointerEvent) {
 			trace("onPointerOver");
 			t.setInputFocus(e); // alternatively: uiDisplay.setInputFocus(t);
-			t.cursor = 2;
+			t.setCursor(2);
 			t.cursorShow();
 		}
 		inputLine.autoWidth = false;
 		inputLine.autoHeight = false;
 
-		inputLine.onPointerOut = function(t:TextLine, e:PointerEvent) {
+		inputLine.onPointerOut = function(t, e:PointerEvent) {
 			trace("onPointerOut");
 			t.cursorHide();
 		}
@@ -177,7 +176,7 @@ class SimpleMasked extends Application
 		
 		
 		// scrolling		
-		red.onMouseWheel = function(b:InteractiveElement, e:WheelEvent) {
+		red.onMouseWheel = function(b:UIElement, e:WheelEvent) {
 			if (e.deltaY != 0) {
 				var yScroll = uiLayoutContainer.getChild(0).yScroll - e.deltaY*10;
 				//if (xScroll >= 0 && xScroll <= uiLayoutContainer.getChild(0).xScrollMax) {
@@ -189,7 +188,7 @@ class SimpleMasked extends Application
 		
 		
 		// delegating lime events to all added UIDisplays and LayoutedUIDisplay
-		UIDisplay.registerEvents(window);		
+		PeoteUIDisplay.registerEvents(window);		
 	}
 
 	
