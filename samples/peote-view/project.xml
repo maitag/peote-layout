@@ -7,7 +7,7 @@
 	<!-- <meta build-number="714" /> --> <!-- let set the buildnumber manual (android) -->
 	<!-- check this for GG-Playstore: <setenv name="ANDROID_GRADLE_TASK" value=":app:bundleRelease" /> -->
 	
-	<app main="Main" path="bin" file="Main" />
+	<app main="NestedLayout" path="bin" file="Main" />
 	<!--
 	<app main="Main" path="bin" file="Main" />
 	<app main="Test" path="bin" file="Test" />
@@ -57,6 +57,10 @@
 	<!-- <haxedef name="source-map-content" /> --> <!-- to debug with chrome id needs also "-debug" -->
 	<haxeflag name="-dce" value="full" />
 	<!-- <haxedef name="dump=pretty output" /> -->
+	
+	<haxedef name="keep_inline_positions" />
+		
+	<haxedef name="no-deprecation-warnings" />
 	
 	<!-- <haxedef name="HXCPP_CHECK_POINTER"/> -->
 	<!-- <haxedef name="HXCPP_M32" if="cpp" /> --> <!-- on windows 64 is default -->

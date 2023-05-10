@@ -63,23 +63,23 @@ class AddRemoveChilds extends Application
 			//alignChildsOnOversizeY:Align.LAST, // force the aligning for all childs on oversizing
 			
 			// ----- inner size (width, height) and outer spacer (left, right, top, bottom):
-			width:Size.limit(100, 200),
+			width:Size.limit(200, 300),
 		},
 		// childs
 		[	
-/*			new Box( new LayoutedSprite(display, Color.RED), {
-				#if peotelayout_debug
-				name:"red",
-				#end
-				width:Size.limit(50, 100),
-			}),
-			new Box( new LayoutedSprite(display, Color.BLUE), {
+			new Box( new LayoutableSprite(display, Color.BLUE), {
 				#if peotelayout_debug
 				name:"blue",
 				#end
 				width:Size.limit(100, 200),
 			}),
-*/		]);
+			new Box( new LayoutableSprite(display, Color.RED), {
+				#if peotelayout_debug
+				name:"red",
+				#end
+				width:Size.limit(50, 100),
+			}),
+		]);
 				
 				
 		// init a layout
@@ -98,7 +98,9 @@ class AddRemoveChilds extends Application
 		]);
 		
 		root.init();
+		
 		root.addChild(green);
+		root.init();
 		
 		root.update(peoteView.width, peoteView.height);
 	}
